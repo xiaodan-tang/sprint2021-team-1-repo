@@ -1,0 +1,53 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+
+
+<section class="py-5">
+  <div class="container">
+    <ol class="breadcrumb pl-0  justify-content-start">
+      <li class="breadcrumb-item"><a href="/restaurant/profile/{{ restaurant_id }}">Back to Restaurant Details</a></li>
+    </ol>
+    <div class="d-flex justify-content-between align-items-end mb-5">
+      <h1 class="hero-heading mb-0">Inspection History</h1>
+      <a class="btn btn-link text-muted" target="_blank" href="https://www1.nyc.gov/html/dot/html/pedestrians/openrestaurants.shtml">Open Restaurant Compliance</a>
+    </div>
+    <div class="d-flex justify-content-between align-items-center flex-column flex-lg-row mb-5">
+      <div class="mr-3">
+        <p class="mb-3 mb-lg-0">There are <strong>{{ inspection_list|length }}</strong> inspection(s) for restaurant
+          <strong>{% with inspection_list|first as i %}{{ i.restaurant_name }}{% endwith %}</strong>
+        </p>
+      </div>
+    </div>
+    <div id="group_item" class="list-group shadow mb-5">
+      {% for inspection in inspection_list %}
+      <a class="list-group-item list-group-item-action p-4">
+        <div class="row text-center">
+          <div class="col-lg-4 align-self-center mb-4 mb-lg-0">
+            {% if inspection.is_roadway_compliant == "Compliant" %}
+              <span class="badge badge-pill p-2 badge-success-light" style="font-size: x-large;">{{ inspection.is_roadway_compliant }}</span>
+            {% else %}
+              <span class="badge badge-pill p-2 badge-danger-light" style="font-size: x-large;">{{ inspection.is_roadway_compliant }}</span>
+            {% endif %}
+          </div>
+          <div class="col-lg-8">
+            <div class="row text-center">
+              <div class="col-6 col-md-6 col-lg-6 py-3 mb-3 mb-lg-0">
+                <h6 class="label-heading" style="font-size: larger;">SKIPPED REASON</h6>
+                {% if inspection.skipped_reason == "nan" %}
+                  <p class="text-sm font-weight-bold" style="font-size: larger;">-</p>
+                {% else %}
+                  <p class="text-sm font-weight-bold" style="font-size: larger;">{{ inspection.skipped_reason }}</p>
+                {% endif %}
+              </div>
+              <div class="col-6 col-md-6 col-lg-6 py-3">
+                <h6 class="label-heading" style="font-size: larger;">INSPECTION DATE</h6>
+                <p class="text-sm font-weight-bold" style="font-size: larger;">{{ inspection.inspected_on }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
