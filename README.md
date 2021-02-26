@@ -1,5 +1,5 @@
-# Dine Safe.ly
-[![Build Status](https://travis-ci.com/gcivil-nyu-org/dine-safe-ly.svg?branch=develop)](https://travis-ci.com/gcivil-nyu-org/dine-safe-ly)
+# DineLine
+[![Build Status](https://travis-ci.com/xiaodan-tang/sprint2021-team-1-repo.svg?branch=main)](https://travis-ci.com/xiaodan-tang/sprint2021-team-1-repo)
 [![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/dine-safe-ly/badge.svg?branch=main)](https://coveralls.io/github/gcivil-nyu-org/dine-safe-ly?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
