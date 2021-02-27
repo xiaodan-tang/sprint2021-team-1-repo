@@ -5,3 +5,8 @@ db.sqlite3
 staticfiles/
 htmlcov/
 *.env
+.venv
+venv
+env/
+*venv/
+venv.bak/
