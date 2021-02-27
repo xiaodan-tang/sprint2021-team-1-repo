@@ -1,4 +1,4 @@
-# Dine Safe.ly
+# DineLine
 [![Build Status](https://travis-ci.com/gcivil-nyu-org/dine-safe-ly.svg?branch=develop)](https://travis-ci.com/gcivil-nyu-org/dine-safe-ly)
 [![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/dine-safe-ly/badge.svg?branch=main)](https://coveralls.io/github/gcivil-nyu-org/dine-safe-ly?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
