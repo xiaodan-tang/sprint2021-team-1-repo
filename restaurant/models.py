@@ -56,6 +56,10 @@ class Restaurant(models.Model):
     compliant_status = models.CharField(
         max_length=200, default=None, blank=True, null=True
     )
+    
+    mopd_compliance_status = models.CharField(
+        max_length=200, default=None, blank=True, null=True
+    )
 
     class Meta:
         unique_together = (("restaurant_name", "business_address", "postcode"),)
