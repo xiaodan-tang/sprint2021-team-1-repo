@@ -260,8 +260,10 @@ def get_filtered_restaurants(
     keyword_filter = {}
     if keyword:
         keyword_filter["restaurant_name__icontains"] = keyword
-    if compliant == "Compliant":
-        keyword_filter["compliant_status__iexact"] = compliant
+    if "COVIDCompliant" in compliant:
+        keyword_filter["compliant_status__iexact"] = "Compliant"
+    if "MOPDCompliant" in compliant:
+        keyword_filter["mopd_compliance_status__iexact"] = "Compliant"
 
     value = None
     if sort_option:
