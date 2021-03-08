@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
 from django.http import HttpResponse, HttpResponseBadRequest
 
+
 from .utils import send_reset_password_email, send_verification_email
 from .forms import (
     UserCreationForm,
@@ -21,6 +22,7 @@ from .forms import (
     UpdatePasswordForm,
     GetEmailForm,
     UserPreferenceForm,
+    ProfileUpdateForm,
 )
 
 import logging
@@ -85,6 +87,11 @@ def account_details(request):
         return redirect("user:login")
 
     user = request.user
+    if request.method == "POST":
+        form = ProfileUpdateForm(user=user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("user:account_details")
 
     favorite_restaurant_list = user.favorite_restaurants.all()
     user_pref_list = user.preferences.all()
@@ -95,7 +102,7 @@ def account_details(request):
 
     return render(
         request=request,
-        template_name="account_details.html",
+        template_name="profile2.html",
         context={
             "favorite_restaurant_list": favorite_restaurant_list,
             "user_pref": user_pref_list,

@@ -15,6 +15,26 @@ from restaurant.models import Categories
 
 logger = logging.getLogger(__name__)
 
+class ProfileUpdateForm(forms.Form):
+    user_id = forms.CharField(label="user_id")
+    username = forms.CharField(label="username", min_length=4, max_length=150)
+    firstname = forms.CharField(label="firstname", min_length=1, max_length=150, required=False)
+    lastname = forms.CharField(label="lastname", min_length=1, max_length=150, required=False)
+    email = forms.EmailField(label="email", required=False)
+
+    def __init__(self, user, data=None):
+        self.user = user
+        super(ProfileUpdateForm, self).__init__(data=data)
+
+    def save(self, commit=True):
+        uid = self.cleaned_data["user_id"]
+        user = get_user_model().objects.get(pk=uid)
+        user.username = self.cleaned_data["username"]
+        user.first_name = self.cleaned_data["firstname"]
+        user.last_name = self.cleaned_data["lastname"]
+        user.email = self.cleaned_data["email"]
+        user.save()
+        return user
 
 class UserCreationForm(forms.Form):
     username = forms.CharField(label="Enter Username", min_length=4, max_length=150)
