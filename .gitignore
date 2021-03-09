@@ -10,3 +10,4 @@ venv
 env/
 *venv/
 venv.bak/
+.DS_Store
