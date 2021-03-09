@@ -102,7 +102,7 @@ def account_details(request):
 
     return render(
         request=request,
-        template_name="profile2.html",
+        template_name="profile.html",
         context={
             "favorite_restaurant_list": favorite_restaurant_list,
             "user_pref": user_pref_list,
