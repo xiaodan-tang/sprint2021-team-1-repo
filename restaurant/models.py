@@ -59,12 +59,17 @@ class Restaurant(models.Model):
 
     def is_accessible_compliant(self):
         restaurant_street_number = self.business_address.split()[0]
-        q_result = AccessibilityRecord.objects.filter(restaurant_name__iexact=self.restaurant_name).filter(street_number=restaurant_street_number).first()
+        q_result = (
+            AccessibilityRecord.objects.filter(
+                restaurant_name__iexact=self.restaurant_name
+            )
+            .filter(street_number=restaurant_street_number)
+            .first()
+        )
         if q_result:
             return q_result.compliant
         else:
             return False
-         
 
     class Meta:
         unique_together = (("restaurant_name", "business_address", "postcode"),)

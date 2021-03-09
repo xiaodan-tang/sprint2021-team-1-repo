@@ -16,6 +16,7 @@ admin.site.register(UserQuestionnaire)
 admin.site.register(YelpRestaurantDetails)
 admin.site.register(Zipcodes)
 
+
 @admin.register(AccessibilityRecord)
 class ViewAdmin(ImportExportModelAdmin):
     pass

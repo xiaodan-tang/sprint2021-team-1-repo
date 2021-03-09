@@ -77,7 +77,7 @@ def create_accessibility_record(
     street_number,
     street_name,
     city,
-    postcode='',
+    postcode="",
 ):
     return AccessibilityRecord.objects.create(
         restaurant_name=restaurant_name,
@@ -134,20 +134,20 @@ class ModelTests(TestCase):
 
     def test_is_accessible_compliant_true(self):
         restaurant = create_restaurant(
-            restaurant_name='JUST SALAD',
-            business_address='252 7th Ave',
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
             yelp_detail=None,
-            postcode='11215',
-            business_id='kasdjf09j2oijlkdjsf',
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
         )
         accessibility_record = create_accessibility_record(
-            restaurant_name='Just Salad',
+            restaurant_name="Just Salad",
             compliant=1,
-            business_address='252 7th Ave',
-            street_number='252',
-            street_name='7th Ave',
-            city='Brooklyn',
-            postcode='11215'
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
         )
         restaurant.save()
         accessibility_record.save()
@@ -155,20 +155,20 @@ class ModelTests(TestCase):
 
     def test_is_accessible_compliant_false(self):
         restaurant = create_restaurant(
-            restaurant_name='JUST SALAD',
-            business_address='252 7th Ave',
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
             yelp_detail=None,
-            postcode='11215',
-            business_id='kasdjf09j2oijlkdjsf',
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
         )
         accessibility_record = create_accessibility_record(
-            restaurant_name='Just Salad',
+            restaurant_name="Just Salad",
             compliant=0,
-            business_address='252 7th Ave',
-            street_number='252',
-            street_name='7th Ave',
-            city='Brooklyn',
-            postcode='11215'
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
         )
         restaurant.save()
         accessibility_record.save()
@@ -176,20 +176,20 @@ class ModelTests(TestCase):
 
     def test_is_accessible_compliant_not_found(self):
         restaurant = create_restaurant(
-            restaurant_name='JUST SALAD',
-            business_address='1290 AVE AMERICAS',
+            restaurant_name="JUST SALAD",
+            business_address="1290 AVE AMERICAS",
             yelp_detail=None,
-            postcode='10104',
-            business_id='VSfYR6MriVSQDAmO0gPFPQ',
+            postcode="10104",
+            business_id="VSfYR6MriVSQDAmO0gPFPQ",
         )
         accessibility_record = create_accessibility_record(
-            restaurant_name='Just Salad',
+            restaurant_name="Just Salad",
             compliant=1,
-            business_address='252 7th Ave',
-            street_number='252',
-            street_name='7th Ave',
-            city='Brooklyn',
-            postcode='11215'
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
         )
         restaurant.save()
         accessibility_record.save()
@@ -308,40 +308,40 @@ class ModelTests(TestCase):
 
     def test_create_accessibility_record(self):
         accessibility_record = create_accessibility_record(
-            restaurant_name='Just Salad',
+            restaurant_name="Just Salad",
             compliant=1,
-            business_address='252 7th Ave',
-            street_number='252',
-            street_name='7th Ave',
-            city='Brooklyn',
-            postcode='11215'
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
         )
         self.assertIsNotNone(accessibility_record)
-        self.assertEqual(accessibility_record.restaurant_name, 'Just Salad')
+        self.assertEqual(accessibility_record.restaurant_name, "Just Salad")
         self.assertEqual(accessibility_record.compliant, 1)
-        self.assertEqual(accessibility_record.business_address, '252 7th Ave')
-        self.assertEqual(accessibility_record.street_number, '252')
-        self.assertEqual(accessibility_record.street_name, '7th Ave')
-        self.assertEqual(accessibility_record.city, 'Brooklyn')
-        self.assertEqual(accessibility_record.postcode, '11215')
+        self.assertEqual(accessibility_record.business_address, "252 7th Ave")
+        self.assertEqual(accessibility_record.street_number, "252")
+        self.assertEqual(accessibility_record.street_name, "7th Ave")
+        self.assertEqual(accessibility_record.city, "Brooklyn")
+        self.assertEqual(accessibility_record.postcode, "11215")
 
     def test_create_accessibility_record_no_postcode(self):
         accessibility_record = create_accessibility_record(
-            restaurant_name='Just Salad',
+            restaurant_name="Just Salad",
             compliant=1,
-            business_address='252 7th Ave',
-            street_number='252',
-            street_name='7th Ave',
-            city='Brooklyn'
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
         )
         self.assertIsNotNone(accessibility_record)
-        self.assertEqual(accessibility_record.restaurant_name, 'Just Salad')
+        self.assertEqual(accessibility_record.restaurant_name, "Just Salad")
         self.assertEqual(accessibility_record.compliant, 1)
-        self.assertEqual(accessibility_record.business_address, '252 7th Ave')
-        self.assertEqual(accessibility_record.street_number, '252')
-        self.assertEqual(accessibility_record.street_name, '7th Ave')
-        self.assertEqual(accessibility_record.city, 'Brooklyn')
-        self.assertEqual(accessibility_record.postcode, '')
+        self.assertEqual(accessibility_record.business_address, "252 7th Ave")
+        self.assertEqual(accessibility_record.street_number, "252")
+        self.assertEqual(accessibility_record.street_name, "7th Ave")
+        self.assertEqual(accessibility_record.city, "Brooklyn")
+        self.assertEqual(accessibility_record.postcode, "")
 
 
 class InspectionRecordsViewTests(TestCase):
