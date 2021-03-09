@@ -6,10 +6,15 @@ django-environ==0.4.5
 APScheduler==3.0.0
 pandas
 black
+boto3
 flake8
 coverage
 coveralls
+phonenumbers
+Pillow==8.0.0
 pre-commit
 python-dotenv
 django-allauth
 django-mathfilters
+django-phonenumber-field
+django-storages
