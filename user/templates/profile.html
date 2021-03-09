@@ -293,8 +293,7 @@
                     }
                   </script>
                 </div>
-                <button class="btn btn-outline-primary mb-4" type="submit" data-original-title="add_preference">Save
-                  your Preferences</button>
+                <button class="btn btn-outline-primary mb-4" type="submit" data-original-title="add_preference">Save your Preferences</button>
               </form>
             </div>
             <hr>
@@ -343,7 +342,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form class="form-validate" method="POST">
+      <form id="profile-form" class="form-validate" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-body p-2">
           <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
@@ -370,13 +369,16 @@
             <div class="col-6">
               <h6 class="mb-0">Image Photo</h6>
               <div class="mt-2 form-group">
-                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" width="100%">
+                <img id="profile-pic-preview" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" width="100%">
                 <div class="row mt-3">
                   <div class="col text-center">
-                    <button type="button" class="btn btn-sm btn-primary">Upload</button>
+                    <label for="profile-pic" role="button" class="btn btn-sm btn-primary">
+                      <input type="file" class="d-none" id="profile-pic" name="profile-pic">
+                      Upload
+                    </label>
                   </div>
                   <div class="col mt-2 text-center">
-                    <button type="button" class="btn btn-sm btn-secondary">Remove</button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="remove-profile-pic-btn">Remove</button>
                   </div>
                 </div>
               </div>
@@ -394,6 +396,21 @@
 </div>
 
 <script>
+  $(document).ready(() => {
+    const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png';
+    $('#profile-pic').change(event => {
+      const file = event.target.files.length ? event.target.files[0] : null;
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        $('#profile-pic-preview').attr('src', evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+    $('#remove-profile-pic-btn').on('click', event => {
+      $('#profile-pic-preview').attr('src', DEFAULT_PROFILE_PIC);
+    });
+  });
   $('body').on('submit', "form[name='saved_res_remove']", function (event) {
     var currentForm = $(this);
     event.preventDefault();
