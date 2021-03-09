@@ -56,6 +56,9 @@ class Restaurant(models.Model):
     compliant_status = models.CharField(
         max_length=200, default=None, blank=True, null=True
     )
+    mopd_compliance_status = models.CharField(
+        max_length=200, default=None, blank=True, null=True
+    )
 
     def is_accessible_compliant(self):
         restaurant_street_number = self.business_address.split()[0]
