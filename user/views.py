@@ -116,7 +116,7 @@ def profile(request):
             "user_pref": user_pref_list,
             "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
             "user_profile": user_profile,
-            "profile_pic": user_profile.photo if user_profile.phone is not None else ''
+            "profile_pic": user_profile.photo if user_profile.phone is not None else None''
         },
     )
 
