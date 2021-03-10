@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "mathfilters",
     "chatbot.apps.ChatbotConfig",
+    "import_export",
 ]
 
 SITE_ID = os.environ.get("SITE_ID")
