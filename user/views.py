@@ -25,7 +25,6 @@ from .forms import (
     UserPreferenceForm,
     ProfileUpdateForm,
 )
-from .models import User_Profile
 
 import logging
 
