@@ -17,8 +17,7 @@
                 width="150">
               <div class="mt-3">
                 <h4>{{user.username}}</h4>
-                <p class="text-secondary mb-1">Full Stack Developer</p>
-                <p class="text-muted font-size-sm">New York, NY</p>
+                <p class="text-muted font-size-sm">{{user_profile.city}},{{user_profile.state}}</p>
                 <button type="button" class="btn btn-link" data-toggle="modal" data-target="#pModal">Edit Profile</button>
               </div>
             </div>
@@ -91,16 +90,7 @@
                 <h6 class="mb-0">Phone</h6>
               </div>
               <div class="col-sm-9 text-secondary">
-                (917) 816-9029
-              </div>
-            </div>
-            <hr>
-            <div class="row">
-              <div class="col-sm-3">
-                <h6 class="mb-0">Mobile</h6>
-              </div>
-              <div class="col-sm-9 text-secondary">
-                (320) 380-4539
+                {{user_profile.phone}}
               </div>
             </div>
             <hr>
@@ -109,7 +99,7 @@
                 <h6 class="mb-0">Address</h6>
               </div>
               <div class="col-sm-9 text-secondary">
-                New York, NY
+                {{user_profile.address1}},{{user_profile.address2}},{{user_profile.city}},{{user_profile.state}}
               </div>
             </div>
           </div>
@@ -361,9 +351,88 @@
                 <h6>Last Name</h6>
                 <input class="form-control form-control-sm" type="text" id="lastname" name="lastname" value="{{user.last_name}}">
               </div>
-              <div class="form-group">
+              <div class="form-group mb-3">
                 <h6>Email</h6>
                 <input class="form-control form-control-sm" type="text" id="email" name="email" value="{{user.email}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Phone</h6>
+                <input class="form-group col-12" type="text" id="phone" name="phone" value="{{user_profile.phone}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Address1</h6>
+                <input class="form-group col-12" type="text" id="address1" name="address1" value="{{user_profile.address1}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Address2</h6>
+                <input class="form-group col-12" type="text" id="address2" name="address2" value="{{user_profile.address2}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Zip Code</h6>
+                <input class="form-group col-12" type="text" id="zip_code" name="zip_code" value="{{user_profile.zip_code}}">
+              </div>
+              <div class="form-group">
+                <h6>State</h6>
+                <select class="selectpicker form-control" name="state" id="state" multiple data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" title="">
+                  <option value="{{user_profile.state}}" selected disabled hidden> 
+                    {{user_profile.state}}
+                  </option> 
+                  <option value="Alabama">Alabama</option>
+                  <option value="Alaska">Alaska</option>
+                  <option value="Arizona">Arizona</option>
+                  <option value="Arkansas">Arkansas</option>
+                  <option value="California">California</option>
+                  <option value="Colorado">Colorado</option>
+                  <option value="Connecticut">Connecticut</option>
+                  <option value="Delaware">Delaware</option>
+                  <option value="District of Columbia">District of Columbia</option>
+                  <option value="Florida">Florida</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Hawaii">Hawaii</option>
+                  <option value="Idaho">Idaho</option>
+                  <option value="Illinois">Illinois</option>
+                  <option value="Indiana">Indiana</option>
+                  <option value="Iowa">Iowa</option>
+                  <option value="Kansas">Kansas</option>
+                  <option value="Kentucky">Kentucky</option>
+                  <option value="Louisiana">Louisiana</option>
+                  <option value="Maine">Maine</option>
+                  <option value="Montana">Montana</option>
+                  <option value="Nebraska">Nebraska</option>
+                  <option value="Nevada">Nevada</option>
+                  <option value="New Hampshire">New Hampshire</option>
+                  <option value="New Jersey">New Jersey</option>
+                  <option value="New Mexico">New Mexico</option>
+                  <option value="New York">New York</option>
+                  <option value="North Carolina">North Carolina</option>
+                  <option value="North Dakota">North Dakota</option>
+                  <option value="Ohio">Ohio</option>
+                  <option value="Oklahoma">Oklahoma</option>
+                  <option value="Oregon">Oregon</option>
+                  <option value="Maryland">Maryland</option>
+                  <option value="Massachusetts">Massachusetts</option>
+                  <option value="Michigan">Michigan</option>
+                  <option value="Minnesota">Minnesota</option>
+                  <option value="Mississippi">Mississippi</option>
+                  <option value="Missouri">Missouri</option>
+                  <option value="Pennsylvania">Pennsylvania</option>
+                  <option value="Rhode Island">Rhode Island</option>
+                  <option value="South Carolina">South Carolina</option>
+                  <option value="South Dakota">South Dakota</option>
+                  <option value="Tennessee">Tennessee</option>
+                  <option value="Texas">Texas</option>
+                  <option value="Utah">Utah</option>
+                  <option value="Vermont">Vermont</option>
+                  <option value="Virginia">Virginia</option>
+                  <option value="Washington">Washington</option>
+                  <option value="West Virginia">West Virginia</option>
+                  <option value="Wisconsin">Wisconsin</option>
+                  <option value="Wyoming">Wyoming</option>
+              </select>
+              </div>
+              <div class="form-group">
+                <h6>City</h6>
+                <input class="form-group col-12" type="text" id="city" name="city" value="{{user_profile.city}}">
               </div>
             </div>
             <div class="col-6">

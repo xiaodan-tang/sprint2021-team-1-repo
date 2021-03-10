@@ -31,6 +31,13 @@ class ProfileUpdateForm(forms.Form):
     )
     email = forms.EmailField(label="email", required=False)
     profile_pic = forms.CharField(label="profile_pic", required=False)
+    phone = forms.CharField(label="phone", min_length=1, max_length=150, required=False)
+    address1 = forms.CharField(label="address1", min_length=1, max_length=150, required=False)
+    address2 = forms.CharField(label="cddress2", min_length=1, max_length=150, required=False)
+    city = forms.CharField(label="city", min_length=1, max_length=64, required=False)
+    zip_code = forms.CharField(label="zip_code", min_length=1, max_length=10,  required=False)
+    state = forms.ChoiceField(label="state", choices=STATE_CHOICES, initial=None, required=False)
+
 
     def __init__(self, user, data=None):
         self.user = user
@@ -57,6 +64,17 @@ class ProfileUpdateForm(forms.Form):
         user.email = self.cleaned_data["email"]
         user.profile_pic = self.cleaned_data["profile_pic"]
         user.save()
+        try:
+            user_profile = User_Profile.objects.get(user=user)
+        except:
+            user_profile = User_Profile.objects.create(user=user)
+        user_profile.phone = self.cleaned_data["phone"]
+        user_profile.address1 = self.cleaned_data["address1"]
+        user_profile.address2 = self.cleaned_data["address2"]
+        user_profile.city = self.cleaned_data["city"]
+        user_profile.zip_code = self.cleaned_data["zip_code"]
+        user_profile.state = self.cleaned_data["state"]
+        user_profile.save()
         return user
 
 
