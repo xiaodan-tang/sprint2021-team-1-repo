@@ -175,13 +175,17 @@ $(document).ready(function(){
                 <div class="mb-4">
                     <label class="form-label">Filter by Compliant Status</label>
                     <div class="form-group">
-                        <div class="custom-control custom-radio">
-                            <input class="custom-control-input" id="All" name="All" type="radio" value="All">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" id="All" name="All" type="checkbox" value="All">
                             <label class="custom-control-label" for="All">All</label>
                         </div>
-                        <div class="custom-control custom-radio">
-                            <input class="custom-control-input" id="Compliant" name="All" type="radio" value="Compliant">
-                            <label class="custom-control-label" for="Compliant">Compliant</label>
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" id="COVIDCompliant" name="COVIDCompliant" type="checkbox" value="COVIDCompliant">
+                            <label class="custom-control-label" for="COVIDCompliant">COVID-19 Compliant</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input" id="MOPDCompliant" name="MOPDCompliant" type="checkbox" value="MOPDCompliant">
+                            <label class="custom-control-label" for="MOPDCompliant">MOPD Compliant</label>
                         </div>
                     </div>
                 </div>
