@@ -1,0 +1,668 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<section class="py-5">
+  <div class="container">
+    <!-- Breadcrumbs -->
+    <ol class="breadcrumb pl-0  justify-content-start">
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+      <li class="breadcrumb-item active">Profile</li>
+    </ol>
+    <div class="row gutters-sm">
+      <div class="col-md-4 mb-3">
+        <div class="card shadow">
+          <div class="card-body">
+            <div class="d-flex flex-column align-items-center text-center">
+              <img id="avatar" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" class="rounded-circle"
+                width="150">
+              <div class="mt-3">
+                <h4>{{user.username}}</h4>
+                <div class="text-muted font-size-sm" id = "test2">
+                  Unknown1
+                </div>
+                <button type="button" class="btn btn-link" data-toggle="modal" data-target="#pModal">Edit Profile</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card mt-3">
+          <div class="card border-0 shadow">
+            <div class="card-header bg-primary-light py-4 border-0">
+              <div class="media align-items-center">
+                <div class="media-body">
+                  <h4 class="h6 subtitle text-sm text-primary">Verify Your Connected Social Accounts</h4>
+                </div>
+                <svg class="svg-icon svg-icon svg-icon-light w-3rem h-3rem ml-3 text-primary">
+                  <use xlink:href="#shield-security-1"> </use>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+              <h6 class="mb-0">
+                Google</h6>
+              {% if accounts.google %}
+              <p class="text-sm text-primary pl-0" style="margin:10px;">Connected</p>
+              {% else %}
+              <p class="text-sm text-muted" style="margin:10px;">Not connected</p>
+              {% endif %}
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+              <h6 class="mb-0">
+                Facebook</h6>
+              {% if accounts.facebook %}
+              <p class="text-sm text-primary pl-0" style="margin:10px;">Connected</p>
+              {% else %}
+              <p class="text-sm text-muted" style="margin:10px;">Not connected</p>
+              {% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Full Name</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                {{user.username}}
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Email</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                {{user.email}}
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Phone</h6>
+              </div>
+              <div class="col-sm-9 text-secondary">
+                {{user_profile.phone}}
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Address</h6>
+              </div>
+              <div class="col-sm-9 text-secondary" id = 'test1'>
+                test
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card mt-3 shadow">
+          <div class="card-body">
+            {% load socialaccount %}
+            {% get_social_accounts user as accounts %}
+            {% if accounts.facebook or accounts.google %}
+            {% else %}
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Password</h6>
+              </div>
+              <div class="col-sm-9 text-right">
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse"
+                  data-target="#updatePassword" aria-expanded="false" aria-controls="updatePassword">Update</button>
+              </div>
+            </div>
+            <form class="form-validate" method="post" id="update_password_form">
+              {% csrf_token %}
+              <div class="collapse" id="updatePassword">
+                <div class="row mt-4" id="sub_update_password_form">
+                  <div id="error_update_pass">
+
+                  </div>
+                  <div class="form-group col-12">
+                    <label class="form-label" for="password_current">Current Password</label>
+                    <input class="form-control" type="password" name="password_current" id="password_current" required>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="form-label" for="password_new">New Password</label>
+                    <input class="form-control" type="password" name="password_new" id="password_new" required>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="form-label" for="password_confirm">Confirm Password</label>
+                    <input class="form-control" type="password" name="password_confirm" id="password_confirm" required>
+                  </div>
+                </div>
+                <button class="btn btn-outline-primary">Update Password</button>
+              </div>
+            </form>
+            <script>
+              $('#update_password_form').on('submit', function (event) {
+                event.preventDefault();
+                update_password();
+              });
+
+              function update_password() {
+                var form = new FormData(document.getElementById("update_password_form"));
+                $.ajax({
+                  url: "update_password",
+                  type: "POST",
+                  data: form,
+                  processData: false,
+                  contentType: false,
+                  success: function (json) {
+                    $('#error_update_pass').html("");
+
+                    var div1 = document.createElement("div");
+                    var strong1 = document.createElement("strong");
+                    strong1.innerHTML =
+                      "Your password has been updated, the page will redirect to login page in 3 seconds.";
+                    div1.appendChild(strong1);
+
+                    div1.className = "alert alert-success";
+                    div1.id = "alert_msg";
+                    document.getElementById("error_update_pass").appendChild(div1);
+
+                    window.setTimeout(function () {
+                      window.location.reload();
+                    }, 3000);
+
+                  },
+                  error: function (xhr, errmsg, err) {
+                    console.log(xhr);
+                    $('#error_update_pass').html("");
+                    var json = JSON.parse(xhr.responseText);
+                    for (i = 0; i < json.errors.length; i++) {
+                      console.log(json.errors[i]);
+
+                      var div1 = document.createElement("div");
+                      var strong1 = document.createElement("strong");
+                      strong1.innerHTML = json.errors[i];
+                      div1.appendChild(strong1);
+
+                      div1.className = "alert alert-danger";
+                      div1.id = "alert_msg";
+                      document.getElementById("error_update_pass").appendChild(div1);
+                    }
+
+                  }
+                });
+              };
+            </script>
+            {% endif %}
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Personal Preferences</h6>
+              </div>
+              <div class="col-sm-9 text-right">
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse"
+                  data-target="#personalPreferences" aria-expanded="false"
+                  aria-controls="personalDetails">Update</button>
+              </div>
+            </div>
+            <div class="row pt-4">
+              {% for pref in user_pref %}
+              {% csrf_token %}
+              <ul class="list-group">
+                <li id="{{ pref.category }}" class="list-group-item">
+                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;"
+                    category="{{ pref.category }}" method="POST">
+                    <div class="text-secondary">{{ pref.category }}&nbsp&nbsp
+                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top"
+                        data-original-title="Remove from Preference">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  </form>
+                </li>
+              </ul>
+              {% endfor %}
+            </div>
+            <div class="collapse" id="personalPreferences">
+              {% csrf_token %}
+              <form class="saved_res_remove" id="add_pref_form" name="add_pref_form" method="POST" action="">
+                {% csrf_token %}
+                <div class="row pt-4">
+                  <div class="form-group col-sm-3">
+
+                    <label class="form-label" for="pref_list">Category</label>
+                    <select class="selectpicker form-control" name="pref_list" id="pref_list" multiple
+                      data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1"
+                      title="">
+                      <option value="newamerican">New American</option>
+                      <option value="armenian">Armenian</option>
+                      <option value="bars">Bars</option>
+                      <option value="bistros">Bistros</option>
+                      <option value="burgers">Burgers</option>
+                      <option value="chinese">Chinese</option>
+                      <option value="danish">Danish</option>
+                      <option value="diners">Diners</option>
+                      <option value="ethiopian">Ethiopian</option>
+                      <option value="filipino">Filipino</option>
+                      <option value="french">French</option>
+                      <option value="georgian">Georgian</option>
+                      <option value="german">German</option>
+                      <option value="greek">Greek</option>
+                      <option value="hotdog">Hot dog</option>
+                      <option value="italian">Italian</option>
+                      <option value="bistros">Bistros</option>
+                      <option value="japanese">Japanese</option>
+                      <option value="jewish">Jewish</option>
+                      <option value="kebab">Kebab</option>
+                      <option value="korean">Korean</option>
+                      <option value="kosher">Kosher</option>
+                      <option value="mexican">Mexican</option>
+                      <option value="noodles">Noodles</option>
+                      <option value="pizza">Pizza</option>
+                      <option value="salad">Salad</option>
+                      <option value="sandwiches">Sandwiches</option>
+                      <option value="seafood">Seafood</option>
+                      <option value="sushi">Sushi</option>
+                      <option value="vegan">Vegan</option>
+                      <option value="vegetarian">Vegetarian</option>
+                      <option value="vietnamese">Vietnamese</option>
+                      <option value="waffles">Waffles</option>
+                      <option value="wraps">Wraps</option>
+                    </select>
+                  </div>
+                  <script>
+                    var pref_menu = document.getElementById("pref_list").options;
+                    for (var i = 0; i < {{user_pref_json | safe}}.length; i++) {
+                      var current_pref = {{user_pref_json | safe}} [i].category;
+                      if ($("#pref_list option[value='+current_pref+']").length == 0) {
+                        console.log(current_pref);
+                        $('#pref_list').children('option[value=' + current_pref + ']').hide();
+                      }
+                    }
+                  </script>
+                </div>
+                <button class="btn btn-outline-primary mb-4" type="submit" data-original-title="add_preference">Save your Preferences</button>
+              </form>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Favorite Restaurants</h6>
+                <div class="row pt-4">
+                  {% for restaurant in favorite_restaurant_list %}
+                  {% csrf_token %}
+                  <ul class="list-group">
+                    <li id="{{ restaurant.business_id }}" class="list-group-item">
+                      <form name="saved_res_remove" class="saved_res_remove" onsubmit="return false;"
+                        res_business_id="{{ restaurant.business_id }}" method="POST">
+                        <a href="../restaurant/profile/{{ restaurant.id }}" target="_blank" class="text-secondary">
+                          {{ restaurant.restaurant_name }}
+                        </a>
+                        &nbsp&nbsp
+                        <button type="submit" class="close" aria-label="Close" data-toggle="tooltip"
+                          data-placement="top" data-original-title="Remove from Favorites">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </form>
+                    </li>
+                  </ul>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- Modal -->
+<div class="modal fade" id="pModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="padding:1px">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit your profile</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="profile-form" class="form-validate" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body p-2">
+          <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
+          <br>
+          <div class="row" style="margin:0px;">
+            <div class="col-6">
+              <div class="form-group mb-3">
+                <h6>Username</h6>
+                <input class="form-control form-control-sm" type="text" id="username" name="username" value="{{user.username}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>First Name</h6>
+                <input class="form-control form-control-sm" type="text" id="firstname" name="firstname" value="{{user.first_name}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Last Name</h6>
+                <input class="form-control form-control-sm" type="text" id="lastname" name="lastname" value="{{user.last_name}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Email</h6>
+                <input class="form-control form-control-sm" type="text" id="email" name="email" value="{{user.email}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Phone</h6>
+                <input class="form-group col-12" type="text" id="phone" name="phone" value="{{user_profile.phone}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Address1</h6>
+                <input class="form-group col-12" type="text" id="address1" name="address1" value="{{user_profile.address1}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Address2</h6>
+                <input class="form-group col-12" type="text" id="address2" name="address2" value="{{user_profile.address2}}">
+              </div>
+              <div class="form-group mb-3">
+                <h6>Zip Code</h6>
+                <input class="form-group col-12" type="text" id="zip_code" name="zip_code" value="{{user_profile.zip_code}}">
+              </div>
+              <div class="form-group">
+                <h6>State</h6>
+                <select class="selectpicker form-control" name="state" id="state" multiple data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" title="">
+                  <option value="Alabama">Alabama</option>
+                  <option value="Alaska">Alaska</option>
+                  <option value="Arizona">Arizona</option>
+                  <option value="Arkansas">Arkansas</option>
+                  <option value="California">California</option>
+                  <option value="Colorado">Colorado</option>
+                  <option value="Connecticut">Connecticut</option>
+                  <option value="Delaware">Delaware</option>
+                  <option value="District of Columbia">District of Columbia</option>
+                  <option value="Florida">Florida</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Hawaii">Hawaii</option>
+                  <option value="Idaho">Idaho</option>
+                  <option value="Illinois">Illinois</option>
+                  <option value="Indiana">Indiana</option>
+                  <option value="Iowa">Iowa</option>
+                  <option value="Kansas">Kansas</option>
+                  <option value="Kentucky">Kentucky</option>
+                  <option value="Louisiana">Louisiana</option>
+                  <option value="Maine">Maine</option>
+                  <option value="Montana">Montana</option>
+                  <option value="Nebraska">Nebraska</option>
+                  <option value="Nevada">Nevada</option>
+                  <option value="New Hampshire">New Hampshire</option>
+                  <option value="New Jersey">New Jersey</option>
+                  <option value="New Mexico">New Mexico</option>
+                  <option value="New York">New York</option>
+                  <option value="North Carolina">North Carolina</option>
+                  <option value="North Dakota">North Dakota</option>
+                  <option value="Ohio">Ohio</option>
+                  <option value="Oklahoma">Oklahoma</option>
+                  <option value="Oregon">Oregon</option>
+                  <option value="Maryland">Maryland</option>
+                  <option value="Massachusetts">Massachusetts</option>
+                  <option value="Michigan">Michigan</option>
+                  <option value="Minnesota">Minnesota</option>
+                  <option value="Mississippi">Mississippi</option>
+                  <option value="Missouri">Missouri</option>
+                  <option value="Pennsylvania">Pennsylvania</option>
+                  <option value="Rhode Island">Rhode Island</option>
+                  <option value="South Carolina">South Carolina</option>
+                  <option value="South Dakota">South Dakota</option>
+                  <option value="Tennessee">Tennessee</option>
+                  <option value="Texas">Texas</option>
+                  <option value="Utah">Utah</option>
+                  <option value="Vermont">Vermont</option>
+                  <option value="Virginia">Virginia</option>
+                  <option value="Washington">Washington</option>
+                  <option value="West Virginia">West Virginia</option>
+                  <option value="Wisconsin">Wisconsin</option>
+                  <option value="Wyoming">Wyoming</option>
+              </select>
+              </div>
+              <div class="form-group">
+                <h6>City</h6>
+                <input class="form-group col-12" type="text" id="city" name="city" value="{{user_profile.city}}">
+              </div>
+            </div>
+            <div class="col-6">
+              <h6 class="mb-0">Image Photo</h6>
+              <div class="mt-2 form-group">
+                <img id="profile-pic-preview" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" width="100%">
+                <div class="row mt-3">
+                  <div class="col text-center">
+                    <label for="profile-pic" role="button" class="btn btn-sm btn-primary">
+                      <input type="file" class="d-none" id="profile-pic" name="profile-pic">
+                      Upload
+                    </label>
+                  </div>
+                  <div class="col mt-2 text-center">
+                    <button type="button" class="btn btn-sm btn-secondary" id="remove-profile-pic-btn">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button class="btn btn-primary" type="submit" name="profile_form" data-toggle="tooltip" data-placement="top"
+            data-original-title="All fields required. Incomplete form will not be saved">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(() => {
+    const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png'; 
+    const profilePic = '{{ profile_pic }}' || DEFAULT_PROFILE_PIC;
+    $('#profile-pic-preview').attr('src', profilePic);
+    $('#avatar').attr('src', profilePic);
+    $('#profile-pic').change(event => {
+      const file = event.target.files.length ? event.target.files[0] : null;
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        $('#profile-pic-preview').attr('src', evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+    $('#remove-profile-pic-btn').on('click', event => {
+      $('#profile-pic-preview').attr('src', DEFAULT_PROFILE_PIC);
+    });
+  });
+  $('body').on('submit', "form[name='saved_res_remove']", function (event) {
+    var currentForm = $(this);
+    event.preventDefault();
+    var formData = currentForm.serialize();
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        function getCookie(name) {
+          var cookieValue = null;
+          if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+      }
+    });
+    $.ajax({
+      type: 'POST',
+      url: "../restaurant/delete/favorite/restaurant/" + currentForm.attr("res_business_id"),
+      data: formData,
+      processData: false,
+      contentType: false,
+      // handle a successful response
+      success: function (response) {
+        $('#' + currentForm.attr('res_business_id')).hide();
+      },
+      error: function (xhr, errmsg, err) {
+        console.log('Error')
+      }
+    });
+  });
+</script>
+<script>
+  {# remove saved preference #}
+  $('body').on('submit', "form[name='saved_pref_delete']", function (event) {
+    var currentForm = $(this);
+    event.preventDefault();
+    var formData = currentForm.serialize();
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        function getCookie(name) {
+          var cookieValue = null;
+          if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+      }
+    });
+    $.ajax({
+      type: 'POST',
+      url: "../user/delete/preference/user/" + currentForm.attr("category"),
+      data: formData,
+      processData: false,
+      contentType: false,
+      // handle a successful response
+      success: function (response) {
+        $('#' + currentForm.attr('category')).hide();
+      },
+      error: function (xhr, errmsg, err) {
+        console.log('Error')
+      }
+    });
+  });
+</script>
+<script>
+  $('#add_pref_form').on('submit', function (event) {
+    event.preventDefault();
+    var form_data = new FormData(document.getElementById("add_pref_form"))
+    var add_form = document.getElementById("add_pref_form");
+
+    {#console.log("add form value is : ", form_data.get("pref_list"));#}
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        function getCookie(name) {
+          var cookieValue = null;
+          if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+      }
+    });
+    $.ajax({
+      type: 'POST',
+      url: "../user/add/preference/user",
+      data: form_data,
+      processData: false,
+      contentType: false,
+      // handle a successful response
+      success: function (response) {
+        window.location.reload(true);
+      },
+      error: function (xhr, errmsg, err) {
+        console.log('Ajax Error')
+      }
+    });
+  });
+</script>
+<script>
+    window.onload = function(){
+      x = document.getElementById('test1');
+
+      var testString = '';
+      var addressList = new Array();
+      var newList = new Array();
+      
+      addressList[0] = '{{user_profile.address1}}';
+      addressList[1] = '{{user_profile.address2}}';
+      addressList[2] = '{{user_profile.city}}';
+      addressList[3] = '{{user_profile.state}}';
+      //console.log(addressList);
+
+      for(var i=0; i< addressList.length; i++) {
+        //console.log(typeof(addressList[i]))
+        if (addressList[i] != ''){
+          newList.push(addressList[i]);
+        }
+      }
+      //console.log(newList)
+      for(var i=0; i< newList.length; i++) {
+        if(i == newList.length-1){
+          testString = testString + newList[i];
+        }
+        else{
+          testString = testString + newList[i] + ', '
+        }
+      }
+    x.innerHTML=testString;
+
+    y = document.getElementById('test2');
+
+          var testString = '';
+          var addressList = new Array();
+          var newList = new Array();
+   
+          addressList[0] = '{{user_profile.city}}';
+          addressList[1] = '{{user_profile.state}}';
+          console.log(addressList);
+
+          for(var i=0; i< addressList.length; i++) {
+            //console.log(typeof(addressList[i]))
+            if (addressList[i] != ''){
+              newList.push(addressList[i]);
+            }
+          }
+          //console.log(newList)
+          for(var i=0; i< newList.length; i++) {
+            if(i == newList.length-1){
+              testString = testString + newList[i];
+            }
+            else{
+              testString = testString + newList[i] + ', '
+            }
+          }
+        y.innerHTML=testString;
+
+        $("#state option[value='{{user_profile.state}}']").prop("selected",true);
+  }
+  </script>
+{% endblock %}
