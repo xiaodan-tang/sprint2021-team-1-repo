@@ -10,10 +10,128 @@ from django.contrib.auth.password_validation import (
     NumericPasswordValidator,
 )
 import logging
+import os.path
+import boto3
+import random
+import string
 
+from .models import User_Profile
 from restaurant.models import Categories
 
 logger = logging.getLogger(__name__)
+
+
+class ProfileUpdateForm(forms.Form):
+    STATE_CHOICES = [
+        ("Alabama", "Alabama"),
+        ("Alaska", "Alaska"),
+        ("Arizona", "Arizona"),
+        ("Arkansas", "Arkansas"),
+        ("California", "California"),
+        ("Colorado", "Colorado"),
+        ("Connecticut", "Connecticut"),
+        ("Delaware", "Delaware"),
+        ("District of Columbia", "District of Columbia"),
+        ("Florida", "Florida"),
+        ("Georgia", "Georgia"),
+        ("Hawaii", "Hawaii"),
+        ("Idaho", "Idaho"),
+        ("Illinois", "Illinois"),
+        ("Indiana", "Indiana"),
+        ("Iowa", "Iowa"),
+        ("Kansas", "Kansas"),
+        ("Kentucky", "Kentucky"),
+        ("Louisiana", "Louisiana"),
+        ("Maine", "Maine"),
+        ("Montana", "Montana"),
+        ("Nebraska", "Nebraska"),
+        ("Nevada", "Nevada"),
+        ("New Hampshire", "New Hampshire"),
+        ("New Jersey", "New Jersey"),
+        ("New Mexico", "New Mexico"),
+        ("New York", "New York"),
+        ("North Carolina", "North Carolina"),
+        ("North Dakota", "North Dakota"),
+        ("Ohio", "Ohio"),
+        ("Oklahoma", "Oklahoma"),
+        ("Oregon", "Oregon"),
+        ("Maryland", "Maryland"),
+        ("Massachusetts", "Massachusetts"),
+        ("Michigan", "Michigan"),
+        ("Minnesota", "Minnesota"),
+        ("Mississippi", "Mississippi"),
+        ("Missouri", "Missouri"),
+        ("Pennsylvania", "Pennsylvania"),
+        ("Rhode Island", "Rhode Island"),
+        ("South Carolina", "South Carolina"),
+        ("South Dakota", "South Dakota"),
+        ("Tennessee", "Tennessee"),
+        ("Texas", "Texas"),
+        ("Utah", "Utah"),
+        ("Vermont", "Vermont"),
+        ("Virginia", "Virginia"),
+        ("Washington", "Washington"),
+        ("West Virginia", "West Virginia"),
+        ("Wisconsin", "Wisconsin"),
+        ("Wyoming", "Wyoming"),
+    ]
+
+    user_id = forms.CharField(label="user_id")
+    username = forms.CharField(label="username", min_length=4, max_length=150)
+    firstname = forms.CharField(
+        label="firstname", min_length=1, max_length=150, required=False
+    )
+    lastname = forms.CharField(
+        label="lastname", min_length=1, max_length=150, required=False
+    )
+    email = forms.EmailField(label="email", required=False)
+    profile_pic = forms.CharField(label="profile_pic", required=False)
+    phone = forms.CharField(label="phone", min_length=1, max_length=150, required=False)
+    address1 = forms.CharField(
+        label="address1", min_length=1, max_length=150, required=False
+    )
+    address2 = forms.CharField(
+        label="cddress2", min_length=1, max_length=150, required=False
+    )
+    city = forms.CharField(label="city", min_length=1, max_length=64, required=False)
+    zip_code = forms.CharField(
+        label="zip_code", min_length=1, max_length=10, required=False
+    )
+    state = forms.ChoiceField(
+        label="state", choices=STATE_CHOICES, initial=None, required=False
+    )
+
+    def __init__(self, user, data=None):
+        self.user = user
+        super(ProfileUpdateForm, self).__init__(data=data)
+
+    def save_image(self, file):
+        char_set = string.ascii_letters + string.digits
+        file_name = (
+            "".join(random.sample(char_set * 6, 10)) + os.path.splitext(file.name)[1]
+        )
+        boto3.client("s3").upload_fileobj(
+            file, "dineline", "media/user_profile_pics/" + file_name
+        )
+        return "https://dineline.s3.amazonaws.com/media/user_profile_pics/" + file_name
+
+    def save(self, commit=True):
+        uid = self.cleaned_data["user_id"]
+        user = get_user_model().objects.get(pk=uid)
+        user.username = self.cleaned_data["username"]
+        user.first_name = self.cleaned_data["firstname"]
+        user.last_name = self.cleaned_data["lastname"]
+        user.email = self.cleaned_data["email"]
+        user.save()
+        user_profile = User_Profile.objects.get(user=user)
+        user_profile.phone = self.cleaned_data["phone"]
+        user_profile.address1 = self.cleaned_data["address1"]
+        user_profile.address2 = self.cleaned_data["address2"]
+        user_profile.city = self.cleaned_data["city"]
+        user_profile.zip_code = self.cleaned_data["zip_code"]
+        user_profile.state = self.cleaned_data["state"]
+        user_profile.save()
+        return user
 
 
 class UserCreationForm(forms.Form):
