@@ -21,7 +21,7 @@ def index(request):
 
     # below is for recomendation
     recommended_restaurants = []
-    if request.user:
+    if request.user and request.user.is_authenticated:
         categories = [category.category for category in request.user.preferences.all()]
         recommended_restaurants = get_filtered_restaurants(
             limit=Restaurant.objects.all().count(),
