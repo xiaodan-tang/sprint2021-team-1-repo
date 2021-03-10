@@ -94,10 +94,7 @@ def profile(request):
                 form.save_image(request.FILES["profile-pic"])
             form.save()
             return redirect("user:account_details")
-    try: 
-        user_profile = User_Profile.objects.get(user=user)
-    except:
-        user_profile = None
+    user_profile = User_Profile.objects.get(user=user)
     favorite_restaurant_list = user.favorite_restaurants.all()
     user_pref_list = user.preferences.all()
     user_pref_list_json = []

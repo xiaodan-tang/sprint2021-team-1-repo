@@ -119,10 +119,7 @@ class ProfileUpdateForm(forms.Form):
         user.email = self.cleaned_data["email"]
         user.profile_pic = self.cleaned_data["profile_pic"]
         user.save()
-        try:
-            user_profile = User_Profile.objects.get(user=user)
-        except:
-            user_profile = User_Profile.objects.create(user=user)
+        user_profile = User_Profile.objects.get(user=user)
         user_profile.phone = self.cleaned_data["phone"]
         user_profile.address1 = self.cleaned_data["address1"]
         user_profile.address2 = self.cleaned_data["address2"]
