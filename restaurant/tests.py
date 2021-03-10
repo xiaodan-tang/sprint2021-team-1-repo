@@ -1034,8 +1034,7 @@ class RestaurantRecommendationsTest(TestCase):
         )
         category_list = ["chinese", "wine-bar"]
         for category in category_list:
-            self.dummy_user.preferences.add(
-                Categories.objects.get(category=category))
+            self.dummy_user.preferences.add(Categories.objects.get(category=category))
 
         self.dummy_user2 = get_user_model().objects.create(
             username="myuser2",
@@ -1044,7 +1043,9 @@ class RestaurantRecommendationsTest(TestCase):
 
     def test_reccomendation(self):
 
-        categories = [category.category for category in self.dummy_user.preferences.all()]
+        categories = [
+            category.category for category in self.dummy_user.preferences.all()
+        ]
         categories.sort()
         self.assertEqual(len(self.dummy_user.preferences.all()), 2)
         self.assertEqual(categories[0], "chinese")

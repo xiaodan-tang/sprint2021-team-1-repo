@@ -2,7 +2,8 @@ from django.shortcuts import render
 from restaurant.utils import get_compliant_restaurant_list
 from restaurant.utils import get_filtered_restaurants
 from restaurant.models import Restaurant
-#from .models import Restaurant
+
+# from .models import Restaurant
 
 import logging
 
@@ -27,7 +28,8 @@ def index(request):
             limit=Restaurant.objects.all().count(),
             category=categories,
             rating=[3.0, 3.5, 4.0, 4.5, 5.0],
-            compliant="Compliant",)
+            compliant="Compliant",
+        )
 
     parameter_dict = {
         "restaurant_list": restaurant_list,
