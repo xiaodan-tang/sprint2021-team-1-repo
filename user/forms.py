@@ -15,7 +15,7 @@ import boto3
 import random
 import string
 
-from .models import User_Profile 
+from .models import User_Profile
 from restaurant.models import Categories
 
 logger = logging.getLogger(__name__)
@@ -87,12 +87,19 @@ class ProfileUpdateForm(forms.Form):
     email = forms.EmailField(label="email", required=False)
     profile_pic = forms.CharField(label="profile_pic", required=False)
     phone = forms.CharField(label="phone", min_length=1, max_length=150, required=False)
-    address1 = forms.CharField(label="address1", min_length=1, max_length=150, required=False)
-    address2 = forms.CharField(label="cddress2", min_length=1, max_length=150, required=False)
+    address1 = forms.CharField(
+        label="address1", min_length=1, max_length=150, required=False
+    )
+    address2 = forms.CharField(
+        label="cddress2", min_length=1, max_length=150, required=False
+    )
     city = forms.CharField(label="city", min_length=1, max_length=64, required=False)
-    zip_code = forms.CharField(label="zip_code", min_length=1, max_length=10,  required=False)
-    state = forms.ChoiceField(label="state", choices=STATE_CHOICES, initial=None, required=False)
-
+    zip_code = forms.CharField(
+        label="zip_code", min_length=1, max_length=10, required=False
+    )
+    state = forms.ChoiceField(
+        label="state", choices=STATE_CHOICES, initial=None, required=False
+    )
 
     def __init__(self, user, data=None):
         self.user = user
@@ -106,9 +113,7 @@ class ProfileUpdateForm(forms.Form):
         boto3.client("s3").upload_fileobj(
             file, "dineline", "media/user_profile_pics/" + file_name
         )
-        self.cleaned_data["profile_pic"] = (
-            "https://dineline.s3.amazonaws.com/media/user_profile_pics/" + file_name
-        )
+        return "https://dineline.s3.amazonaws.com/media/user_profile_pics/" + file_name
 
     def save(self, commit=True):
         uid = self.cleaned_data["user_id"]
@@ -117,7 +122,6 @@ class ProfileUpdateForm(forms.Form):
         user.first_name = self.cleaned_data["firstname"]
         user.last_name = self.cleaned_data["lastname"]
         user.email = self.cleaned_data["email"]
-        user.profile_pic = self.cleaned_data["profile_pic"]
         user.save()
         user_profile = User_Profile.objects.get(user=user)
         user_profile.phone = self.cleaned_data["phone"]

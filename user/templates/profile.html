@@ -467,6 +467,7 @@
 <script>
   $(document).ready(() => {
     const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png';
+    $('#profile-pic-preview').attr('src', '{{ user_profile.photo }}' || DEFAULT_PROFILE_PIC);
     $('#profile-pic').change(event => {
       const file = event.target.files.length ? event.target.files[0] : null;
       if (!file) return;
