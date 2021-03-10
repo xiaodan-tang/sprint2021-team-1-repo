@@ -15,12 +15,67 @@ import boto3
 import random
 import string
 
+from .models import User_Profile 
 from restaurant.models import Categories
 
 logger = logging.getLogger(__name__)
 
 
 class ProfileUpdateForm(forms.Form):
+    STATE_CHOICES = [
+        ("Alabama", "Alabama"),
+        ("Alaska", "Alaska"),
+        ("Arizona", "Arizona"),
+        ("Arkansas", "Arkansas"),
+        ("California", "California"),
+        ("Colorado", "Colorado"),
+        ("Connecticut", "Connecticut"),
+        ("Delaware", "Delaware"),
+        ("District of Columbia", "District of Columbia"),
+        ("Florida", "Florida"),
+        ("Georgia", "Georgia"),
+        ("Hawaii", "Hawaii"),
+        ("Idaho", "Idaho"),
+        ("Illinois", "Illinois"),
+        ("Indiana", "Indiana"),
+        ("Iowa", "Iowa"),
+        ("Kansas", "Kansas"),
+        ("Kentucky", "Kentucky"),
+        ("Louisiana", "Louisiana"),
+        ("Maine", "Maine"),
+        ("Montana", "Montana"),
+        ("Nebraska", "Nebraska"),
+        ("Nevada", "Nevada"),
+        ("New Hampshire", "New Hampshire"),
+        ("New Jersey", "New Jersey"),
+        ("New Mexico", "New Mexico"),
+        ("New York", "New York"),
+        ("North Carolina", "North Carolina"),
+        ("North Dakota", "North Dakota"),
+        ("Ohio", "Ohio"),
+        ("Oklahoma", "Oklahoma"),
+        ("Oregon", "Oregon"),
+        ("Maryland", "Maryland"),
+        ("Massachusetts", "Massachusetts"),
+        ("Michigan", "Michigan"),
+        ("Minnesota", "Minnesota"),
+        ("Mississippi", "Mississippi"),
+        ("Missouri", "Missouri"),
+        ("Pennsylvania", "Pennsylvania"),
+        ("Rhode Island", "Rhode Island"),
+        ("South Carolina", "South Carolina"),
+        ("South Dakota", "South Dakota"),
+        ("Tennessee", "Tennessee"),
+        ("Texas", "Texas"),
+        ("Utah", "Utah"),
+        ("Vermont", "Vermont"),
+        ("Virginia", "Virginia"),
+        ("Washington", "Washington"),
+        ("West Virginia", "West Virginia"),
+        ("Wisconsin", "Wisconsin"),
+        ("Wyoming", "Wyoming"),
+    ]
+
     user_id = forms.CharField(label="user_id")
     username = forms.CharField(label="username", min_length=4, max_length=150)
     firstname = forms.CharField(
