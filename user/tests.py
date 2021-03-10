@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from restaurant.models import Categories
 from .forms import (
@@ -202,6 +203,24 @@ class TestUserRegisterView(BaseTest):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_view_register_page_w_profile(self):
+        response = self.c.post(
+            "/user/register",
+            {
+                "username": "user_test_for_register",
+                "email": "abcde@gmail.com",
+                "password1": "hardPass123",
+                "password2": "hardPass123",
+                "phone": "1234567890",
+                "address1": "123 main street",
+                "address2": "123 main street",
+                "city": "New York City",
+                "zip_code": "1234567",
+                "state": "California",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test__register_page_invalid_request(self):
         response = self.c.get(
             "/user/register",
@@ -288,6 +307,29 @@ class TestAccountDetailsView(BaseTest):
         self.c.force_login(self.dummy_user)
         response = self.c.get("/user/account_details")
         self.assertEqual(response.status_code, 200)
+
+    def test_view_profile_user_not_logged_in(self):
+        response = self.c.get("/user/profile")
+        self.assertEqual(response.status_code, 302)
+
+    def test_view_profile_user_logged_in(self):
+        self.c.force_login(self.dummy_user)
+        response = self.c.get("/user/profile")
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_user_profile(self):
+        self.c.force_login(self.dummy_user)
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic": SimpleUploadedFile(
+                    "test.jpg", b"file_content", content_type="image/jpg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
 
 
 class TestForgetPasswordView(BaseTest):

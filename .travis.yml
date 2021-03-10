@@ -7,6 +7,10 @@ branches:
   only:
   - main
 
+branches:
+  only:
+  - main
+
 install:
   - pip install -r requirements.txt
 

@@ -5,4 +5,12 @@ db.sqlite3
 staticfiles/
 htmlcov/
 *.env
+<<<<<<< HEAD
+.venv
 venv
+env/
+*venv/
+venv.bak/
+.DS_Store
+README.md
+
