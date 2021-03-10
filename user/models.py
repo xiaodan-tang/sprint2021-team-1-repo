@@ -89,4 +89,4 @@ class User_Profile(models.Model):
     )
 
     def __str__(self):
-        return f"{self.user.username} User Profile"
+        return f"{self.user.username}_user_profile"
