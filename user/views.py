@@ -100,7 +100,7 @@ def profile(request):
                 user=user, defaults={"photo": profile_pic}
             )
             form.save()
-            return redirect("user:account_details")
+            return redirect("user:profile")
     user_profile = User_Profile.objects.get(user=user)
     favorite_restaurant_list = user.favorite_restaurants.all()
     user_pref_list = user.preferences.all()
