@@ -90,8 +90,8 @@ def account_details(request):
     if request.method == "POST":
         form = ProfileUpdateForm(user=user, data=request.POST)
         if form.is_valid():
-            if 'profile-pic' in request.FILES:
-                form.save_image(request.FILES['profile-pic'])
+            if "profile-pic" in request.FILES:
+                form.save_image(request.FILES["profile-pic"])
             form.save()
             return redirect("user:account_details")
 

@@ -19,11 +19,16 @@ from restaurant.models import Categories
 
 logger = logging.getLogger(__name__)
 
+
 class ProfileUpdateForm(forms.Form):
     user_id = forms.CharField(label="user_id")
     username = forms.CharField(label="username", min_length=4, max_length=150)
-    firstname = forms.CharField(label="firstname", min_length=1, max_length=150, required=False)
-    lastname = forms.CharField(label="lastname", min_length=1, max_length=150, required=False)
+    firstname = forms.CharField(
+        label="firstname", min_length=1, max_length=150, required=False
+    )
+    lastname = forms.CharField(
+        label="lastname", min_length=1, max_length=150, required=False
+    )
     email = forms.EmailField(label="email", required=False)
     profile_pic = forms.CharField(label="profile_pic", required=False)
 
@@ -33,10 +38,16 @@ class ProfileUpdateForm(forms.Form):
 
     def save_image(self, file):
         char_set = string.ascii_letters + string.digits
-        file_name = ''.join(random.sample(char_set*6, 10)) + os.path.splitext(file.name)[1]
-        boto3.client('s3').upload_fileobj(file, 'dineline', 'media/user_profile_pics/' + file_name)
-        self.cleaned_data["profile_pic"] = "https://dineline.s3.amazonaws.com/media/user_profile_pics/" + file_name
-    
+        file_name = (
+            "".join(random.sample(char_set * 6, 10)) + os.path.splitext(file.name)[1]
+        )
+        boto3.client("s3").upload_fileobj(
+            file, "dineline", "media/user_profile_pics/" + file_name
+        )
+        self.cleaned_data["profile_pic"] = (
+            "https://dineline.s3.amazonaws.com/media/user_profile_pics/" + file_name
+        )
+
     def save(self, commit=True):
         uid = self.cleaned_data["user_id"]
         user = get_user_model().objects.get(pk=uid)
@@ -47,6 +58,7 @@ class ProfileUpdateForm(forms.Form):
         user.profile_pic = self.cleaned_data["profile_pic"]
         user.save()
         return user
+
 
 class UserCreationForm(forms.Form):
     username = forms.CharField(label="Enter Username", min_length=4, max_length=150)
