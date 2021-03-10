@@ -210,12 +210,12 @@ class TestUserRegisterView(BaseTest):
                 "email": "abcde@gmail.com",
                 "password1": "hardPass123",
                 "password2": "hardPass123",
-                "phone" : "1234567890",
-                "address1" : "123 main street",
-                "address2" : "123 main street",
-                "city" : "New York City",
-                "zip_code" : "1234567",
-                "state" : "California"
+                "phone": "1234567890",
+                "address1": "123 main street",
+                "address2": "123 main street",
+                "city": "New York City",
+                "zip_code": "1234567",
+                "state": "California",
             },
         )
         self.assertEqual(response.status_code, 200)
