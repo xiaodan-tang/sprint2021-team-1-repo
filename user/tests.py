@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from restaurant.models import Categories
 from .forms import (
@@ -320,7 +321,13 @@ class TestAccountDetailsView(BaseTest):
         self.c.force_login(self.dummy_user)
         response = self.c.post(
             "/user/profile",
-            {"user_id": self.dummy_user.id, "username": self.dummy_user.username},
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic": SimpleUploadedFile(
+                    "test.jpg", b"file_content", content_type="image/jpg"
+                ),
+            },
         )
         self.assertEqual(response.status_code, 302)
 
