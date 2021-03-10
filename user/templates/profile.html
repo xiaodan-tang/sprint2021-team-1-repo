@@ -17,7 +17,9 @@
                 width="150">
               <div class="mt-3">
                 <h4>{{user.username}}</h4>
-                <p class="text-muted font-size-sm">{{user_profile.city}},{{user_profile.state}}</p>
+                <div class="text-muted font-size-sm" id = "test2">
+                  Unknown1
+                </div>
                 <button type="button" class="btn btn-link" data-toggle="modal" data-target="#pModal">Edit Profile</button>
               </div>
             </div>
@@ -98,8 +100,8 @@
               <div class="col-sm-3">
                 <h6 class="mb-0">Address</h6>
               </div>
-              <div class="col-sm-9 text-secondary">
-                {{user_profile.address1}},{{user_profile.address2}},{{user_profile.city}},{{user_profile.state}}
+              <div class="col-sm-9 text-secondary" id = 'test1'>
+                test
               </div>
             </div>
           </div>
@@ -374,9 +376,6 @@
               <div class="form-group">
                 <h6>State</h6>
                 <select class="selectpicker form-control" name="state" id="state" multiple data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" title="">
-                  <option value="{{user_profile.state}}" selected disabled hidden> 
-                    {{user_profile.state}}
-                  </option> 
                   <option value="Alabama">Alabama</option>
                   <option value="Alaska">Alaska</option>
                   <option value="Arizona">Arizona</option>
@@ -611,4 +610,65 @@
     });
   });
 </script>
+<script>
+    window.onload = function(){
+      x = document.getElementById('test1');
+
+      var testString = '';
+      var addressList = new Array();
+      var newList = new Array();
+      
+      addressList[0] = '{{user_profile.address1}}';
+      addressList[1] = '{{user_profile.address2}}';
+      addressList[2] = '{{user_profile.city}}';
+      addressList[3] = '{{user_profile.state}}';
+      //console.log(addressList);
+
+      for(var i=0; i< addressList.length; i++) {
+        //console.log(typeof(addressList[i]))
+        if (addressList[i] != ''){
+          newList.push(addressList[i]);
+        }
+      }
+      //console.log(newList)
+      for(var i=0; i< newList.length; i++) {
+        if(i == newList.length-1){
+          testString = testString + newList[i];
+        }
+        else{
+          testString = testString + newList[i] + ', '
+        }
+      }
+    x.innerHTML=testString;
+
+    y = document.getElementById('test2');
+
+          var testString = '';
+          var addressList = new Array();
+          var newList = new Array();
+   
+          addressList[0] = '{{user_profile.city}}';
+          addressList[1] = '{{user_profile.state}}';
+          console.log(addressList);
+
+          for(var i=0; i< addressList.length; i++) {
+            //console.log(typeof(addressList[i]))
+            if (addressList[i] != ''){
+              newList.push(addressList[i]);
+            }
+          }
+          //console.log(newList)
+          for(var i=0; i< newList.length; i++) {
+            if(i == newList.length-1){
+              testString = testString + newList[i];
+            }
+            else{
+              testString = testString + newList[i] + ', '
+            }
+          }
+        y.innerHTML=testString;
+
+        $("#state option[value='{{user_profile.state}}']").prop("selected",true);
+  }
+  </script>
 {% endblock %}
