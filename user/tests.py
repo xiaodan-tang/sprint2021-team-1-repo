@@ -202,6 +202,24 @@ class TestUserRegisterView(BaseTest):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_view_register_page_w_profile(self):
+        response = self.c.post(
+            "/user/register",
+            {
+                "username": "user_test_for_register",
+                "email": "abcde@gmail.com",
+                "password1": "hardPass123",
+                "password2": "hardPass123",
+                "phone": "1234567890",
+                "address1": "123 main street",
+                "address2": "123 main street",
+                "city": "New York City",
+                "zip_code": "1234567",
+                "state": "California",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test__register_page_invalid_request(self):
         response = self.c.get(
             "/user/register",
