@@ -1141,3 +1141,35 @@ class GetFilteredRestaurantsTests(TestCase):
         )
 
         self.assertEqual(details.business_id, filtered_restaurants[0].business_id)
+
+
+class RestaurantRecommendationsTest(TestCase):
+    """ Test Recommend Restaurants module"""
+
+    def setUp(self):
+        Categories.objects.create(category="chinese", parent_category="chinese")
+        Categories.objects.create(category="wine-bar", parent_category="bars")
+        self.dummy_user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        category_list = ["chinese", "wine-bar"]
+        for category in category_list:
+            self.dummy_user.preferences.add(Categories.objects.get(category=category))
+
+        self.dummy_user2 = get_user_model().objects.create(
+            username="myuser2",
+            email="abcd@gmail.com",
+        )
+
+    def test_reccomendation(self):
+
+        categories = [
+            category.category for category in self.dummy_user.preferences.all()
+        ]
+        categories.sort()
+        self.assertEqual(len(self.dummy_user.preferences.all()), 2)
+        self.assertEqual(categories[0], "chinese")
+        self.assertEqual(categories[1], "wine-bar")
+        self.assertIsNotNone(self.dummy_user2.preferences.all())
+        self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
