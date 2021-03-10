@@ -306,7 +306,26 @@ class TestAccountDetailsView(BaseTest):
         self.c.force_login(self.dummy_user)
         response = self.c.get("/user/account_details")
         self.assertEqual(response.status_code, 200)
+    
+    def test_view_profile_user_not_logged_in(self):
+        response = self.c.get("/user/profile")
+        self.assertEqual(response.status_code, 302)
 
+    def test_view_profile_user_logged_in(self):
+        self.c.force_login(self.dummy_user)
+        response = self.c.get("/user/profile")
+        self.assertEqual(response.status_code, 200)
+    
+    def test_update_user_profile(self):
+        self.c.force_login(self.dummy_user)
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username
+            }
+        )
+        self.assertEqual(response.status_code, 302)
 
 class TestForgetPasswordView(BaseTest):
     def test_forget_password_valid_email(self):
