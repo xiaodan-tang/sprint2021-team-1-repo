@@ -70,7 +70,7 @@ def register(request):
 
             form2 = UserProfileCreationForm(user=user, data=request.POST)
             form2.save()
-            
+
             send_verification_email(request, form.cleaned_data.get("email"))
             return render(request=request, template_name="sent_verification_email.html")
     else:

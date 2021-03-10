@@ -133,6 +133,7 @@ class ProfileUpdateForm(forms.Form):
         user_profile.save()
         return user
 
+
 class UserProfileCreationForm(forms.Form):
     STATE_CHOICES = [
         ("Alabama", "Alabama"),
