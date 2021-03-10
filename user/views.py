@@ -19,6 +19,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from .utils import send_reset_password_email, send_verification_email
 from .forms import (
     UserCreationForm,
+    UserProfileCreationForm,
     ResetPasswordForm,
     UpdatePasswordForm,
     GetEmailForm,
