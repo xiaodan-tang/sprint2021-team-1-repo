@@ -134,6 +134,90 @@ class ProfileUpdateForm(forms.Form):
         return user
 
 
+class UserProfileCreationForm(forms.Form):
+    STATE_CHOICES = [
+        ("Alabama", "Alabama"),
+        ("Alaska", "Alaska"),
+        ("Arizona", "Arizona"),
+        ("Arkansas", "Arkansas"),
+        ("California", "California"),
+        ("Colorado", "Colorado"),
+        ("Connecticut", "Connecticut"),
+        ("Delaware", "Delaware"),
+        ("District of Columbia", "District of Columbia"),
+        ("Florida", "Florida"),
+        ("Georgia", "Georgia"),
+        ("Hawaii", "Hawaii"),
+        ("Idaho", "Idaho"),
+        ("Illinois", "Illinois"),
+        ("Indiana", "Indiana"),
+        ("Iowa", "Iowa"),
+        ("Kansas", "Kansas"),
+        ("Kentucky", "Kentucky"),
+        ("Louisiana", "Louisiana"),
+        ("Maine", "Maine"),
+        ("Montana", "Montana"),
+        ("Nebraska", "Nebraska"),
+        ("Nevada", "Nevada"),
+        ("New Hampshire", "New Hampshire"),
+        ("New Jersey", "New Jersey"),
+        ("New Mexico", "New Mexico"),
+        ("New York", "New York"),
+        ("North Carolina", "North Carolina"),
+        ("North Dakota", "North Dakota"),
+        ("Ohio", "Ohio"),
+        ("Oklahoma", "Oklahoma"),
+        ("Oregon", "Oregon"),
+        ("Maryland", "Maryland"),
+        ("Massachusetts", "Massachusetts"),
+        ("Michigan", "Michigan"),
+        ("Minnesota", "Minnesota"),
+        ("Mississippi", "Mississippi"),
+        ("Missouri", "Missouri"),
+        ("Pennsylvania", "Pennsylvania"),
+        ("Rhode Island", "Rhode Island"),
+        ("South Carolina", "South Carolina"),
+        ("South Dakota", "South Dakota"),
+        ("Tennessee", "Tennessee"),
+        ("Texas", "Texas"),
+        ("Utah", "Utah"),
+        ("Vermont", "Vermont"),
+        ("Virginia", "Virginia"),
+        ("Washington", "Washington"),
+        ("West Virginia", "West Virginia"),
+        ("Wisconsin", "Wisconsin"),
+        ("Wyoming", "Wyoming"),
+    ]
+
+    address1 = forms.CharField(label="address1")
+    address2 = forms.CharField(label="address2")
+    city = forms.CharField(label="city")
+    zip_code = forms.CharField(label="zip_code")
+    state = forms.ChoiceField(label="state", choices=STATE_CHOICES)
+
+    def __init__(self, user, data):
+        self.user = user
+        self.data = data
+        self.user_profile = User_Profile.objects.get(user=self.user)
+        # super(UserProfileCreationForm, self).__init__(data=data)
+
+    def save(self, commit=True):
+        if "phone" in self.data:
+            self.user_profile.phone = self.data["phone"]
+        if "address1" in self.data:
+            self.user_profile.address1 = self.data["address1"]
+        if "address2" in self.data:
+            self.user_profile.address2 = self.data["address2"]
+        if "city" in self.data:
+            self.user_profile.city = self.data["city"]
+        if "zip_code" in self.data:
+            self.user_profile.zip_code = self.data["zip_code"]
+        if "state" in self.data:
+            self.user_profile.state = self.data["state"]
+        self.user_profile.save()
+        return self.user_profile
+
+
 class UserCreationForm(forms.Form):
     username = forms.CharField(label="Enter Username", min_length=4, max_length=150)
     email = forms.EmailField(label="Enter email")
