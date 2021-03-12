@@ -7,6 +7,7 @@ from .models import (
     YelpRestaurantDetails,
     Zipcodes,
     AccessibilityRecord,
+    FAQ,
 )
 
 
@@ -18,5 +19,9 @@ admin.site.register(Zipcodes)
 
 
 @admin.register(AccessibilityRecord)
+class ViewAdmin(ImportExportModelAdmin):
+    pass
+
+@admin.register(FAQ)
 class ViewAdmin(ImportExportModelAdmin):
     pass
