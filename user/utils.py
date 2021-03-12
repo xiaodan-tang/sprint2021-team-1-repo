@@ -2,8 +2,9 @@ from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django import template
+from django.conf import settings
 
 import logging
 
@@ -45,3 +46,18 @@ def send_verification_email(request, email):
     email = EmailMultiAlternatives(email_subject, to=[user.email])
     email.attach_alternative(html_content, "text/html")
     return email.send()
+
+
+def send_feedback_email(request, email, subject, message):
+    try:
+        email_subject = "DineLine Feedback:" + subject
+        email_message = "From: " + email + "\n" + message
+        send_mail(
+            email_subject,
+            email_message,
+            settings.EMAIL_HOST_USER,
+            [settings.EMAIL_HOST_USER],
+        )
+        return True
+    except Exception:
+        return False
