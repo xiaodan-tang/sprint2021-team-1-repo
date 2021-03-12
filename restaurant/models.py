@@ -162,3 +162,8 @@ class Zipcodes(models.Model):
 
     def __str__(self):
         return "{} {} {}".format(self.zipcode, self.borough, self.neighborhood)
+
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=200, primary_key=True)
+    answer = models.TextField()
