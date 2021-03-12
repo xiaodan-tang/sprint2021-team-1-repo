@@ -165,7 +165,7 @@ class Zipcodes(models.Model):
 
 
 class FAQ(models.Model):
-    question = models.CharField(max_length=200, primary_key=True)
+    question = models.CharField(max_length=200)
     answer = models.TextField()
 
     def __str__(self):
