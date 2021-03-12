@@ -612,14 +612,25 @@ function timeChangeFunc(x) {
 }
 
 var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+var day_time = [0, 0, 0, 0, 0, 0, 0];
+for (i = 0; i < yelp_info.hours[0].open.length; i++) {
+    var curr = yelp_info.hours[0].open[i].day;
+    day_time[curr]++;
+}
+var prev_day = -1;
 for (i = 0; i < yelp_info.hours[0].open.length; i++) {
     var opening_hours = document.getElementById("res_open_hours");
     var row = document.createElement("tr");
     opening_hours.appendChild(row);
-    var thh = document.createElement("th");
-    thh.className = "pl-0";
-    thh.innerHTML = days[i];
-    row.appendChild(thh);
+    var curr_day = yelp_info.hours[0].open[i].day;
+    if (curr_day != prev_day) {
+        var thh = document.createElement("th");
+        thh.className = "pl-0";
+        thh.innerHTML = days[curr_day];
+        thh.rowSpan = day_time[curr_day];
+        row.appendChild(thh);
+    }
+    prev_day = curr_day;
     var tdd = document.createElement("td");
     tdd.className = "pr-0 text-right";
     tdd.innerHTML = timeChangeFunc(yelp_info.hours[0].open[i].start) + "-" + timeChangeFunc(yelp_info.hours[0].open[i].end);
