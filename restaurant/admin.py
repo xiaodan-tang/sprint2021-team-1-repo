@@ -22,6 +22,7 @@ admin.site.register(Zipcodes)
 class ViewAdmin(ImportExportModelAdmin):
     pass
 
+
 @admin.register(FAQ)
 class ViewAdmin(ImportExportModelAdmin):
     pass
