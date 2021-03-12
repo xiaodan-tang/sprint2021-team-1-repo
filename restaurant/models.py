@@ -167,3 +167,6 @@ class Zipcodes(models.Model):
 class FAQ(models.Model):
     question = models.CharField(max_length=200, primary_key=True)
     answer = models.TextField()
+
+    def __str__(self):
+        return "{} {}".format(self.question, self.answer)
