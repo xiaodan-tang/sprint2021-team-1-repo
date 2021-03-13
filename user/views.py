@@ -96,14 +96,11 @@ def profile(request):
     if request.method == "POST":
         form = ProfileUpdateForm(user=user, data=request.POST)
         if form.is_valid():
-            profile_pic = (
-                form.save_image(request.FILES["profile-pic"])
-                if "profile-pic" in request.FILES
-                else None
-            )
-            User_Profile.objects.update_or_create(
-                user=user, defaults={"photo": profile_pic}
-            )
+            if "profile-pic" in request.FILES:
+                profile_pic = form.save_image(request.FILES["profile-pic"])
+                User_Profile.objects.update_or_create(
+                    user=user, defaults={"photo": profile_pic}
+                )
             form.save()
             return redirect("user:profile")
     user_profile = User_Profile.objects.get(user=user)

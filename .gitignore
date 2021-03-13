@@ -11,3 +11,4 @@ env/
 *venv/
 venv.bak/
 .DS_Store
+README.md
