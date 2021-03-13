@@ -1,5 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils import timezone
+
+from datetime import datetime
 
 
 class Categories(models.Model):
@@ -126,3 +129,34 @@ class Zipcodes(models.Model):
 
     def __str__(self):
         return "{} {} {}".format(self.zipcode, self.borough, self.neighborhood)
+
+
+class Review(models.Model):
+    # Basic info
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviews"
+    )
+    restaurant = models.ForeignKey(
+        Restaurant, on_delete=models.CASCADE, related_name="reviews"
+    )
+    time = models.DateTimeField(default=datetime.now, editable=False)
+    content = models.TextField()
+
+    # Ratings
+    rating = models.PositiveIntegerField(default=0)
+    rating_safety = models.PositiveIntegerField(default=0)
+    # Accessibility Ratings
+    rating_entry = models.PositiveIntegerField(default=0)
+    rating_door = models.PositiveIntegerField(default=0)
+    rating_table = models.PositiveIntegerField(default=0)
+    rating_bathroom = models.PositiveIntegerField(default=0)
+    rating_path = models.PositiveIntegerField(default=0)
+
+    # Images
+    image1 = models.ImageField(null=True, blank=True, upload_to="review_images/")
+    image2 = models.ImageField(null=True, blank=True, upload_to="review_images/")
+    image3 = models.ImageField(null=True, blank=True, upload_to="review_images/")
+
+    def __str__(self):
+        return f"{self.user.username} review on {self.restaurant.restaurant_name}"
+

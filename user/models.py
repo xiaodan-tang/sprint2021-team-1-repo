@@ -74,7 +74,7 @@ class User_Profile(models.Model):
         DineSafelyUser, on_delete=models.CASCADE, null=True, related_name="user_profile"
     )
     photo = models.CharField("Profile Picture", max_length=150, null=True)
-    phone = PhoneNumberField(null=True, blank=True, unique=True)
+    phone = PhoneNumberField(null=True, blank=True, unique=False)
     address1 = models.CharField("Address line 1", max_length=128, blank=True)
     address2 = models.CharField("Address line 2", max_length=128, blank=True)
     city = models.CharField("City", max_length=64, blank=True)
