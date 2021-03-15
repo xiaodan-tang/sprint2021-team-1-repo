@@ -452,3 +452,10 @@ class TestContactFormView(BaseTest):
             str(flash_message[0]), "Invalid or missing data in contact form!"
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_request_received(self):
+        response = self.c.get(
+            "/user/request_received",
+            {},
+        )
+        self.assertEqual(response.status_code, 200)

@@ -207,7 +207,6 @@ def contact_form(request):
             # Sends user answers to website email
             feedback_sent = send_feedback_email(request, email, subject, message)
             if feedback_sent:
-                messages.success(request, "Feedback successfully submitted!")
                 return redirect("user:request_received")
             else:
                 messages.error(request, "An error occurred, feedback was not sent!")
