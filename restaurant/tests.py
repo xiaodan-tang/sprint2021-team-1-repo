@@ -1072,8 +1072,13 @@ class IntegratedInspectionRestaurantsTests(TestCase):
             restaurant.business_address,
             restaurant.postcode,
         )
+
+        q_mopd = Restaurant.objects.get(restaurant_name=restaurant.restaurant_name, business_address=restaurant.business_address)
+        mopd_status = q_mopd.mopd_compliance_status
+
         record = model_to_dict(target_inspection)
         record["inspected_on"] = record["inspected_on"].strftime("%Y-%m-%d %I:%M %p")
+        record["mopd_compliance"] = mopd_status
 
         self.assertEqual(latest_inspection, record)
 
