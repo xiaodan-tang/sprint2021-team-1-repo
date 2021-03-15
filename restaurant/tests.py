@@ -16,8 +16,14 @@ from .models import (
     UserQuestionnaire,
     Categories,
     AccessibilityRecord,
+    FAQ,
 )
-from .views import get_inspection_info, get_landing_page, get_restaurant_profile
+from .views import (
+    get_inspection_info,
+    get_landing_page,
+    get_restaurant_profile,
+    get_faqs_list,
+)
 from .utils import (
     merge_yelp_info,
     get_restaurant_info_yelp,
@@ -102,6 +108,10 @@ def create_yelp_restaurant_details(
         latitude=latitude,
         longitude=longitude,
     )
+
+
+def create_faq(question, answer):
+    return FAQ.objects.create(question=question, answer=answer)
 
 
 class MockResponse:
@@ -578,7 +588,45 @@ class SearchFilterFormTests(BaseTest):
             "price_3": True,
             "price_4": True,
             "rating": [1, 2, 3],
-            "All": "Compliant",
+            "All": True,
+        }
+        response = self.c.post(
+            "/restaurant/search_filter/restaurants_list/1", search_filter_form
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_filter_covid_compliant(self):
+        search_filter_form = {
+            "keyword": "",
+            "neighbourhood": [],
+            "category": [],
+            "price_1": False,
+            "price_2": False,
+            "price_3": False,
+            "price_4": False,
+            "rating": [],
+            "All": False,
+            "COVIDCompliant": True,
+            "MOPDCompliant": False,
+        }
+        response = self.c.post(
+            "/restaurant/search_filter/restaurants_list/1", search_filter_form
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_filter_mopd_compliant(self):
+        search_filter_form = {
+            "keyword": "",
+            "neighbourhood": [],
+            "category": [],
+            "price_1": False,
+            "price_2": False,
+            "price_3": False,
+            "price_4": False,
+            "rating": [],
+            "All": False,
+            "COVIDCompliant": False,
+            "MOPDCompliant": True,
         }
         response = self.c.post(
             "/restaurant/search_filter/restaurants_list/1", search_filter_form
@@ -716,6 +764,19 @@ class RestaurantViewTests(TestCase):
         response = self.c.post(path=url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.dummy_user.favorite_restaurants.all().count() == 0)
+
+    def test_get_faqs_list(self):
+        create_faq(
+            "What are the benefits of becoming a registered user?",
+            "save favorite restaurants, add user preferences, edit user profile, get recommendations.",
+        )
+        request = self.factory.get("restaurant:faqs")
+        request.user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        response = get_faqs_list(request)
+        self.assertEqual(response.status_code, 200)
 
 
 class RestaurantUtilsTests(TestCase):
@@ -1072,8 +1133,16 @@ class IntegratedInspectionRestaurantsTests(TestCase):
             restaurant.business_address,
             restaurant.postcode,
         )
+
+        q_mopd = Restaurant.objects.get(
+            restaurant_name=restaurant.restaurant_name,
+            business_address=restaurant.business_address,
+        )
+        mopd_status = q_mopd.mopd_compliance_status
+
         record = model_to_dict(target_inspection)
         record["inspected_on"] = record["inspected_on"].strftime("%Y-%m-%d %I:%M %p")
+        record["mopd_compliance"] = mopd_status
 
         self.assertEqual(latest_inspection, record)
 

@@ -50,7 +50,7 @@
                         <div class="card h-100 border-0 shadow">
                         {% if restaurant.yelp_info.rating >= 4 %}
                             <div class="ribbon ribbon-primary">
-                                Recommended
+                                Popular
                             </div>
                         {% endif %}
                             <div class="card-img-top overflow-hidden dark-overlay bg-cover" style="background-image: url({{ restaurant.yelp_info.image_url }}); min-height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' restaurant.id %}"></a>
@@ -78,6 +78,12 @@
                                         <i class="fas fa-check-circle" style="color:#596ff8"></i>
                                     {% endif %}
                                 </p>
+                                {% if restaurant.mopd_compliance_status == "Compliant" %}
+                                        <span class="badge badge-pill badge-success">
+                                            Compliant
+                                            <i class="fas fa-wheelchair"></i>
+                                        </span>
+                                {% endif %}
                                 <p class="text-sm mb-0">
                                     {% for cat in restaurant.yelp_info.categories %}
                                     <a class="mr-1 disabled text-decoration-none">{{ cat.title}}</a>
@@ -93,6 +99,68 @@
             <!-- If we need pagination-->
             <div class="swiper-pagination"></div>
         </div>
+
+        {% if user.is_authenticated %}
+        <section class="py-6 bg-gray-100">
+            <div class="container">
+                <div class="text-center pb-lg-4">
+                    <h2 class="mb-5">Recommended for you</h2>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <!-- Slider main container-->
+                <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+                    <!-- Additional required wrapper-->
+                    <div class="swiper-wrapper pb-5">
+                        {% for restaurant in recommended_restaurant_list %}
+                        {% if not restaurant.yelp_info.fake_info %}
+                        <div class="swiper-slide h-auto px-2">
+                            <!-- venue item-->
+                            <div class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
+                                <div class="card h-100 border-0 shadow">
+               
+                                    <div class="card-img-top overflow-hidden dark-overlay bg-cover" style="background-image: url({{ restaurant.yelp_info.image_url }}); min-height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' restaurant.id %}"></a>
+                                        <div class="card-img-overlay-bottom z-index-20">
+                                            <h4 class="text-white text-shadow">{{ restaurant.yelp_info.name }}</h4>
+                                            <p class="mb-2 text-xs">
+                                                {% for i in "x"|ljust:restaurant.yelp_info.rating %}
+                                                    <i class="fa fa-star text-warning"></i>
+                                                {% endfor %}
+                                                {% with restaurant.yelp_info.rating|add:-5|abs as aa %}
+                                                {% if aa == 0 %}
+                                                {% else %}
+                                                {% for i in "x"|ljust:aa %}
+                                                <i class="fa fa-star text-gray-300"></i>
+                                                {% endfor %}
+                                                {% endif %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-sm text-muted text-uppercase mb-1">
+                                            <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                            {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
+                                                <i class="fas fa-check-circle" style="color:#596ff8"></i>
+                                            {% endif %}
+                                        </p>
+                                        <p class="text-sm mb-0">
+                                            {% for cat in restaurant.yelp_info.categories %}
+                                            <a class="mr-1 disabled text-decoration-none">{{ cat.title}}</a>
+                                            {% endfor %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <!-- If we need pagination-->
+                    <div class="swiper-pagination"></div>
+                </div>
+
+        {% endif %}
         <div class="text-center mt-5"><a class="btn btn-outline-primary" href="{% url 'restaurant:browse' %}">See all restaurants</a></div>
     </div>
 </section>
@@ -105,13 +173,20 @@
         <div class="row">
             <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
                 <div class="px-0 pr-lg-3">
-                    <div class="icon-rounded mb-3 bg-secondary-light">
-                        <svg class="svg-icon w-2rem h-2rem text-secondary">
-                            <use xlink:href="#love-pin-1"> </use>
+                    <div class="icon-rounded mb-3 bg-primary-light">
+                        <svg class="svg-icon w-2rem h-2rem text-primary">
+                            <use xlink:href="#pay-1"></use>
                         </svg>
                     </div>
-                    <h3 class="h6 text-uppercase">Phase 4</h3>
-                    <p class="text-muted text-sm">NYC is in Phase 4 of reopening,
+                    <h3 class="h6 text-uppercase">Safety first</h3>
+                    <p class="text-muted text-sm">Most importantly, your safety
+                        comes first!
+                    <li class="text-muted text-sm">Stay home if sick.</li>
+                    <li class="text-muted text-sm">Maintain social distancing.</li>
+                    <li class="text-muted text-sm">Wear a face covering.</li>
+                    <li class="text-muted text-sm">Practice healthy hand hygiene.</li>
+                    <br>
+                    <p class="text-muted text-sm">NYC is in the process of reopening
                         which means restaurants and bars have reopened to allow take-out, delivery, outdoor, and now indoor dining.
                         <br> <br>
                         <a href="https://www1.nyc.gov/html/dot/html/pedestrians/openrestaurants.shtml">Get the latest updates here</a>
@@ -163,51 +238,20 @@
             </div>
             <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
                 <div class="px-0 pr-lg-3">
-                    <div class="icon-rounded mb-3 bg-primary-light">
-                        <svg class="svg-icon w-2rem h-2rem text-primary">
-                            <use xlink:href="#pay-1"></use>
+                    <div class="icon-rounded mb-3 bg-secondary-light">
+                        <svg class="svg-icon w-2rem h-2rem text-secondary">
+                            <use xlink:href="#love-pin-1"> </use>
                         </svg>
                     </div>
-                    <h3 class="h6 text-uppercase">Safety first</h3>
-                    <p class="text-muted text-sm">Most importantly, your safety
-                        comes first!
-                    <li class="text-muted text-sm">Stay home if sick.</li>
-                    <li class="text-muted text-sm">Maintain social distancing.</li>
-                    <li class="text-muted text-sm">Wear a face covering.</li>
-                    <li class="text-muted text-sm">Practice healthy hand hygiene.</li>
+                    <h3 class="h6 text-uppercase">MOPD Compliance</h3>
+                    <span class="badge badge-pill badge-success">Compliant <i class="fas fa-wheelchair" style="color:#ffffff"></i></span>
+                    <p class="text-muted text-sm">Accessibility for those with disabilities is important!</p>
+                    <li class="text-muted text-sm">We use the Mayors Office for People with Disabilities (MOPD) compliance data for restaurants in New York City to ensure that restaurants are accessible to those handicapped and with disabilities.</li>
                     </p>
                 </div>
             </div>
         </div>
     </section>
-    <br>
-    <!-- Brands Section-->
-    <section style="height: 150px">
-      <div class="container">
-        <h5 class="text-center text-uppercase letter-spacing-3 mb-5">Made Possible By</h5>
-        <!-- Brands Slider-->
-        <div class="swiper-container brands-slider">
-          <div class="swiper-wrapper pb-5">
-            <!-- item-->
-            <div class="swiper-slide h-auto d-flex align-items-center justify-content-center"><img class="img-fluid w-6rem opacity-7" src="https://dine-safely.s3.amazonaws.com/nyc-open-data-logo.svg" alt="Brand 1"></div>
-            <!-- item-->
-            <div class="swiper-slide h-auto d-flex align-items-center justify-content-center"><img class="img-fluid w-6rem opacity-7" src="https://dine-safely.s3.amazonaws.com/Yelp_Logo.svg.png" alt="Brand 2"></div>
-            <!-- item-->
-            <div class="swiper-slide h-auto d-flex align-items-center justify-content-center"><img class="img-fluid w-6rem opacity-7" src="https://dine-safely.s3.amazonaws.com/nyu_logo_new_york_university.jpg" alt="Brand 3"></div>
-            <!-- item-->
-            <div class="swiper-slide h-auto d-flex align-items-center justify-content-center"><img class="img-fluid w-6rem opacity-7" src="https://dine-safely.s3.amazonaws.com/Amazon-Web-Services-AWS-Logo-Transparent-PNG.png" alt="Brand 4"></div>
-            <!-- item-->
-            <div class="swiper-slide h-auto d-flex align-items-center justify-content-center"><img class="img-fluid w-6rem opacity-7" src="https://dine-safely.s3.amazonaws.com/google-maps-logo-5-1.png" alt="Brand 5"></div>
-            <!-- item-->
-            <div class="swiper-slide h-auto d-flex align-items-center justify-content-center"><img class="img-fluid w-6rem opacity-7" src="https://dine-safely.s3.amazonaws.com/hosting_heroku.png" alt="Brand 6"></div>
-            <!-- item-->
-          </div>
-        </div>
-      </div>
-    </section>
-        </div>
-    </div>
-</section>
 <section class="py-6 bg-gray-100">
     <div class="container">
         <div class="row">

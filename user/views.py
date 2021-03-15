@@ -1,7 +1,9 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
+from .models import User_Profile
 from restaurant.models import Categories
 import json
 
@@ -14,13 +16,21 @@ from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from .utils import send_reset_password_email, send_verification_email
+from .utils import (
+    send_reset_password_email,
+    send_verification_email,
+    send_feedback_email,
+)
+
 from .forms import (
     UserCreationForm,
+    UserProfileCreationForm,
     ResetPasswordForm,
     UpdatePasswordForm,
     GetEmailForm,
     UserPreferenceForm,
+    ContactForm,
+    ProfileUpdateForm,
 )
 
 import logging
@@ -64,6 +74,10 @@ def register(request):
             user = form.save()
             user.is_active = False
             user.save()
+
+            form2 = UserProfileCreationForm(user=user, data=request.POST)
+            form2.save()
+
             send_verification_email(request, form.cleaned_data.get("email"))
             return render(request=request, template_name="sent_verification_email.html")
     else:
@@ -80,26 +94,75 @@ def post_logout(request):
 
 
 # @login_required()
-def account_details(request):
+def profile(request):
     if not request.user.is_authenticated:
         return redirect("user:login")
 
     user = request.user
-
+    if request.method == "POST":
+        form = ProfileUpdateForm(user=user, data=request.POST)
+        if form.is_valid():
+            if "profile-pic" in request.FILES:
+                profile_pic = form.save_image(request.FILES["profile-pic"])
+                User_Profile.objects.update_or_create(
+                    user=user, defaults={"photo": profile_pic}
+                )
+            form.save()
+            return redirect("user:profile")
+    user_profile = User_Profile.objects.get(user=user)
     favorite_restaurant_list = user.favorite_restaurants.all()
     user_pref_list = user.preferences.all()
     user_pref_list_json = []
     for pref in user_pref_list:
         pref_dic = model_to_dict(pref)
         user_pref_list_json.append(pref_dic)
-
     return render(
         request=request,
-        template_name="account_details.html",
+        template_name="profile.html",
         context={
             "favorite_restaurant_list": favorite_restaurant_list,
             "user_pref": user_pref_list,
             "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
+            "user_profile": user_profile,
+            "profile_pic": "" if user_profile is None else user_profile.photo,
+        },
+    )
+
+
+# @login_required()
+def account_details(request):
+    if not request.user.is_authenticated:
+        return redirect("user:login")
+
+    user = request.user
+    if request.method == "POST":
+        form = ProfileUpdateForm(user=user, data=request.POST)
+        if form.is_valid():
+            profile_pic = (
+                form.save_image(request.FILES["profile-pic"])
+                if "profile-pic" in request.FILES
+                else None
+            )
+            User_Profile.objects.update_or_create(
+                user=user, defaults={"photo": profile_pic}
+            )
+            form.save()
+            return redirect("user:account_details")
+    user_profile = User_Profile.objects.get(user=user)
+    favorite_restaurant_list = user.favorite_restaurants.all()
+    user_pref_list = user.preferences.all()
+    user_pref_list_json = []
+    for pref in user_pref_list:
+        pref_dic = model_to_dict(pref)
+        user_pref_list_json.append(pref_dic)
+    return render(
+        request=request,
+        template_name="profile.html",
+        context={
+            "favorite_restaurant_list": favorite_restaurant_list,
+            "user_pref": user_pref_list,
+            "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
+            "user_profile": user_profile,
         },
     )
 
@@ -189,3 +252,28 @@ def update_password(request):
         response = HttpResponse(json.dumps(context), content_type="application/json")
         response.status_code = 400
         return response
+
+
+def contact_form(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get("email")
+            subject = form.cleaned_data.get("subject")
+            message = form.cleaned_data.get("message")
+            # Sends user answers to website email
+            feedback_sent = send_feedback_email(request, email, subject, message)
+            if feedback_sent:
+                return redirect("user:request_received")
+            else:
+                messages.error(request, "An error occurred, feedback was not sent!")
+        else:
+            messages.error(request, "Invalid or missing data in contact form!")
+    form = ContactForm()
+    return render(
+        request=request, template_name="contact_us.html", context={"form": form}
+    )
+
+
+def request_received(request):
+    return render(request=request, template_name="request_received.html")

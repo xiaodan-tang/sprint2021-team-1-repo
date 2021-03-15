@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadReque
 from django.urls import reverse
 import random
 
-from .models import Restaurant
+from .models import Restaurant, FAQ
 
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (
@@ -229,3 +229,11 @@ def chatbot_keyword(request):
             return JsonResponse(response)
         except AttributeError as e:
             return HttpResponseBadRequest(e)
+
+
+def get_faqs_list(request):
+    faqs_list = FAQ.objects.all()
+    context = {
+        "faqs_list": faqs_list,
+    }
+    return render(request, "faqs.html", context)

@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from restaurant.models import Categories
 from .forms import (
@@ -9,8 +10,9 @@ from .forms import (
     GetEmailForm,
     UpdatePasswordForm,
     UserPreferenceForm,
+    ContactForm,
 )
-from .utils import send_reset_password_email
+from .utils import send_reset_password_email, send_feedback_email
 from django.test import Client
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -176,6 +178,50 @@ class TestUserPreferenceForm(BaseTest):
         self.assertTrue(user_pref_form.is_valid())
 
 
+class TestContactForm(BaseTest):
+    def test_contact_form_valid(self):
+        form_data = {
+            "email": self.dummy_user.email,
+            "subject": "Test subject",
+            "message": "Test message: hello world!!!",
+        }
+        feedback_form = ContactForm(form_data)
+        self.assertTrue(feedback_form.is_valid())
+
+    def test_contact_form_invalid_email(self):
+        form_data = {
+            "email": "hello world",
+            "subject": "Test subject",
+            "message": "Test message: hello world!!!",
+        }
+        feedback_form = ContactForm(form_data)
+        self.assertFalse(feedback_form.is_valid())
+
+    def test_contact_form_missing_email(self):
+        form_data = {
+            "subject": "Test subject",
+            "message": "Test message: hello world!!!",
+        }
+        feedback_form = ContactForm(form_data)
+        self.assertFalse(feedback_form.is_valid())
+
+    def test_contact_form_missing_subject(self):
+        form_data = {
+            "email": self.dummy_user.email,
+            "message": "Test message: hello world!!!",
+        }
+        feedback_form = ContactForm(form_data)
+        self.assertFalse(feedback_form.is_valid())
+
+    def test_contact_form_invalid_message(self):
+        form_data = {
+            "email": self.dummy_user.email,
+            "subject": "Test subject",
+        }
+        feedback_form = ContactForm(form_data)
+        self.assertFalse(feedback_form.is_valid())
+
+
 class TestUtils(BaseTest):
     class MockRequest:
         host_name = "localhost"
@@ -188,6 +234,15 @@ class TestUtils(BaseTest):
             send_reset_password_email(self.MockRequest(), self.dummy_user.email), 1
         )
 
+    def test_send_feedback_email(self):
+        subject = "Test subject"
+        message = "Test message: hello world!!!"
+        self.assertTrue(
+            send_feedback_email(
+                self.MockRequest(), self.dummy_user.email, subject, message
+            )
+        )
+
 
 class TestUserRegisterView(BaseTest):
     def test_view_register_page(self):
@@ -198,6 +253,24 @@ class TestUserRegisterView(BaseTest):
                 "email": "abcde@gmail.com",
                 "password1": "hardPass123",
                 "password2": "hardPass123",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_register_page_w_profile(self):
+        response = self.c.post(
+            "/user/register",
+            {
+                "username": "user_test_for_register",
+                "email": "abcde@gmail.com",
+                "password1": "hardPass123",
+                "password2": "hardPass123",
+                "phone": "1234567890",
+                "address1": "123 main street",
+                "address2": "123 main street",
+                "city": "New York City",
+                "zip_code": "1234567",
+                "state": "California",
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -289,6 +362,29 @@ class TestAccountDetailsView(BaseTest):
         response = self.c.get("/user/account_details")
         self.assertEqual(response.status_code, 200)
 
+    def test_view_profile_user_not_logged_in(self):
+        response = self.c.get("/user/profile")
+        self.assertEqual(response.status_code, 302)
+
+    def test_view_profile_user_logged_in(self):
+        self.c.force_login(self.dummy_user)
+        response = self.c.get("/user/profile")
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_user_profile(self):
+        self.c.force_login(self.dummy_user)
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic": SimpleUploadedFile(
+                    "test.jpg", b"file_content", content_type="image/jpg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
 
 class TestForgetPasswordView(BaseTest):
     def test_forget_password_valid_email(self):
@@ -344,4 +440,64 @@ class TestDeletePrefView(BaseTest):
         Categories.objects.create(category="sushi", parent_category="sushi")
         Categories.objects.create(category="french", parent_category="french")
         response = self.c.post(path=url)
+        self.assertEqual(response.status_code, 200)
+
+
+class TestContactFormView(BaseTest):
+    def test_contact_form_valid_data(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {
+                "email": "abcd@gmail.com",
+                "subject": "hello world",
+                "message": "testing testing",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_contact_form_invalid_email(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {
+                "email": "fake email",
+                "subject": "hello world",
+                "message": "testing testing",
+            },
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(
+            str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_contact_form_missing_email(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {
+                "subject": "hello world",
+                "message": "testing testing",
+            },
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(
+            str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_contact_form_missing_data(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {},
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(
+            str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_request_received(self):
+        response = self.c.get(
+            "/user/request_received",
+            {},
+        )
         self.assertEqual(response.status_code, 200)

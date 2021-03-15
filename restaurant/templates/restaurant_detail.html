@@ -14,6 +14,7 @@
 
           </span>
           &nbsp;&nbsp;<span id="res_review_count" class="ml-4"></span><span>&nbsp;Reviews</span>
+          <div id="div_mopd"></div>
         </p>
       </div>
     </div>
@@ -542,6 +543,34 @@ var inspection_data = {{ lasted_inspection | safe}};
 document.getElementById("res_compliance_status").innerHTML = inspection_data.is_roadway_compliant;
 document.getElementById("res_last_inspection").innerHTML = inspection_data.inspected_on;
 
+var mopd_status = inspection_data.mopd_compliance;
+
+var div_mopd = document.getElementById("div_mopd");
+div_mopd.style = "margin:5px";
+
+var p_m = document.createElement("span");
+p_m.className = "text-sm text-uppercase mb-1";
+
+var am = document.createElement("a");
+am.className = "text-dark";
+
+if(mopd_status == "Compliant"){
+  p_m.className = "badge badge-pill badge-success";
+  am.className = "text-light";
+  am.style = "font-size:14px"
+  am.innerHTML += "Compliant";
+  am.innerHTML += "&nbsp";
+  am.style = "text-decoration:none";
+  var wheelchair = document.createElement("i");
+  wheelchair.className = "fas fa-wheelchair";
+  wheelchair.style = "color:white";
+  p_m.appendChild(am);
+  p_m.appendChild(wheelchair);
+}
+
+// Add MOPD Compliance Status to the div container 
+div_mopd.appendChild(p_m);
+
 if(inspection_data.is_roadway_compliant=="Compliant")
   {document.getElementById("res_compliance_status").className = "badge badge-pill p-2 badge-success-light"}
 else
@@ -612,14 +641,25 @@ function timeChangeFunc(x) {
 }
 
 var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+var day_time = [0, 0, 0, 0, 0, 0, 0];
+for (i = 0; i < yelp_info.hours[0].open.length; i++) {
+    var curr = yelp_info.hours[0].open[i].day;
+    day_time[curr]++;
+}
+var prev_day = -1;
 for (i = 0; i < yelp_info.hours[0].open.length; i++) {
     var opening_hours = document.getElementById("res_open_hours");
     var row = document.createElement("tr");
     opening_hours.appendChild(row);
-    var thh = document.createElement("th");
-    thh.className = "pl-0";
-    thh.innerHTML = days[i];
-    row.appendChild(thh);
+    var curr_day = yelp_info.hours[0].open[i].day;
+    if (curr_day != prev_day) {
+        var thh = document.createElement("th");
+        thh.className = "pl-0";
+        thh.innerHTML = days[curr_day];
+        thh.rowSpan = day_time[curr_day];
+        row.appendChild(thh);
+    }
+    prev_day = curr_day;
     var tdd = document.createElement("td");
     tdd.className = "pr-0 text-right";
     tdd.innerHTML = timeChangeFunc(yelp_info.hours[0].open[i].start) + "-" + timeChangeFunc(yelp_info.hours[0].open[i].end);

@@ -19,6 +19,7 @@ urlpatterns = [
     path("forget_password", views.forget_password, name="forget_password"),
     path("verification", views.forget_password, name="verification"),
     path("account_details", views.account_details, name="account_details"),
+    path("profile", views.profile, name="profile"),
     path("update_password", views.update_password, name="update_password"),
     path(
         "add/preference/user",
@@ -30,4 +31,6 @@ urlpatterns = [
         views.delete_preference,
         name="delete_preference",
     ),
+    path("contact_form", views.contact_form, name="contact_form"),
+    path("request_received", views.request_received, name="request_received"),
 ]
