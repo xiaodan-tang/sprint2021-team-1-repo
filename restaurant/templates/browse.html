@@ -474,6 +474,31 @@ $(document).ready(function(){
                     p_1.appendChild(a2);
                 }
 
+                // MOPD Compliance Status 
+
+                var p_m = document.createElement("span");
+                p_m.className = "text-sm text-uppercase mb-1";
+
+                var am = document.createElement("a");
+                am.className = "text-dark";
+                am.href = "../restaurant/inspection_records/" + restaurant_list[i].id ;
+
+                if(restaurant_list[i].mopd_compliance_status == "Compliant")
+                {
+                    console.log(restaurant_list[i]);
+                    p_m.className = "badge badge-pill badge-success";
+                    am.className = "text-light";
+                    am.style = "font-size:14px"
+                    am.innerHTML += restaurant_list[i].mopd_compliance_status;
+                    am.innerHTML += "&nbsp";
+                    var wheelchair = document.createElement("i");
+                    wheelchair.className = "fas fa-wheelchair";
+                    wheelchair.style = "color:white";
+                    p_m.appendChild(am);
+                    p_m.appendChild(wheelchair);
+                }
+                // END MOPD Compliance Status
+
                 var p_2 = document.createElement("p");
                 p_2.id = "res_category";
                 p_2.className = "text-sm mb-0";
@@ -493,6 +518,8 @@ $(document).ready(function(){
                 p_2.appendChild(a3);
 
                 div5.appendChild(p_1);
+                // Add MOPD Compliance Status to the div container 
+                div5.appendChild(p_m);
                 div5.appendChild(p_2);
 
                 div2.appendChild(a1);

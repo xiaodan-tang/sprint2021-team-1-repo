@@ -5,6 +5,7 @@ from .models import (
     Restaurant,
     YelpRestaurantDetails,
     UserQuestionnaire,
+    AccessibilityRecord
 )
 import requests
 import json
@@ -91,9 +92,14 @@ def get_latest_inspection_record(business_name, business_address, postcode):
         business_address=business_address,
         postcode=postcode,
     ).order_by("-inspected_on")
+
+    q = Restaurant.objects.get(restaurant_name=business_name, business_address=business_address)
+    mopd_status = q.mopd_compliance_status
+
     if len(records) >= 1:
         record = model_to_dict(records[0])
         record["inspected_on"] = record["inspected_on"].strftime("%Y-%m-%d %I:%M %p")
+        record["mopd_compliance"] = mopd_status
         return record
 
     return None
@@ -105,14 +111,16 @@ def query_inspection_record(business_name, business_address, postcode):
         business_address=business_address,
         postcode=postcode,
     ).order_by("-inspected_on")
+    q = Restaurant.objects.get(restaurant_name=business_name, business_address=business_address)
+    mopd_status = q.mopd_compliance_status
     result = []
     for record in records:
         inspection_record = model_to_dict(record)
         inspection_record["inspected_on"] = inspection_record["inspected_on"].strftime(
             "%Y-%m-%d %I:%M %p"
         )
+        inspection_record["mopd_compliance"] = mopd_status
         result.append(inspection_record)
-
     return result
 
 
