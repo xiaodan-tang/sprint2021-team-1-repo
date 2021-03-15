@@ -399,3 +399,58 @@ class TestDeletePrefView(BaseTest):
         Categories.objects.create(category="french", parent_category="french")
         response = self.c.post(path=url)
         self.assertEqual(response.status_code, 200)
+
+
+class TestContactFormView(BaseTest):
+    def test_contact_form_valid_data(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {
+                "email": "abcd@gmail.com",
+                "subject": "hello world",
+                "message": "testing testing",
+            },
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(str(flash_message[0]), "Feedback successfully submitted!")
+        self.assertEqual(response.status_code, 200)
+
+    def test_contact_form_invalid_email(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {
+                "email": "fake email",
+                "subject": "hello world",
+                "message": "testing testing",
+            },
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(
+            str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_contact_form_missing_email(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {
+                "subject": "hello world",
+                "message": "testing testing",
+            },
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(
+            str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_contact_form_missing_data(self):
+        response = self.c.post(
+            "/user/contact_form",
+            {},
+        )
+        flash_message = list(response.context["messages"])
+        self.assertEqual(
+            str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
