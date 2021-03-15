@@ -18,7 +18,12 @@ from .models import (
     AccessibilityRecord,
     FAQ,
 )
-from .views import get_inspection_info, get_landing_page, get_restaurant_profile, get_faqs_list
+from .views import (
+    get_inspection_info,
+    get_landing_page,
+    get_restaurant_profile,
+    get_faqs_list,
+)
 from .utils import (
     merge_yelp_info,
     get_restaurant_info_yelp,
@@ -763,7 +768,7 @@ class RestaurantViewTests(TestCase):
     def test_get_faqs_list(self):
         create_faq(
             "What are the benefits of becoming a registered user?",
-            "save favorite restaurants, add user preferences, edit user profile, get recommendations."
+            "save favorite restaurants, add user preferences, edit user profile, get recommendations.",
         )
         request = self.factory.get("restaurant:faqs")
         request.user = get_user_model().objects.create(
