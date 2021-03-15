@@ -253,5 +253,4 @@ def populate_restaurant_with_yelp_id():
 if __name__ == "__main__":
     #populate_restaurant_with_yelp_id()
     get_inspection_data()
-    #populate_mopd_compliance_status()
 
