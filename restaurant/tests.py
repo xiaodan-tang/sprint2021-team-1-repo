@@ -16,8 +16,9 @@ from .models import (
     UserQuestionnaire,
     Categories,
     AccessibilityRecord,
+    FAQ,
 )
-from .views import get_inspection_info, get_landing_page, get_restaurant_profile
+from .views import get_inspection_info, get_landing_page, get_restaurant_profile, get_faqs_list
 from .utils import (
     merge_yelp_info,
     get_restaurant_info_yelp,
@@ -102,6 +103,10 @@ def create_yelp_restaurant_details(
         latitude=latitude,
         longitude=longitude,
     )
+
+
+def create_faq(question, answer):
+    return FAQ.objects.create(question=question, answer=answer)
 
 
 class MockResponse:
@@ -716,6 +721,19 @@ class RestaurantViewTests(TestCase):
         response = self.c.post(path=url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.dummy_user.favorite_restaurants.all().count() == 0)
+
+    def test_get_faqs_list(self):
+        create_faq(
+            "What are the benefits of becoming a registered user?",
+            "save favorite restaurants, add user preferences, edit user profile, get recommendations."
+        )
+        request = self.factory.get("restaurant:faqs")
+        request.user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        response = get_faqs_list(request)
+        self.assertEqual(response.status_code, 200)
 
 
 class RestaurantUtilsTests(TestCase):
