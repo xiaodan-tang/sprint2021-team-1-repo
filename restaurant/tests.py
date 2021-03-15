@@ -583,7 +583,45 @@ class SearchFilterFormTests(BaseTest):
             "price_3": True,
             "price_4": True,
             "rating": [1, 2, 3],
-            "All": "Compliant",
+            "All": True,
+        }
+        response = self.c.post(
+            "/restaurant/search_filter/restaurants_list/1", search_filter_form
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_filter_covid_compliant(self):
+        search_filter_form = {
+            "keyword": "",
+            "neighbourhood": [],
+            "category": [],
+            "price_1": False,
+            "price_2": False,
+            "price_3": False,
+            "price_4": False,
+            "rating": [],
+            "All": False,
+            "COVIDCompliant": True,
+            "MOPDCompliant": False,
+        }
+        response = self.c.post(
+            "/restaurant/search_filter/restaurants_list/1", search_filter_form
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_filter_mopd_compliant(self):
+        search_filter_form = {
+            "keyword": "",
+            "neighbourhood": [],
+            "category": [],
+            "price_1": False,
+            "price_2": False,
+            "price_3": False,
+            "price_4": False,
+            "rating": [],
+            "All": False,
+            "COVIDCompliant": False,
+            "MOPDCompliant": True,
         }
         response = self.c.post(
             "/restaurant/search_filter/restaurants_list/1", search_filter_form
