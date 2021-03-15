@@ -4,7 +4,7 @@ from .models import (
     InspectionRecords,
     Restaurant,
     YelpRestaurantDetails,
-    UserQuestionnaire
+    UserQuestionnaire,
 )
 import requests
 import json
