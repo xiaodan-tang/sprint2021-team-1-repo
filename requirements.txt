@@ -2,6 +2,7 @@ appdirs>=1.4.4
 APScheduler>=3.0.0
 asgiref>=3.3.1
 black>=20.8b1
+boto3
 certifi>=2020.12.5
 cffi>=1.14.5
 cfgv>=3.2.0
@@ -23,6 +24,8 @@ django-heroku>=0.3.1
 django-import-export>=2.5.0
 django-mathfilters>=1.0.0
 django-six>=1.0.4
+django-phonenumber-field
+django-storages
 docopt>=0.6.2
 et-xmlfile>=1.0.1
 filelock>=3.0.12
@@ -42,6 +45,8 @@ openpyxl>=3.0.6
 pandas>=1.1.0
 pathspec>=0.8.1
 pip>=21.0.1
+phonenumbers
+Pillow==8.0.0
 pre-commit>=2.10.1
 psycopg2>=2.8.6
 psycopg2-binary>=2.8.6

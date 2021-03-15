@@ -30,7 +30,7 @@ load_dotenv(dotenv_path=env_path)
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", False) == "True"
 
 ALLOWED_HOSTS = []
 
@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "mathfilters",
     "chatbot.apps.ChatbotConfig",
+    "phonenumber_field",
+    "storages",
     "import_export",
 ]
 
@@ -144,6 +146,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+MEDIA_URL = "/media/"
 
 
 YELP_BUSINESS_API = "https://api.yelp.com/v3/businesses/"
@@ -193,7 +196,7 @@ LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index"
 
 EMAIL_HOST = "smtp.gmail.com"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "dinesafely.nyc@gmail.com"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "dine.safely1527@gmail.com"
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
@@ -240,3 +243,19 @@ SOCIALACCOUNT_PROVIDERS = {
 
 GOOGLE_MAP_KEY = os.environ.get("GOOGLE_MAP_KEY")
 GOOGLE_MAP_ID = os.environ.get("GOOGLE_MAP_ID")
+
+# AWS S3 settings
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = "dineline"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+}
+AWS_MEDIA_LOCATION = "media"
+MEDIAFILES_DIRS = [
+    os.path.join(BASE_DIR, "media"),
+]
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_MEDIA_LOCATION)
+
+DEFAULT_FILE_STORAGE = "dinesafelysite.storage_backends.MediaStorage"

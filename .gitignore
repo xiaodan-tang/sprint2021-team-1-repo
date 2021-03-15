@@ -7,7 +7,11 @@ db.sqlite3
 staticfiles/
 htmlcov/
 *.env
-  
-venv
+
 env
 .DS_Store
+.venv
+venv
+*venv/
+venv.bak/
+README.md
