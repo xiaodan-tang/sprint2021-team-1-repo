@@ -102,7 +102,7 @@ class Review(models.Model):
     restaurant = models.ForeignKey(
         Restaurant, on_delete=models.CASCADE, related_name="reviews"
     )
-    time = models.DateTimeField(default=datetime.now, editable=False)
+    time = models.DateTimeField(default=datetime.now, editable=False, db_index=True)
     content = models.TextField()
 
     # Ratings

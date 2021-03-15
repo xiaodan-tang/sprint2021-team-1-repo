@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.serializers.json import DjangoJSONEncoder
+
 import random
 
 from .models import Restaurant
-
-from django.views.decorators.csrf import csrf_exempt
 from .forms import (
     # QuestionnaireForm,
     SearchFilterForm,
@@ -15,6 +16,7 @@ from .forms import (
 
 # from user.models import User_Profile
 from user.forms import UserQuestionaireForm
+from user.models import Review
 
 # from user.forms import
 # from '../user/forms' import UserQuestionnaireForm
@@ -37,7 +39,6 @@ from .utils import (
 
 from django.http import HttpResponse
 from django.http import HttpResponseNotFound
-from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 import json
 import logging
@@ -48,8 +49,6 @@ logger = logging.getLogger(__name__)
 def get_restaurant_profile(request, restaurant_id):
 
     if request.method == "POST" and "content" in request.POST:
-        print("POSTTT", request.method, request.POST)
-
         form = UserQuestionaireForm(request.POST, restaurant_id)
         # if form.is_valid():
         form.save()
@@ -81,6 +80,25 @@ def get_restaurant_profile(request, restaurant_id):
         average_safety_rating = get_average_safety_rating(restaurant.business_id)
 
         statistics_dict = questionnaire_statistics(restaurant.business_id)
+        internal_reviews = list(
+            Review.objects.filter(restaurant=Restaurant(pk=restaurant.pk))
+            .select_related("user")
+            .order_by("-time")
+            .all()[:50]
+            .values(
+                "user",
+                "user__username",
+                "user__user_profile__photo",
+                "rating",
+                "rating_safety",
+                "rating_door",
+                "rating_table",
+                "rating_bathroom",
+                "rating_path",
+                "time",
+                "content",
+            )
+        )
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
@@ -96,7 +114,9 @@ def get_restaurant_profile(request, restaurant_id):
                     user.favorite_restaurants.all().filter(id=restaurant_id)
                 )
                 > 0,
+                "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
                 "statistics_dict": statistics_dict,
+                "user_id": request.user.id,
             }
         else:
             parameter_dict = {
@@ -109,6 +129,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "latest_feedback": feedback,
                 "average_safety_rating": average_safety_rating,
                 "statistics_dict": statistics_dict,
+                "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
             }
 
         return render(request, "restaurant_detail.html", parameter_dict)
