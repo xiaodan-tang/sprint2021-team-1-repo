@@ -207,12 +207,16 @@ def contact_form(request):
             # Sends user answers to website email
             feedback_sent = send_feedback_email(request, email, subject, message)
             if feedback_sent:
-                messages.success(request, "Feedback successfully submitted!")
+                return redirect("user:request_received")
             else:
                 messages.error(request, "An error occurred, feedback was not sent!")
         else:
             messages.error(request, "Invalid or missing data in contact form!")
     form = ContactForm()
     return render(
-        request=request, template_name="temp_contact_page.html", context={"form": form}
+        request=request, template_name="contact_us.html", context={"form": form}
     )
+
+
+def request_received(request):
+    return render(request=request, template_name="request_received.html")

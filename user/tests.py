@@ -411,9 +411,7 @@ class TestContactFormView(BaseTest):
                 "message": "testing testing",
             },
         )
-        flash_message = list(response.context["messages"])
-        self.assertEqual(str(flash_message[0]), "Feedback successfully submitted!")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
     def test_contact_form_invalid_email(self):
         response = self.c.post(
@@ -452,5 +450,12 @@ class TestContactFormView(BaseTest):
         flash_message = list(response.context["messages"])
         self.assertEqual(
             str(flash_message[0]), "Invalid or missing data in contact form!"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_request_received(self):
+        response = self.c.get(
+            "/user/request_received",
+            {},
         )
         self.assertEqual(response.status_code, 200)

@@ -50,7 +50,7 @@ def send_verification_email(request, email):
 
 def send_feedback_email(request, email, subject, message):
     try:
-        email_subject = "DineLine Feedback:" + subject
+        email_subject = "DineLine Feedback: " + subject
         email_message = "From: " + email + "\n" + message
         send_mail(
             email_subject,
