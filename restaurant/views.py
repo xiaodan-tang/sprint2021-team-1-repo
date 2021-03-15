@@ -9,9 +9,17 @@ from .models import Restaurant
 
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (
-    QuestionnaireForm,
+    # QuestionnaireForm,
     SearchFilterForm,
 )
+
+# from user.models import User_Profile
+from user.forms import UserQuestionaireForm
+
+# from user.forms import
+# from '../user/forms' import UserQuestionnaireForm
+# from '../user/models' import UserModel
+
 from .utils import (
     query_yelp,
     query_inspection_record,
@@ -39,13 +47,15 @@ logger = logging.getLogger(__name__)
 
 def get_restaurant_profile(request, restaurant_id):
 
-    if request.method == "POST" and "questionnaire_form" in request.POST:
-        form = QuestionnaireForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "success")
-            url = reverse("restaurant:profile", args=[restaurant_id])
-            return HttpResponseRedirect(url)
+    if request.method == "POST" and "content" in request.POST:
+        print("POSTTT", request.method, request.POST)
+
+        form = UserQuestionaireForm(request.POST, restaurant_id)
+        # if form.is_valid():
+        form.save()
+        messages.success(request, "success")
+        url = reverse("restaurant:profile", args=[restaurant_id])
+        return HttpResponseRedirect(url)
 
     try:
         csv_file = get_csv_from_github()

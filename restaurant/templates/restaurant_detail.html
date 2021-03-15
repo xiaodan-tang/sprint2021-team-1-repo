@@ -330,7 +330,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
                 <input type="text" id="restaurant_business_id_save_favorite" name="restaurant_business_id" value="" hidden>
-                <input type="text" id="user_id_save_favorite" name="user_id" value="{{user.id}}" hidden>
+                <input type="text" id="user_id_save_favorite" name="user_id" value="{{user.id}}" hidden required>
               </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -377,9 +377,9 @@
               <form class="form-validate" method="POST">
                 {% csrf_token %}
                 <div class="modal-body">
-                  <p class="mb-2">How would you rate this this restaurant?</p>
+                  <p class="mb-2">How would you rate this restaurant?</p>
                   <div class="form-group mb-2" style="width: 200px;">
-                    <select class="selectpicker form-control" name="safety_level" data-style="btn-selectpicker" title="">
+                    <select class="selectpicker form-control" name="rating" data-style="btn-selectpicker" title="">
                       <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
                       <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
                       <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
@@ -387,10 +387,70 @@
                       <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
                     </select>
                   </div>
-                  <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden >
+                  <p class="mb-2">How would you rate the safety of this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_safety" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of entry to this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_entry" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of doors at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_door" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of tables at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_table" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of bathrooms at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_bathroom" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of pathways at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_path" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden>
                   <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
                   <input type="text" id="saved_on" name="saved_on"   hidden>
-                  <p class="mb-2">Did you receive a temperature check?</p>
+                  {% comment %} <p class="mb-2">Did you receive a temperature check?</p>
                   <div class="form-group mb-2">
                     <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
                     <label for="temp_check_true" title="text">Yes</label>
@@ -424,15 +484,15 @@
                     <label for="distance_compliant_true" title="text">Yes</label>
                     <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
                     <label for="distance_compliant_false" title="text">No</label>
-                  </div>
+                  </div> {% endcomment %}
                   <p class="mb-2">Tell others about your thoughts!</p>
                   <div class="form-group mb-2">
-                    <textarea class="form-control" name="" id="" cols="30" rows="5"></textarea>
+                    <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
                   </div>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
+                  <button class="btn btn-primary" type="submit" name="content" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
                 </div>
               </form>
             </div>
