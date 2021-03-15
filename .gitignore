@@ -1,5 +1,7 @@
 *.pyc
 .idea/
+bin/
+lib/
 db.sqlite3
 .coverage
 staticfiles/

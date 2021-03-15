@@ -30,7 +30,7 @@ load_dotenv(dotenv_path=env_path)
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     "import_export",
 ]
 
-SITE_ID = os.environ.get("SITE_ID")
+SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
