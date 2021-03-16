@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
+
 from .models import User_Profile, Review
 from restaurant.models import Categories
 import json
@@ -159,11 +160,12 @@ def profile(request):
         },
     )
 
-
+  
 # @login_required()
 def account_details(request):
     if not request.user.is_authenticated:
         return redirect("user:login")
+
     user = request.user
     if request.method == "POST":
         form = ProfileUpdateForm(user=user, data=request.POST)
