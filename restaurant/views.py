@@ -27,6 +27,7 @@ from .utils import (
     query_inspection_record,
     get_latest_inspection_record,
     get_restaurant_list,
+    get_reviews_stats,
     get_latest_feedback,
     get_average_safety_rating,
     get_total_restaurant_number,
@@ -100,6 +101,9 @@ def get_restaurant_profile(request, restaurant_id):
                 "content",
             )
         )
+        reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
+            internal_reviews
+        )
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
@@ -115,7 +119,11 @@ def get_restaurant_profile(request, restaurant_id):
                     user.favorite_restaurants.all().filter(id=restaurant_id)
                 )
                 > 0,
+                # Internal reviews
                 "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+                "reviews_count": reviews_count,
+                "ratings_avg": ratings_avg,
+                "distribution": ratings_distribution,
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
             }
@@ -130,7 +138,11 @@ def get_restaurant_profile(request, restaurant_id):
                 "latest_feedback": feedback,
                 "average_safety_rating": average_safety_rating,
                 "statistics_dict": statistics_dict,
+                # Internal reviews
                 "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+                "reviews_count": reviews_count,
+                "ratings_avg": ratings_avg,
+                "distribution": ratings_distribution,
             }
 
         return render(request, "restaurant_detail.html", parameter_dict)
