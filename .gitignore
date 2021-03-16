@@ -5,7 +5,6 @@ db.sqlite3
 staticfiles/
 htmlcov/
 *.env
-<<<<<<< HEAD
 .venv
 venv
 env/
@@ -13,4 +12,5 @@ env/
 venv.bak/
 .DS_Store
 README.md
-
+restaurant/migrations/*
+user/migrations/*

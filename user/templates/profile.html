@@ -337,7 +337,7 @@
             <div class="col-6">
               <div class="form-group mb-3">
                 <h6>Username</h6>
-                <input class="form-control form-control-sm" type="text" id="username" name="username" value="{{user.username}}">
+                <input class="form-control form-control-sm" type="text" id="username" name="username" readonly="true" value="{{user.username}}">
               </div>
               <div class="form-group mb-3">
                 <h6>First Name</h6>
@@ -349,27 +349,27 @@
               </div>
               <div class="form-group mb-3">
                 <h6>Email</h6>
-                <input class="form-control form-control-sm" type="text" id="email" name="email" value="{{user.email}}">
+                <input class="form-control form-control-sm" type="text" id="email" name="email" readonly="true" value="{{user.email}}">
               </div>
               <div class="form-group mb-3">
                 <h6>Phone</h6>
-                <input class="form-group col-12" type="text" id="phone" name="phone" value="{{user_profile.phone}}">
+                <input class="form-control form-control-sm" type="text" id="phone" name="phone" value="{{user_profile.phone}}">
               </div>
               <div class="form-group mb-3">
                 <h6>Address1</h6>
-                <input class="form-group col-12" type="text" id="address1" name="address1" value="{{user_profile.address1}}">
+                <input class="form-control form-control-sm" type="text" id="address1" name="address1" value="{{user_profile.address1}}">
               </div>
               <div class="form-group mb-3">
                 <h6>Address2</h6>
-                <input class="form-group col-12" type="text" id="address2" name="address2" value="{{user_profile.address2}}">
+                <input class="form-control form-control-sm" type="text" id="address2" name="address2" value="{{user_profile.address2}}">
               </div>
               <div class="form-group mb-3">
                 <h6>Zip Code</h6>
-                <input class="form-group col-12" type="text" id="zip_code" name="zip_code" value="{{user_profile.zip_code}}">
+                <input class="form-control form-control-sm" type="text" id="zip_code" name="zip_code" value="{{user_profile.zip_code}}">
               </div>
               <div class="form-group">
                 <h6>State</h6>
-                <select class="selectpicker form-control" name="state" id="state" multiple data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" title="">
+                <select class="selectpicker form-control" name="state" id="state" data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" title="">
                   <option value="Alabama">Alabama</option>
                   <option value="Alaska">Alaska</option>
                   <option value="Arizona">Arizona</option>
@@ -425,7 +425,7 @@
               </div>
               <div class="form-group">
                 <h6>City</h6>
-                <input class="form-group col-12" type="text" id="city" name="city" value="{{user_profile.city}}">
+                <input class="form-control form-control-sm" type="text" id="city" name="city" value="{{user_profile.city}}">
               </div>
             </div>
             <div class="col-6">
@@ -449,8 +449,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button class="btn btn-primary" type="submit" name="profile_form" data-toggle="tooltip" data-placement="top"
-            data-original-title="All fields required. Incomplete form will not be saved">Save Changes</button>
+          <button class="btn btn-primary" type="submit" name="profile_form" data-toggle="tooltip" data-placement="top">Save Changes</button>
         </div>
       </form>
     </div>
