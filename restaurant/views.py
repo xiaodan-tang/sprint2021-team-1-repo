@@ -216,7 +216,7 @@ def chatbot_keyword(request):
                 category=data["category"],
                 neighborhood=data["location"],
                 rating=[3.0, 3.5, 4.0, 4.5, 5.0],
-                compliant="Compliant",
+                compliant=["COVIDCompliant"],
             )
 
             # If number > 3, we pick 3 random restaurants in that list to recommend to user.
