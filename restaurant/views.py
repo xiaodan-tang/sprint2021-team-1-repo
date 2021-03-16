@@ -145,8 +145,12 @@ def edit_comment(request, restaurant_id, comment_id, action):
     if action == "delete":
         Review.objects.filter(id=comment_id).delete()
     if action == "put":
-        pass
-    return HttpResponseRedirect("/restaurant/profile/" + restaurant_id)
+        review = Review.objects.get(id=comment_id)
+        review.rating = request.POST.get("rating")
+        review.content = request.POST.get("content")
+        review.save()
+        messages.success(request, "success")
+    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
 def get_inspection_info(request, restaurant_id):

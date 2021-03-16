@@ -374,7 +374,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form class="form-validate" method="POST">
+              <form class="form-validate" method="POST" name="rating-form">
                 {% csrf_token %}
                 <div class="modal-body">
                   <p class="mb-2">How would you rate this restaurant?</p>
@@ -492,7 +492,7 @@
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button class="btn btn-primary" type="submit" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
+                  <button class="btn btn-primary" type="button" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved" id="rating-submit-button">Submit</button>
                 </div>
               </form>
             </div>
@@ -759,6 +759,14 @@ for (i = 0; i < yelp_info.photos.length; i++) {
     gallery_imgs.appendChild(ele);
 }
 
+document.getElementById('rating-submit-button').addEventListener('click', () => {
+  document.forms['rating-form'].submit();
+});
+
+$('#exampleModal').on('hidden.bs.modal', function (e) {
+  document.forms['rating-form'].removeAttribute('action');
+})
+
 const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
 const isNull = el => el === 'null' || el === null || el === undefined;
 const restaurantId = '{{ restaurant_id }}' || '';
@@ -900,16 +908,22 @@ class RatingReview extends HTMLElement {
     this.deleteForm = document.createElement('form');
     this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
 
-    this.updateForm = document.createElement('form');
-    this.updateForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
-
     ['Edit', 'Delete'].forEach((el, index) => {
       const anchor = document.createElement('a');
       anchor.setAttribute('class', 'dropdown-item small py-2');
       anchor.setAttribute('href', '#');      
       anchor.innerText = el;
       if (index === 0) {
-        anchor.addEventListener('click', () => this.updateForm.submit());
+        anchor.addEventListener('click', () => {
+          $('#exampleModal').modal('toggle');
+          const rating = document.querySelector('select[name="rating"]');
+          rating.value = this.getAttribute('user-rating');
+          rating.dispatchEvent(new Event('change'));
+          const content = document.querySelector('textarea[name="content"]');
+          content.value = this.getAttribute('review-text');
+          content.dispatchEvent(new Event('change'));
+          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
+        });
       } else {
         anchor.addEventListener('click', () => this.deleteForm.submit());
       }
@@ -918,7 +932,6 @@ class RatingReview extends HTMLElement {
 
     optionButtonWrapper.appendChild(this.optionButton);
     optionButtonWrapper.appendChild(dropdownWrapper);
-    optionButtonWrapper.appendChild(this.updateForm);
     optionButtonWrapper.appendChild(this.deleteForm);
     optionButtonWrapper.addEventListener('mouseover', () => {
       dropdownWrapper.classList.add('show');

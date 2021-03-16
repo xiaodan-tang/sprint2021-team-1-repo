@@ -36,7 +36,6 @@ class UserQuestionaireForm(forms.Form):
         self.content = data["content"]
 
     def save(self):
-        user = get_user_model().objects.get(pk=self.user_id)
         ret = user.reviews.create(
             rating=self.rating,
             rating_safety=self.rating_safety,
