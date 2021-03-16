@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "chatbot.apps.ChatbotConfig",
     "phonenumber_field",
     "storages",
+    "import_export",
 ]
 
 SITE_ID = os.environ.get("SITE_ID")

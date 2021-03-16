@@ -15,6 +15,7 @@ from .models import (
     Zipcodes,
     UserQuestionnaire,
     Categories,
+    AccessibilityRecord,
 )
 from .views import get_inspection_info, get_landing_page, get_restaurant_profile
 from .utils import (
@@ -69,6 +70,26 @@ def create_inspection_records(
     )
 
 
+def create_accessibility_record(
+    restaurant_name,
+    compliant,
+    business_address,
+    street_number,
+    street_name,
+    city,
+    postcode="",
+):
+    return AccessibilityRecord.objects.create(
+        restaurant_name=restaurant_name,
+        compliant=compliant,
+        business_address=business_address,
+        street_number=street_number,
+        street_name=street_name,
+        city=city,
+        postcode=postcode,
+    )
+
+
 def create_yelp_restaurant_details(
     business_id, neighborhood, price, rating, img_url, latitude, longitude
 ):
@@ -110,6 +131,69 @@ class ModelTests(TestCase):
             str(restaurant),
             "1 Gary Danko 800 N Point St 94109 WavvLdfdP6g8aZTtbBQHTw None",
         )
+
+    def test_is_accessible_compliant_true(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        accessibility_record = create_accessibility_record(
+            restaurant_name="Just Salad",
+            compliant=1,
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
+        )
+        restaurant.save()
+        accessibility_record.save()
+        self.assertTrue(restaurant.is_accessible_compliant())
+
+    def test_is_accessible_compliant_false(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        accessibility_record = create_accessibility_record(
+            restaurant_name="Just Salad",
+            compliant=0,
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
+        )
+        restaurant.save()
+        accessibility_record.save()
+        self.assertFalse(restaurant.is_accessible_compliant())
+
+    def test_is_accessible_compliant_not_found(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="1290 AVE AMERICAS",
+            yelp_detail=None,
+            postcode="10104",
+            business_id="VSfYR6MriVSQDAmO0gPFPQ",
+        )
+        accessibility_record = create_accessibility_record(
+            restaurant_name="Just Salad",
+            compliant=1,
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
+        )
+        restaurant.save()
+        accessibility_record.save()
+        self.assertFalse(restaurant.is_accessible_compliant())
 
     def test_create_categories(self):
         cat = Categories(category="wine_bar", parent_category="bars")
@@ -221,6 +305,43 @@ class ModelTests(TestCase):
             + str(questionnaire.saved_on)
             + " True True True True True",
         )
+
+    def test_create_accessibility_record(self):
+        accessibility_record = create_accessibility_record(
+            restaurant_name="Just Salad",
+            compliant=1,
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+            postcode="11215",
+        )
+        self.assertIsNotNone(accessibility_record)
+        self.assertEqual(accessibility_record.restaurant_name, "Just Salad")
+        self.assertEqual(accessibility_record.compliant, 1)
+        self.assertEqual(accessibility_record.business_address, "252 7th Ave")
+        self.assertEqual(accessibility_record.street_number, "252")
+        self.assertEqual(accessibility_record.street_name, "7th Ave")
+        self.assertEqual(accessibility_record.city, "Brooklyn")
+        self.assertEqual(accessibility_record.postcode, "11215")
+
+    def test_create_accessibility_record_no_postcode(self):
+        accessibility_record = create_accessibility_record(
+            restaurant_name="Just Salad",
+            compliant=1,
+            business_address="252 7th Ave",
+            street_number="252",
+            street_name="7th Ave",
+            city="Brooklyn",
+        )
+        self.assertIsNotNone(accessibility_record)
+        self.assertEqual(accessibility_record.restaurant_name, "Just Salad")
+        self.assertEqual(accessibility_record.compliant, 1)
+        self.assertEqual(accessibility_record.business_address, "252 7th Ave")
+        self.assertEqual(accessibility_record.street_number, "252")
+        self.assertEqual(accessibility_record.street_name, "7th Ave")
+        self.assertEqual(accessibility_record.city, "Brooklyn")
+        self.assertEqual(accessibility_record.postcode, "")
 
 
 class InspectionRecordsViewTests(TestCase):
@@ -1020,3 +1141,35 @@ class GetFilteredRestaurantsTests(TestCase):
         )
 
         self.assertEqual(details.business_id, filtered_restaurants[0].business_id)
+
+
+class RestaurantRecommendationsTest(TestCase):
+    """ Test Recommend Restaurants module"""
+
+    def setUp(self):
+        Categories.objects.create(category="chinese", parent_category="chinese")
+        Categories.objects.create(category="wine-bar", parent_category="bars")
+        self.dummy_user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        category_list = ["chinese", "wine-bar"]
+        for category in category_list:
+            self.dummy_user.preferences.add(Categories.objects.get(category=category))
+
+        self.dummy_user2 = get_user_model().objects.create(
+            username="myuser2",
+            email="abcd@gmail.com",
+        )
+
+    def test_reccomendation(self):
+
+        categories = [
+            category.category for category in self.dummy_user.preferences.all()
+        ]
+        categories.sort()
+        self.assertEqual(len(self.dummy_user.preferences.all()), 2)
+        self.assertEqual(categories[0], "chinese")
+        self.assertEqual(categories[1], "wine-bar")
+        self.assertIsNotNone(self.dummy_user2.preferences.all())
+        self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
