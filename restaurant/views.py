@@ -89,6 +89,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "user",
                 "user__username",
                 "user__user_profile__photo",
+                "id",
                 "rating",
                 "rating_safety",
                 "rating_door",
@@ -138,6 +139,14 @@ def get_restaurant_profile(request, restaurant_id):
         return HttpResponseNotFound(
             "Restaurant ID {} does not exist".format(restaurant_id)
         )
+
+
+def edit_comment(request, restaurant_id, comment_id, action):
+    if action == "delete":
+        Review.objects.filter(id=comment_id).delete()
+    if action == "put":
+        pass
+    return HttpResponseRedirect("/restaurant/profile/" + restaurant_id)
 
 
 def get_inspection_info(request, restaurant_id):

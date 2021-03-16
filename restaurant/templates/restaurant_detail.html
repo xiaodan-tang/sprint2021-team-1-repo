@@ -761,8 +761,10 @@ for (i = 0; i < yelp_info.photos.length; i++) {
 
 const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
 const isNull = el => el === 'null' || el === null || el === undefined;
+const restaurantId = '{{ restaurant_id }}' || '';
 /**
  * Rating box view
+ * @param {review-id} string
  * @param {profile-img} string
  * @param {profile-img-alt} string
  * @param {profile-url} string
@@ -770,6 +772,7 @@ const isNull = el => el === 'null' || el === null || el === undefined;
  * @param {user-name} string
  * @param {user-rating} string
  * @param {review-text} string
+ * @param {editable} boolean - if this rating comment is left by the login user, this comment should be editable
  */
 class RatingReview extends HTMLElement {
   constructor () {
@@ -778,8 +781,8 @@ class RatingReview extends HTMLElement {
 
     this.addStyles();
 
-    const rootDiv = document.createElement('div');
-    rootDiv.className = 'media d-block d-sm-flex review';
+    this.rootDiv = document.createElement('div');
+    this.rootDiv.className = 'media d-block d-sm-flex review';
 
     // left side
     const userProfile = document.createElement('div');
@@ -830,14 +833,18 @@ class RatingReview extends HTMLElement {
     
     ratingBody.appendChild(this.comments);
 
-    rootDiv.appendChild(userProfile);
-    rootDiv.appendChild(ratingBody);
+    this.rootDiv.appendChild(userProfile);
+    this.rootDiv.appendChild(ratingBody);
 
-    this.shadowRoot.appendChild(rootDiv);
+    if (this.hasAttribute('editable')) {
+      this.attachOptionButton();
+    }
+
+    this.shadowRoot.appendChild(this.rootDiv);
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -862,9 +869,68 @@ class RatingReview extends HTMLElement {
       });
     } else if (name === 'review-text') {
       this.comments.innerText = newValue || '';
+    } else if (name === 'editable') {
+      this.attachOptionButton();
     }
   }
 
+  attachOptionButton () {
+    if (this.optionButton) return;
+    // option button
+    const optionButtonWrapper = document.createElement('div');
+    optionButtonWrapper.setAttribute('class', 'dropdown');
+
+    this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.optionButton.setAttribute('viewBox', '0 0 24 24');
+    this.optionButton.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    this.optionButton.setAttribute('style', 'display: inline-block; width: 1rem; height: 1rem; cursor: pointer;');
+    this.optionButton.setAttribute('class', 'dropdown-toggle');
+    this.optionButton.setAttribute('type', 'button');
+
+    const optionWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const optionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    optionPath.setAttribute('d', 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+    optionWrapper.appendChild(optionPath);
+    this.optionButton.appendChild(optionWrapper);
+
+    // dropdown button wrapper
+    const dropdownWrapper = document.createElement('div');
+    dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
+
+    this.deleteForm = document.createElement('form');
+    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
+
+    this.updateForm = document.createElement('form');
+    this.updateForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
+
+    ['Edit', 'Delete'].forEach((el, index) => {
+      const anchor = document.createElement('a');
+      anchor.setAttribute('class', 'dropdown-item small py-2');
+      anchor.setAttribute('href', '#');      
+      anchor.innerText = el;
+      if (index === 0) {
+        anchor.addEventListener('click', () => this.updateForm.submit());
+      } else {
+        anchor.addEventListener('click', () => this.deleteForm.submit());
+      }
+      dropdownWrapper.appendChild(anchor);
+    });
+
+    optionButtonWrapper.appendChild(this.optionButton);
+    optionButtonWrapper.appendChild(dropdownWrapper);
+    optionButtonWrapper.appendChild(this.updateForm);
+    optionButtonWrapper.appendChild(this.deleteForm);
+    optionButtonWrapper.addEventListener('mouseover', () => {
+      dropdownWrapper.classList.add('show');
+    });
+    dropdownWrapper.addEventListener('mouseout', () => {
+      dropdownWrapper.classList.remove('show');
+    });
+
+    this.rootDiv.appendChild(optionButtonWrapper);
+  }
+
+  // add web component styles
   addStyles () {
     const styleLinks = [
       'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
@@ -907,6 +973,11 @@ internalReviews.forEach(review => {
   ratingReview.setAttribute('time-created', review.time);
   ratingReview.setAttribute('user-rating', review.rating);
   ratingReview.setAttribute('review-text', review.content);
+  ratingReview.setAttribute('review-id', review.id);
+  ratingReview.setAttribute('restaurant-id', restaurantId);
+  if (userId === review.user) {
+    ratingReview.setAttribute('editable', 'editable');
+  }
   reviewWrapper.appendChild(ratingReview);
 });
 
