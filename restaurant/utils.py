@@ -526,25 +526,18 @@ def get_compliant_restaurant_list(
     return restaurants_to_dict(restaurants)
 
 
-def get_restaurant_reviews(restaurant):
-    reviews = Review.objects.filter(restaurant=restaurant)
-    ratings, distribution = [], [0] * 5
+def get_reviews_stats(reviews):
+    ratings, distribution = [], [0] * 6
     for review in reviews:
-        rating = int(review.rating)
+        rating = int(review["rating"])
         ratings.append(rating)
-        distribution[rating - 1] += 1
+        distribution[rating] += 1
 
     count, total = len(ratings), sum(ratings)
     ratings_avg = 0 if count == 0 else round(total / count, 2)
 
     if count != 0:
-        for i in range(5):
+        for i in range(6):
             distribution[i] = round(distribution[i] / count, 2) * 100
 
-    response = {
-        'reviews': list(reviews),
-        'reviews_count': count,
-        'ratings_avg': ratings_avg,
-        'distribution': distribution,
-    }
-    return response
+    return count, ratings_avg, distribution
