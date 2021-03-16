@@ -19,6 +19,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from .utils import send_reset_password_email, send_verification_email
 from .forms import (
     UserCreationForm,
+    UserProfileCreationForm,
     ResetPasswordForm,
     UpdatePasswordForm,
     GetEmailForm,
@@ -67,6 +68,10 @@ def register(request):
             user = form.save()
             user.is_active = False
             user.save()
+
+            form2 = UserProfileCreationForm(user=user, data=request.POST)
+            form2.save()
+
             send_verification_email(request, form.cleaned_data.get("email"))
             return render(request=request, template_name="sent_verification_email.html")
     else:
@@ -91,14 +96,11 @@ def profile(request):
     if request.method == "POST":
         form = ProfileUpdateForm(user=user, data=request.POST)
         if form.is_valid():
-            profile_pic = (
-                form.save_image(request.FILES["profile-pic"])
-                if "profile-pic" in request.FILES
-                else None
-            )
-            User_Profile.objects.update_or_create(
-                user=user, defaults={"photo": profile_pic}
-            )
+            if "profile-pic" in request.FILES:
+                profile_pic = form.save_image(request.FILES["profile-pic"])
+                User_Profile.objects.update_or_create(
+                    user=user, defaults={"photo": profile_pic}
+                )
             form.save()
             return redirect("user:profile")
     user_profile = User_Profile.objects.get(user=user)

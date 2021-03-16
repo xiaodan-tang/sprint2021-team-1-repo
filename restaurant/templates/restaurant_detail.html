@@ -10,10 +10,14 @@
         <h1 id="res-name" class="text-shadow verified">}</h1>
         <p><i class="fas fa-map-marker-alt mr-2"></i><span id="res-display-addr"></span></p>
         <p class="mb-0 d-flex align-items-center">
-          <span id="res_rev_star">
-
-          </span>
-          &nbsp;&nbsp;<span id="res_review_count" class="ml-4"></span><span>&nbsp;Reviews</span>
+          <span id="res_rev_star"></span>
+          &nbsp;&nbsp;
+          <span id="res_review_count" class="ml-4"></span>
+          <span>&nbsp;Reviews</span>
+          <button class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
+            <i class="fa fa-star"></i>
+            Write a review
+          </button>
         </p>
       </div>
     </div>
@@ -326,7 +330,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
                 <input type="text" id="restaurant_business_id_save_favorite" name="restaurant_business_id" value="" hidden>
-                <input type="text" id="user_id_save_favorite" name="user_id" value="{{user.id}}" hidden>
+                <input type="text" id="user_id_save_favorite" name="user_id" value="{{user.id}}" hidden required>
               </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -362,7 +366,7 @@
 
         <!-- Modal -->
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
+          <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Tell us about your experience!</h5>
@@ -370,57 +374,12 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form class="form-validate" method="POST">
+              <form class="form-validate" method="POST" name="rating-form">
                 {% csrf_token %}
                 <div class="modal-body">
-                  <h2>For this restaurant:</h2>
-                  <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden >
-                    <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
-                    <input type="text" id="saved_on" name="saved_on"   hidden>
-                  <br>
-                  <p>Did you receive a temperature check?</p>
-                  <div class="form-group">
-                    <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
-                    <label for="temp_check_true" title="text">Yes</label>
-                    <input id="temp_check_false" type="radio" name="temperature_required" value="false" required/>
-                    <label for="temp_check_false" title="text">No</label>
-                  </div>
-                  <br>
-                  <p>Were you or a member of your party required to provide contact tracing information?</p>
-                  <div class="form-group">
-                    <input id="contact_true" type="radio" name="contact_info_required" value="true" required/>
-                    <label for="contact_true" title="text">Yes</label>
-                    <input id="contact_false" type="radio" name="contact_info_required" value="false" required/>
-                    <label for="contact_false" title="text">No</label>
-                  </div>
-                  <br>
-                  <p>Were restaurant staff wearing masks at all times?</p>
-                  <div class="form-group">
-                    <input id="employee_mask_true" type="radio" name="employee_mask" value="true" required/>
-                    <label for="employee_mask_true" title="text">Yes</label>
-                    <input id="employee_mask_false" type="radio" name="employee_mask" value="false" required/>
-                    <label for="employee_mask_false" title="text">No</label>
-                  </div>
-                  <br>
-                  <p>Was in-door capacity under 25%?</p>
-                  <div class="form-group">
-                    <input id="capacity_true" type="radio" name="capacity_compliant" value="true" required/>
-                    <label for="capacity_true" title="text">Yes</label>
-                    <input id="capacity_false" type="radio" name="capacity_compliant" value="false" required/>
-                    <label for="capacity_false" title="text">No</label>
-                  </div>
-                  <br>
-                  <p>Were you seated at least 6 feet from the nearest party?</p>
-                  <div class="form-group">
-                    <input id="distance_compliant_true" type="radio" name="distance_compliant" value="true" required/>
-                    <label for="distance_compliant_true" title="text">Yes</label>
-                    <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
-                    <label for="distance_compliant_false" title="text">No</label>
-                  </div>
-                  <br>
-                  <p>How would you rate the safety level for this restaurant?</p>
-                  <div class="form-group" style="width: 200px;">
-                    <select class="selectpicker form-control" name="safety_level" data-style="btn-selectpicker" title="">
+                  <p class="mb-2">How would you rate this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating" data-style="btn-selectpicker" title="">
                       <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
                       <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
                       <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
@@ -428,11 +387,112 @@
                       <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
                     </select>
                   </div>
-                  <br>
+                  <p class="mb-2">How would you rate the safety of this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_safety" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of entry to this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_entry" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of doors at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_door" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of tables at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_table" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of bathrooms at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_bathroom" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <p class="mb-2">How would you rate the accessibility of pathways at this restaurant?</p>
+                  <div class="form-group mb-2" style="width: 200px;">
+                    <select class="selectpicker form-control" name="rating_path" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden>
+                  <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
+                  <input type="text" id="saved_on" name="saved_on"   hidden>
+                  {% comment %} <p class="mb-2">Did you receive a temperature check?</p>
+                  <div class="form-group mb-2">
+                    <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
+                    <label for="temp_check_true" title="text">Yes</label>
+                    <input id="temp_check_false" type="radio" name="temperature_required" value="false" required/>
+                    <label for="temp_check_false" title="text">No</label>
+                  </div>
+                  <p class="mb-2">Were you or a member of your party required to provide contact tracing information?</p>
+                  <div class="form-group mb-2">
+                    <input id="contact_true" type="radio" name="contact_info_required" value="true" required/>
+                    <label for="contact_true" title="text">Yes</label>
+                    <input id="contact_false" type="radio" name="contact_info_required" value="false" required/>
+                    <label for="contact_false" title="text">No</label>
+                  </div>
+                  <p class="mb-2">Were restaurant staff wearing masks at all times?</p>
+                  <div class="form-group mb-2">
+                    <input id="employee_mask_true" type="radio" name="employee_mask" value="true" required/>
+                    <label for="employee_mask_true" title="text">Yes</label>
+                    <input id="employee_mask_false" type="radio" name="employee_mask" value="false" required/>
+                    <label for="employee_mask_false" title="text">No</label>
+                  </div>
+                  <p class="mb-2">Was in-door capacity under 25%?</p>
+                  <div class="form-group mb-2">
+                    <input id="capacity_true" type="radio" name="capacity_compliant" value="true" required/>
+                    <label for="capacity_true" title="text">Yes</label>
+                    <input id="capacity_false" type="radio" name="capacity_compliant" value="false" required/>
+                    <label for="capacity_false" title="text">No</label>
+                  </div>
+                  <p class="mb-2">Were you seated at least 6 feet from the nearest party?</p>
+                  <div class="form-group mb-2">
+                    <input id="distance_compliant_true" type="radio" name="distance_compliant" value="true" required/>
+                    <label for="distance_compliant_true" title="text">Yes</label>
+                    <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
+                    <label for="distance_compliant_false" title="text">No</label>
+                  </div> {% endcomment %}
+                  <p class="mb-2">Tell others about your thoughts!</p>
+                  <div class="form-group mb-2">
+                    <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
+                  </div>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
+                  <button class="btn btn-primary" type="button" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved" id="rating-submit-button">Submit</button>
                 </div>
               </form>
             </div>
@@ -468,9 +528,67 @@
           </div>
         </div>
         <div class="text-block">
-          <p class="subtitle text-sm text-primary">Yelp </p>
-          <h5 class="mb-4">Recent Reviews </h5>
-          <span id="review_content"></span>
+          <h3 class="mb-4">Reviews Summary</h3>
+          <div class="d-flex">
+            <div class="col-7 col-sm-8 col-lg-9">
+              <div class="d-flex align-items-center">
+                <span style="flex: 0 0 1.5rem;">5</span>
+                <div class="h-100" style="flex: 1 1 auto;">
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <span style="flex: 0 0 1.5rem;">4</span>
+                <div class="h-100" style="flex: 1 1 auto;">
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 10%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <span style="flex: 0 0 1.5rem;">3</span>
+                <div class="h-100" style="flex: 1 1 auto;">
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 6%;" aria-valuenow="6" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <span style="flex: 0 0 1.5rem;">2</span>
+                <div class="h-100" style="flex: 1 1 auto;">
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 2%;" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <span style="flex: 0 0 1.5rem;">1</span>
+                <div class="h-100" style="flex: 1 1 auto;">
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 8%;" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex flex-column col-5 col-sm-4 col-md-3 justify-content-center">
+              <h1 class="text-center">4.5</h1>
+              <div class="text-center">
+                <span class="btn-link" style="cursor: pointer;">78 reviews</span>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <h6>
+            <span class="text-primary">YELP</span> REVIEWS
+          </h6>
+          <span id="yelp_review"></span>
+          <hr>
+          <h6>
+            <span class="text-primary">INTERNAL</span> REVIEWS
+          </h6>
+          <span id="internal_review"></span>
         </div>
       </div>
       <div class="col-lg-4">
@@ -641,69 +759,240 @@ for (i = 0; i < yelp_info.photos.length; i++) {
     gallery_imgs.appendChild(ele);
 }
 
-var yelp_reviews = {{ yelp_info.reviews | safe }};
-for (i = 0; i < yelp_reviews.reviews.length; i++) {
-    var review_content = document.getElementById("review_content");
-    var ele = document.createElement("div");
-    ele.className = "media d-block d-sm-flex review";
-    review_content.appendChild(ele);
+document.getElementById('rating-submit-button').addEventListener('click', () => {
+  document.forms['rating-form'].submit();
+});
 
-    var ele2 = document.createElement("div");
-    ele2.className = "text-md-center mr-4 mr-xl-5";
-    var img = document.createElement("img");
-    img.className = "d-block avatar avatar-xl p-2 mb-2";
+$('#exampleModal').on('hidden.bs.modal', function (e) {
+  document.forms['rating-form'].removeAttribute('action');
+})
 
-    if(yelp_reviews.reviews[i].user.image_url)
-    {
-      img.src = yelp_reviews.reviews[i].user.image_url;
+const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
+const isNull = el => el === 'null' || el === null || el === undefined;
+const restaurantId = '{{ restaurant_id }}' || '';
+/**
+ * Rating box view
+ * @param {review-id} string
+ * @param {profile-img} string
+ * @param {profile-img-alt} string
+ * @param {profile-url} string
+ * @param {time-created} string
+ * @param {user-name} string
+ * @param {user-rating} string
+ * @param {review-text} string
+ * @param {editable} boolean - if this rating comment is left by the login user, this comment should be editable
+ */
+class RatingReview extends HTMLElement {
+  constructor () {
+    super();
+    this.attachShadow({ mode: 'open' });
+
+    this.addStyles();
+
+    this.rootDiv = document.createElement('div');
+    this.rootDiv.className = 'media d-block d-sm-flex review';
+
+    // left side
+    const userProfile = document.createElement('div');
+    userProfile.className = 'text-md-center mr-4 mr-xl-5';
+    this.avatar = document.createElement('img');
+    this.avatar.className = 'd-block avatar avatar-xl p-2 mb-2';
+
+    this.avatar.src = this.getAttribute('profile-img') || DEFAULT_AVATAR;
+    this.avatar.alt = this.getAttribute('profile-img-alt') || '';
+    this.createRatingTimestamp = document.createElement('span');
+    this.createRatingTimestamp.className = 'text-uppercase text-muted text-sm';
+    this.createRatingTimestamp.innerText = this.getAttribute('time-created') || '';
+    
+    userProfile.appendChild(this.avatar);
+    userProfile.appendChild(this.createRatingTimestamp);
+
+    // right side
+    const ratingBody = document.createElement('div');
+    ratingBody.className = 'media-body';
+    
+    // author link
+    const author = document.createElement('h6');
+    author.className = 'mt-2 mb-1';
+
+    this.authorProfileLink = document.createElement('a');
+    this.authorProfileLink.href = this.getAttribute('profile-url') || DEFAULT_AVATAR;
+    this.authorProfileLink.innerText = this.getAttribute('user-name') || '';
+
+    author.appendChild(this.authorProfileLink);
+    ratingBody.appendChild(author);
+
+    // rating stars
+    this.ratingStars = document.createElement('div');
+    const rating = Number(this.getAttribute('user-rating') || '');
+    for (let i = 0; i < 5; i++) {
+      const star = document.createElement('i');
+      star.className = 'fa fa-xs fa-star';
+      star.classList.add(i < rating ? 'text-primary' : 'text-gray-200');
+      this.ratingStars.appendChild(star);
     }
-    else
-    {
-      img.src = "https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg";
-    }
-    img.alt = yelp_reviews.reviews[i].user.name;
-    var span = document.createElement("span");
-    span.className = "text-uppercase text-muted text-sm";
-    span.innerHTML = yelp_reviews.reviews[i].time_created;
-    ele2.appendChild(img);
-    ele2.appendChild(span);
-    ele.appendChild(ele2);
+    ratingBody.appendChild(this.ratingStars);
 
-    var ele3 = document.createElement("div");
-    ele3.className = "media-body";
-    var h6 = document.createElement("h6");
-    h6.className = "mt-2 mb-1";
-    var a = document.createElement("a");
-    a.href = yelp_reviews.reviews[i].user.profile_url;
-    a.innerHTML = yelp_reviews.reviews[i].user.name;
-    h6.appendChild(a);
-    ele3.appendChild(h6);
-    var div4 = document.createElement("div");
-    var user_rating = yelp_reviews.reviews[i].rating;
-    div4.className = "mb-2";
-    for (j = 0; j < user_rating; j++) {
-        var icon = document.createElement("i");
-        icon.className = "fa fa-xs fa-star text-primary";
-        div4.appendChild(icon);
-    }
-    for (j = 0; j < 5 - user_rating; j++) {
-        var icon2 = document.createElement("i");
-        icon2.className = "fa fa-xs fa-star text-gray-200";
-        div4.appendChild(icon2);
+    // comments
+    this.comments = document.createElement('p');
+    this.comments.setAttribute('style', 'display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;');
+    this.comments.className = 'text-muted text-sm';
+    this.comments.innerText = this.getAttribute('review-text');
+    
+    ratingBody.appendChild(this.comments);
+
+    this.rootDiv.appendChild(userProfile);
+    this.rootDiv.appendChild(ratingBody);
+
+    if (this.hasAttribute('editable')) {
+      this.attachOptionButton();
     }
 
+    this.shadowRoot.appendChild(this.rootDiv);
+  }
 
+  static get observedAttributes() {
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable'];
+  }
 
-    ele3.appendChild(div4);
-    var p = document.createElement("p");
-    p.className = "text-muted text-sm";
-    p.innerHTML = yelp_reviews.reviews[i].text;
-    ele3.appendChild(p);
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'profile-img') {
+      this.avatar.setAttribute('src', isNull(newValue) ? DEFAULT_AVATAR : newValue);
+    } else if (name === 'profile-img-alt') {
+      this.avatar.setAttribute('alt', newValue || '');
+    } else if (name === 'time-created') {
+      this.createRatingTimestamp.innerText = newValue || '';
+    } else if (name === 'profile-url') {
+      this.authorProfileLink.setAttribute('href', newValue || '');
+    } else if (name === 'user-name') {
+      this.authorProfileLink.innerText = newValue || '';
+    } else if (name === 'user-rating') {
+      const rating = Number(newValue || 0);
+      new Array().forEach.call(this.ratingStars.children, (el, index) => {
+        if (index < rating) {
+          el.classList.replace('text-gray-200', 'text-primary');
+        } else {
+          el.classList.replace('text-primary', 'text-gray-200');
+        }
+      });
+    } else if (name === 'review-text') {
+      this.comments.innerText = newValue || '';
+    } else if (name === 'editable') {
+      this.attachOptionButton();
+    }
+  }
 
+  attachOptionButton () {
+    if (this.optionButton) return;
+    // option button
+    const optionButtonWrapper = document.createElement('div');
+    optionButtonWrapper.setAttribute('class', 'dropdown');
 
-    ele.appendChild(ele3);
-}
+    this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.optionButton.setAttribute('viewBox', '0 0 24 24');
+    this.optionButton.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    this.optionButton.setAttribute('style', 'display: inline-block; width: 1rem; height: 1rem; cursor: pointer;');
+    this.optionButton.setAttribute('class', 'dropdown-toggle');
+    this.optionButton.setAttribute('type', 'button');
 
+    const optionWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const optionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    optionPath.setAttribute('d', 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+    optionWrapper.appendChild(optionPath);
+    this.optionButton.appendChild(optionWrapper);
+
+    // dropdown button wrapper
+    const dropdownWrapper = document.createElement('div');
+    dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
+
+    this.deleteForm = document.createElement('form');
+    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
+
+    ['Edit', 'Delete'].forEach((el, index) => {
+      const anchor = document.createElement('a');
+      anchor.setAttribute('class', 'dropdown-item small py-2');
+      anchor.setAttribute('href', '#');      
+      anchor.innerText = el;
+      if (index === 0) {
+        anchor.addEventListener('click', () => {
+          $('#exampleModal').modal('toggle');
+          const rating = document.querySelector('select[name="rating"]');
+          rating.value = this.getAttribute('user-rating');
+          rating.dispatchEvent(new Event('change'));
+          const content = document.querySelector('textarea[name="content"]');
+          content.value = this.getAttribute('review-text');
+          content.dispatchEvent(new Event('change'));
+          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
+        });
+      } else {
+        anchor.addEventListener('click', () => this.deleteForm.submit());
+      }
+      dropdownWrapper.appendChild(anchor);
+    });
+
+    optionButtonWrapper.appendChild(this.optionButton);
+    optionButtonWrapper.appendChild(dropdownWrapper);
+    optionButtonWrapper.appendChild(this.deleteForm);
+    optionButtonWrapper.addEventListener('mouseover', () => {
+      dropdownWrapper.classList.add('show');
+    });
+    dropdownWrapper.addEventListener('mouseout', () => {
+      dropdownWrapper.classList.remove('show');
+    });
+
+    this.rootDiv.appendChild(optionButtonWrapper);
+  }
+
+  // add web component styles
+  addStyles () {
+    const styleLinks = [
+      'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
+      '/static/css/style.default.452e11c7.css',
+      '/static/css/all.css'
+    ]
+
+    styleLinks.forEach(el => {
+      const styles = document.createElement('link');
+      styles.setAttribute('rel', 'stylesheet');
+      styles.setAttribute('href', el);
+      this.shadowRoot.appendChild(styles);
+    });
+  }
+};
+customElements.define('rating-review', RatingReview);
+const yelpReviews = {{ yelp_info.reviews | safe }};
+
+yelpReviews['reviews'].forEach(review => {
+  const reviewWrapper = document.getElementById('yelp_review');
+  const ratingReview = document.createElement('rating-review');
+  ratingReview.setAttribute('profile-img', review.user.image_url);
+  ratingReview.setAttribute('profile-img-alt', review.user.name);
+  ratingReview.setAttribute('profile-url', review.user.profile_url);
+  ratingReview.setAttribute('user-name', review.user.name);
+  ratingReview.setAttribute('time-created', review.time_created);
+  ratingReview.setAttribute('user-rating', review.rating);
+  ratingReview.setAttribute('review-text', review.text);
+  reviewWrapper.appendChild(ratingReview);
+});
+
+const userId = Number('{{ user_id | safe }}');
+const internalReviews = {{ internal_reviews | safe }};
+internalReviews.forEach(review => {
+  const reviewWrapper = document.getElementById('internal_review');
+  const ratingReview = document.createElement('rating-review');
+  ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
+  ratingReview.setAttribute('profile-img-alt', review.user__username);
+  ratingReview.setAttribute('user-name', review.user__username);
+  ratingReview.setAttribute('time-created', review.time);
+  ratingReview.setAttribute('user-rating', review.rating);
+  ratingReview.setAttribute('review-text', review.content);
+  ratingReview.setAttribute('review-id', review.id);
+  ratingReview.setAttribute('restaurant-id', restaurantId);
+  if (userId === review.user) {
+    ratingReview.setAttribute('editable', 'editable');
+  }
+  reviewWrapper.appendChild(ratingReview);
+});
 
 var data = {{ data | safe }};
 
@@ -719,7 +1008,6 @@ var addMarkerToMap = function (map, latData, lngData) {
     marker.setAnimation(google.maps.Animation.DROP);
 }
 
-console.log(inspection_data);
 function initMap() {
   const myLatLng = { lat: lat, lng: long };
   const map = new google.maps.Map(document.getElementById("detailMap"), {

@@ -21,6 +21,36 @@ from restaurant.models import Categories
 logger = logging.getLogger(__name__)
 
 
+class UserQuestionaireForm(forms.Form):
+    def __init__(self, data, restaurant_id):
+        self.restaurant_id = restaurant_id
+        self.user_id = data["user_id"]
+        self.rating = data["rating"]
+        self.rating_safety = data["rating_safety"]
+        self.rating_entry = data["rating_entry"]
+        self.rating_door = data["rating_door"]
+        self.rating_table = data["rating_table"]
+        self.rating_bathroom = data["rating_bathroom"]
+        self.rating_path = data["rating_path"]
+        # self.restaurant_business_id = data.restaurant_business_id # not sure if needed
+        self.content = data["content"]
+
+    def save(self):
+        ret = user.reviews.create(
+            rating=self.rating,
+            rating_safety=self.rating_safety,
+            rating_entry=self.rating_entry,
+            rating_door=self.rating_door,
+            rating_table=self.rating_table,
+            rating_bathroom=self.rating_bathroom,
+            rating_path=self.rating_path,
+            content=self.content,
+            restaurant_id=self.restaurant_id,
+        )
+        ret.save()
+        return ret
+
+
 class ProfileUpdateForm(forms.Form):
     STATE_CHOICES = [
         ("Alabama", "Alabama"),
@@ -134,6 +164,90 @@ class ProfileUpdateForm(forms.Form):
         user_profile.state = self.cleaned_data["state"]
         user_profile.save()
         return user
+
+
+class UserProfileCreationForm(forms.Form):
+    STATE_CHOICES = [
+        ("Alabama", "Alabama"),
+        ("Alaska", "Alaska"),
+        ("Arizona", "Arizona"),
+        ("Arkansas", "Arkansas"),
+        ("California", "California"),
+        ("Colorado", "Colorado"),
+        ("Connecticut", "Connecticut"),
+        ("Delaware", "Delaware"),
+        ("District of Columbia", "District of Columbia"),
+        ("Florida", "Florida"),
+        ("Georgia", "Georgia"),
+        ("Hawaii", "Hawaii"),
+        ("Idaho", "Idaho"),
+        ("Illinois", "Illinois"),
+        ("Indiana", "Indiana"),
+        ("Iowa", "Iowa"),
+        ("Kansas", "Kansas"),
+        ("Kentucky", "Kentucky"),
+        ("Louisiana", "Louisiana"),
+        ("Maine", "Maine"),
+        ("Montana", "Montana"),
+        ("Nebraska", "Nebraska"),
+        ("Nevada", "Nevada"),
+        ("New Hampshire", "New Hampshire"),
+        ("New Jersey", "New Jersey"),
+        ("New Mexico", "New Mexico"),
+        ("New York", "New York"),
+        ("North Carolina", "North Carolina"),
+        ("North Dakota", "North Dakota"),
+        ("Ohio", "Ohio"),
+        ("Oklahoma", "Oklahoma"),
+        ("Oregon", "Oregon"),
+        ("Maryland", "Maryland"),
+        ("Massachusetts", "Massachusetts"),
+        ("Michigan", "Michigan"),
+        ("Minnesota", "Minnesota"),
+        ("Mississippi", "Mississippi"),
+        ("Missouri", "Missouri"),
+        ("Pennsylvania", "Pennsylvania"),
+        ("Rhode Island", "Rhode Island"),
+        ("South Carolina", "South Carolina"),
+        ("South Dakota", "South Dakota"),
+        ("Tennessee", "Tennessee"),
+        ("Texas", "Texas"),
+        ("Utah", "Utah"),
+        ("Vermont", "Vermont"),
+        ("Virginia", "Virginia"),
+        ("Washington", "Washington"),
+        ("West Virginia", "West Virginia"),
+        ("Wisconsin", "Wisconsin"),
+        ("Wyoming", "Wyoming"),
+    ]
+
+    address1 = forms.CharField(label="address1")
+    address2 = forms.CharField(label="address2")
+    city = forms.CharField(label="city")
+    zip_code = forms.CharField(label="zip_code")
+    state = forms.ChoiceField(label="state", choices=STATE_CHOICES)
+
+    def __init__(self, user, data):
+        self.user = user
+        self.data = data
+        self.user_profile = User_Profile.objects.get(user=self.user)
+        # super(UserProfileCreationForm, self).__init__(data=data)
+
+    def save(self, commit=True):
+        if "phone" in self.data:
+            self.user_profile.phone = self.data["phone"]
+        if "address1" in self.data:
+            self.user_profile.address1 = self.data["address1"]
+        if "address2" in self.data:
+            self.user_profile.address2 = self.data["address2"]
+        if "city" in self.data:
+            self.user_profile.city = self.data["city"]
+        if "zip_code" in self.data:
+            self.user_profile.zip_code = self.data["zip_code"]
+        if "state" in self.data:
+            self.user_profile.state = self.data["state"]
+        self.user_profile.save()
+        return self.user_profile
 
 
 class UserCreationForm(forms.Form):

@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from restaurant.models import Restaurant, Categories
 from phonenumber_field.modelfields import PhoneNumberField
 
+from datetime import datetime
+
 
 class DineSafelyUser(AbstractUser):
     favorite_restaurants = models.ManyToManyField(Restaurant, blank=True)
@@ -74,7 +76,7 @@ class User_Profile(models.Model):
         DineSafelyUser, on_delete=models.CASCADE, null=True, related_name="user_profile"
     )
     photo = models.CharField("Profile Picture", max_length=150, null=True)
-    phone = PhoneNumberField(null=True, blank=True, unique=True)
+    phone = PhoneNumberField(null=True, blank=True, unique=False)
     address1 = models.CharField("Address line 1", max_length=128, blank=True)
     address2 = models.CharField("Address line 2", max_length=128, blank=True)
     city = models.CharField("City", max_length=64, blank=True)
@@ -89,4 +91,34 @@ class User_Profile(models.Model):
     )
 
     def __str__(self):
-        return f"{self.user.username} User Profile"
+        return f"{self.user.username}_user_profile"
+
+
+class Review(models.Model):
+    # Basic info
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="reviews"
+    )
+    restaurant = models.ForeignKey(
+        Restaurant, on_delete=models.CASCADE, related_name="reviews"
+    )
+    time = models.DateTimeField(default=datetime.now, editable=False, db_index=True)
+    content = models.TextField()
+
+    # Ratings
+    rating = models.PositiveIntegerField(default=0)
+    rating_safety = models.PositiveIntegerField(default=0)
+    # Accessibility Ratings
+    rating_entry = models.PositiveIntegerField(default=0)
+    rating_door = models.PositiveIntegerField(default=0)
+    rating_table = models.PositiveIntegerField(default=0)
+    rating_bathroom = models.PositiveIntegerField(default=0)
+    rating_path = models.PositiveIntegerField(default=0)
+
+    # Images
+    image1 = models.ImageField(null=True, blank=True, upload_to="review_images/")
+    image2 = models.ImageField(null=True, blank=True, upload_to="review_images/")
+    image3 = models.ImageField(null=True, blank=True, upload_to="review_images/")
+
+    def __str__(self):
+        return f"{self.user.username} review on {self.restaurant.restaurant_name}"
