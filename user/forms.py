@@ -78,7 +78,8 @@ class ProfileUpdateForm(forms.Form):
 
     user_id = forms.CharField(label="user_id")
     username = forms.CharField(
-        label="username", min_length=4, max_length=150, required=False)
+        label="username", min_length=4, max_length=150, required=False
+    )
     firstname = forms.CharField(
         label="firstname", min_length=1, max_length=150, required=False
     )
