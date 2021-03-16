@@ -2,10 +2,6 @@ language: python
 
 python:
   - 3.7
-  
-branches:
-  only:
-  - main
 
 install:
   - pip install -r requirements.txt
