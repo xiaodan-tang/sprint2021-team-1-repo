@@ -6,6 +6,7 @@ from django.urls import reverse
 import random
 
 from .models import Restaurant
+from user.models import Review
 
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (
@@ -17,6 +18,7 @@ from .utils import (
     query_inspection_record,
     get_latest_inspection_record,
     get_restaurant_list,
+    get_restaurant_reviews,
     get_latest_feedback,
     get_average_safety_rating,
     get_total_restaurant_number,
@@ -37,76 +39,76 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_restaurant_profile(request, restaurant_id):
-
-    if request.method == "POST" and "questionnaire_form" in request.POST:
-        form = QuestionnaireForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "success")
-            url = reverse("restaurant:profile", args=[restaurant_id])
-            return HttpResponseRedirect(url)
-
-    try:
-        csv_file = get_csv_from_github()
-        result = {}
-        for idx, row in csv_file.iterrows():
-            if idx == 0:
-                continue
-            result[row["modzcta"]] = [
-                row["modzcta_name"],
-                row["percentpositivity_7day"],
-                row["people_tested"],
-                row["people_positive"],
-                row["median_daily_test_rate"],
-                row["adequately_tested"],
-            ]
-
-        restaurant = Restaurant.objects.get(pk=restaurant_id)
-        response_yelp = query_yelp(restaurant.business_id)
-        latest_inspection = get_latest_inspection_record(
-            restaurant.restaurant_name, restaurant.business_address, restaurant.postcode
-        )
-        feedback = get_latest_feedback(restaurant.business_id)
-        average_safety_rating = get_average_safety_rating(restaurant.business_id)
-
-        statistics_dict = questionnaire_statistics(restaurant.business_id)
-        if request.user.is_authenticated:
-            user = request.user
-            parameter_dict = {
-                "google_key": settings.GOOGLE_MAP_KEY,
-                "google_map_id": settings.GOOGLE_MAP_ID,
-                "data": json.dumps(result, cls=DjangoJSONEncoder),
-                "yelp_info": response_yelp,
-                "lasted_inspection": latest_inspection,
-                "restaurant_id": restaurant_id,
-                "latest_feedback": feedback,
-                "average_safety_rating": average_safety_rating,
-                "saved_restaurants": len(
-                    user.favorite_restaurants.all().filter(id=restaurant_id)
-                )
-                > 0,
-                "statistics_dict": statistics_dict,
-            }
-        else:
-            parameter_dict = {
-                "google_key": settings.GOOGLE_MAP_KEY,
-                "google_map_id": settings.GOOGLE_MAP_ID,
-                "data": json.dumps(result, cls=DjangoJSONEncoder),
-                "yelp_info": response_yelp,
-                "lasted_inspection": latest_inspection,
-                "restaurant_id": restaurant_id,
-                "latest_feedback": feedback,
-                "average_safety_rating": average_safety_rating,
-                "statistics_dict": statistics_dict,
-            }
-
-        return render(request, "restaurant_detail.html", parameter_dict)
-    except Restaurant.DoesNotExist:
-        logger.warning("Restaurant ID could not be found: {}".format(restaurant_id))
-        return HttpResponseNotFound(
-            "Restaurant ID {} does not exist".format(restaurant_id)
-        )
+# def get_restaurant_profile(request, restaurant_id):
+#
+#     if request.method == "POST" and "questionnaire_form" in request.POST:
+#         form = QuestionnaireForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "success")
+#             url = reverse("restaurant:profile", args=[restaurant_id])
+#             return HttpResponseRedirect(url)
+#
+#     try:
+#         csv_file = get_csv_from_github()
+#         result = {}
+#         for idx, row in csv_file.iterrows():
+#             if idx == 0:
+#                 continue
+#             result[row["modzcta"]] = [
+#                 row["modzcta_name"],
+#                 row["percentpositivity_7day"],
+#                 row["people_tested"],
+#                 row["people_positive"],
+#                 row["median_daily_test_rate"],
+#                 row["adequately_tested"],
+#             ]
+#
+#         restaurant = Restaurant.objects.get(pk=restaurant_id)
+#         response_yelp = query_yelp(restaurant.business_id)
+#         latest_inspection = get_latest_inspection_record(
+#             restaurant.restaurant_name, restaurant.business_address, restaurant.postcode
+#         )
+#         feedback = get_latest_feedback(restaurant.business_id)
+#         average_safety_rating = get_average_safety_rating(restaurant.business_id)
+#
+#         statistics_dict = questionnaire_statistics(restaurant.business_id)
+#         if request.user.is_authenticated:
+#             user = request.user
+#             parameter_dict = {
+#                 "google_key": settings.GOOGLE_MAP_KEY,
+#                 "google_map_id": settings.GOOGLE_MAP_ID,
+#                 "data": json.dumps(result, cls=DjangoJSONEncoder),
+#                 "yelp_info": response_yelp,
+#                 "lasted_inspection": latest_inspection,
+#                 "restaurant_id": restaurant_id,
+#                 "latest_feedback": feedback,
+#                 "average_safety_rating": average_safety_rating,
+#                 "saved_restaurants": len(
+#                     user.favorite_restaurants.all().filter(id=restaurant_id)
+#                 )
+#                 > 0,
+#                 "statistics_dict": statistics_dict,
+#             }
+#         else:
+#             parameter_dict = {
+#                 "google_key": settings.GOOGLE_MAP_KEY,
+#                 "google_map_id": settings.GOOGLE_MAP_ID,
+#                 "data": json.dumps(result, cls=DjangoJSONEncoder),
+#                 "yelp_info": response_yelp,
+#                 "lasted_inspection": latest_inspection,
+#                 "restaurant_id": restaurant_id,
+#                 "latest_feedback": feedback,
+#                 "average_safety_rating": average_safety_rating,
+#                 "statistics_dict": statistics_dict,
+#             }
+#
+#         return render(request, "restaurant_detail.html", parameter_dict)
+#     except Restaurant.DoesNotExist:
+#         logger.warning("Restaurant ID could not be found: {}".format(restaurant_id))
+#         return HttpResponseNotFound(
+#             "Restaurant ID {} does not exist".format(restaurant_id)
+#         )
 
 
 def get_inspection_info(request, restaurant_id):
@@ -229,3 +231,93 @@ def chatbot_keyword(request):
             return JsonResponse(response)
         except AttributeError as e:
             return HttpResponseBadRequest(e)
+
+
+def get_restaurant_profile(request, restaurant_id):
+
+    if request.method == "POST" and "questionnaire_form" in request.POST:
+        form = QuestionnaireForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "success")
+            url = reverse("restaurant:profile", args=[restaurant_id])
+            return HttpResponseRedirect(url)
+
+    try:
+        csv_file = get_csv_from_github()
+        result = {}
+        for idx, row in csv_file.iterrows():
+            if idx == 0:
+                continue
+            result[row["modzcta"]] = [
+                row["modzcta_name"],
+                row["percentpositivity_7day"],
+                row["people_tested"],
+                row["people_positive"],
+                row["median_daily_test_rate"],
+                row["adequately_tested"],
+            ]
+
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+        response_yelp = query_yelp(restaurant.business_id)
+        latest_inspection = get_latest_inspection_record(
+            restaurant.restaurant_name, restaurant.business_address, restaurant.postcode
+        )
+        feedback = get_latest_feedback(restaurant.business_id)
+        average_safety_rating = get_average_safety_rating(restaurant.business_id)
+
+        statistics_dict = questionnaire_statistics(restaurant.business_id)
+
+        # Reviews data
+        reviews_contents = get_restaurant_reviews(restaurant)
+        reviews = reviews_contents['reviews']
+        reviews_count = reviews_contents['reviews_count']
+        ratings_avg = reviews_contents['ratings_avg']
+        distribution = reviews_contents['distribution']
+
+        print("distribution", distribution)
+        print("ratings_avg", ratings_avg)
+        if request.user.is_authenticated:
+            user = request.user
+            parameter_dict = {
+                "google_key": settings.GOOGLE_MAP_KEY,
+                "google_map_id": settings.GOOGLE_MAP_ID,
+                "data": json.dumps(result, cls=DjangoJSONEncoder),
+                "yelp_info": response_yelp,
+                "lasted_inspection": latest_inspection,
+                "restaurant_id": restaurant_id,
+                "latest_feedback": feedback,
+                "average_safety_rating": average_safety_rating,
+                "saved_restaurants": len(
+                    user.favorite_restaurants.all().filter(id=restaurant_id)
+                )
+                > 0,
+                "statistics_dict": statistics_dict,
+                "reviews": reviews,
+                "reviews_count": reviews_count,
+                "ratings_avg": ratings_avg,
+                "distribution": distribution,
+            }
+        else:
+            parameter_dict = {
+                "google_key": settings.GOOGLE_MAP_KEY,
+                "google_map_id": settings.GOOGLE_MAP_ID,
+                "data": json.dumps(result, cls=DjangoJSONEncoder),
+                "yelp_info": response_yelp,
+                "lasted_inspection": latest_inspection,
+                "restaurant_id": restaurant_id,
+                "latest_feedback": feedback,
+                "average_safety_rating": average_safety_rating,
+                "statistics_dict": statistics_dict,
+                "reviews": reviews,
+                "reviews_count": reviews_count,
+                "ratings_avg": ratings_avg,
+                "distribution": distribution,
+            }
+
+        return render(request, "restaurant_detail.html", parameter_dict)
+    except Restaurant.DoesNotExist:
+        logger.warning("Restaurant ID could not be found: {}".format(restaurant_id))
+        return HttpResponseNotFound(
+            "Restaurant ID {} does not exist".format(restaurant_id)
+        )

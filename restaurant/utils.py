@@ -6,6 +6,9 @@ from .models import (
     YelpRestaurantDetails,
     UserQuestionnaire,
 )
+
+from user.models import Review
+
 import requests
 import json
 import logging
@@ -521,3 +524,27 @@ def get_compliant_restaurant_list(
         offset : offset + int(limit)  # noqa: E203
     ]
     return restaurants_to_dict(restaurants)
+
+
+def get_restaurant_reviews(restaurant):
+    reviews = Review.objects.filter(restaurant=restaurant)
+    ratings, distribution = [], [0] * 5
+    for review in reviews:
+        rating = int(review.rating)
+        ratings.append(rating)
+        distribution[rating - 1] += 1
+
+    count, total = len(ratings), sum(ratings)
+    ratings_avg = 0 if count == 0 else round(total / count, 2)
+
+    if count != 0:
+        for i in range(5):
+            distribution[i] = round(distribution[i] / count, 2) * 100
+
+    response = {
+        'reviews': list(reviews),
+        'reviews_count': count,
+        'ratings_avg': ratings_avg,
+        'distribution': distribution,
+    }
+    return response
