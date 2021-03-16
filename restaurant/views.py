@@ -104,7 +104,6 @@ def get_restaurant_profile(request, restaurant_id):
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
-
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
