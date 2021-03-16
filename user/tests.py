@@ -331,11 +331,12 @@ class TestAccountDetailsView(BaseTest):
         )
         self.assertEqual(response.status_code, 302)
 
+
 class TestUserReviewsView(BaseTest):
     def test_no_user_logged_in(self):
         response = self.c.get("/user/user_reviews")
         self.assertEqual(response.status_code, 302)
-        
+
     def test_user_login(self):
         self.c.force_login(self.dummy_user)
         response = self.c.get("/user/user_reviews")
