@@ -7,8 +7,6 @@ from .models import (
     UserQuestionnaire,
 )
 
-from user.models import Review
-
 import requests
 import json
 import logging
