@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from restaurant.utils import get_compliant_restaurant_list
 from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
-from restaurant.models import Restaurant
 
 # from .models import Restaurant
 
