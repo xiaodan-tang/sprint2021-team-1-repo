@@ -38,6 +38,7 @@ from .utils import (
     questionnaire_report,
     questionnaire_statistics,
 )
+from dinesafelysite.views import index
 
 import json
 
@@ -1231,7 +1232,9 @@ class RestaurantRecommendationsTest(TestCase):
             email="abcd@gmail.com",
         )
 
-    def test_reccomendation(self):
+        self.factory = RequestFactory()
+
+    def test_recommendation(self):
 
         categories = [
             category.category for category in self.dummy_user.preferences.all()
@@ -1242,3 +1245,16 @@ class RestaurantRecommendationsTest(TestCase):
         self.assertEqual(categories[1], "wine-bar")
         self.assertIsNotNone(self.dummy_user2.preferences.all())
         self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
+
+    def test_index_view_recommendation(self):
+        # test user with preferences
+        request1 = self.factory.get("index")
+        request1.user = self.dummy_user
+        response1 = index(request1)
+        self.assertEqual(response1.status_code, 200)
+
+        # test user without preferences
+        request2 = self.factory.get("index")
+        request2.user = self.dummy_user2
+        response2 = index(request2)
+        self.assertEqual(response2.status_code, 200)
