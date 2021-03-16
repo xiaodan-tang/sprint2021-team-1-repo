@@ -437,3 +437,9 @@ class UserPreferenceForm(forms.Form):
         category_list = self.cleaned_data.get("pref_list")
         for category in category_list:
             user.preferences.add(Categories.objects.get(category=category))
+
+
+class ContactForm(forms.Form):
+    email = forms.EmailField(label="Email", required=True)
+    subject = forms.CharField(label="Subject", max_length=120, required=True)
+    message = forms.CharField(widget=forms.Textarea, required=True, max_length=300)

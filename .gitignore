@@ -1,16 +1,17 @@
 *.pyc
 .idea/
+bin/
+lib/
 db.sqlite3
 .coverage
 staticfiles/
 htmlcov/
 *.env
-<<<<<<< HEAD
+
+env
+.DS_Store
 .venv
 venv
-env/
 *venv/
 venv.bak/
-.DS_Store
 README.md
-
