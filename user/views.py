@@ -108,8 +108,6 @@ def user_reviews(request):
             "restaurant__id",
         )
     )
-
-    print(internal_reviews)
     return render(
         request=request,
         template_name="profile_review.html",
