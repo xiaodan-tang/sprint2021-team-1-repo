@@ -160,7 +160,7 @@ def profile(request):
         },
     )
 
-  
+
 # @login_required()
 def account_details(request):
     if not request.user.is_authenticated:

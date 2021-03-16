@@ -21,7 +21,6 @@ from restaurant.models import Categories
 logger = logging.getLogger(__name__)
 
 
-
 class UserQuestionaireForm(forms.Form):
     def __init__(self, data, restaurant_id):
         self.restaurant_id = restaurant_id
@@ -51,8 +50,8 @@ class UserQuestionaireForm(forms.Form):
         )
         ret.save()
         return ret
-      
-      
+
+
 class ProfileUpdateForm(forms.Form):
     STATE_CHOICES = [
         ("Alabama", "Alabama"),
