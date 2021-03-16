@@ -20,7 +20,7 @@ def index(request):
     )
 
     # below is for recommendation
-    recommended_restaurants = []
+    recommended_restaurants_list = []
     if request.user and request.user.is_authenticated:
         categories = [category.category for category in request.user.preferences.all()]
         recommended_restaurants = get_filtered_restaurants(
