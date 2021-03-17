@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
+
 from .models import User_Profile, Review
 from restaurant.models import Categories
 import json
