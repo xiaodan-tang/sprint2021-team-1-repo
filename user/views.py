@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from .models import User_Profile, Review
@@ -14,8 +15,12 @@ from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
 from django.http import HttpResponse, HttpResponseBadRequest
 
+from .utils import (
+    send_reset_password_email,
+    send_verification_email,
+    send_feedback_email,
+)
 
-from .utils import send_reset_password_email, send_verification_email
 from .forms import (
     UserCreationForm,
     UserProfileCreationForm,
@@ -23,6 +28,7 @@ from .forms import (
     UpdatePasswordForm,
     GetEmailForm,
     UserPreferenceForm,
+    ContactForm,
     ProfileUpdateForm,
 )
 
@@ -282,3 +288,28 @@ def update_password(request):
         response = HttpResponse(json.dumps(context), content_type="application/json")
         response.status_code = 400
         return response
+
+
+def contact_form(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get("email")
+            subject = form.cleaned_data.get("subject")
+            message = form.cleaned_data.get("message")
+            # Sends user answers to website email
+            feedback_sent = send_feedback_email(request, email, subject, message)
+            if feedback_sent:
+                return redirect("user:request_received")
+            else:
+                messages.error(request, "An error occurred, feedback was not sent!")
+        else:
+            messages.error(request, "Invalid or missing data in contact form!")
+    form = ContactForm()
+    return render(
+        request=request, template_name="contact_us.html", context={"form": form}
+    )
+
+
+def request_received(request):
+    return render(request=request, template_name="request_received.html")
