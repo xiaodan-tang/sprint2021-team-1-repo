@@ -175,6 +175,17 @@ def save_inspections(row, business_id):
     return
 
 
+def populate_mopd_compliance_status():
+    restaurants = Restaurant.objects.all()
+    for r in restaurants:
+        compliant = r.is_accessible_compliant()
+        if compliant:
+            r.mopd_compliance_status = "Compliant"
+        else:
+            r.mopd_compliance_status = "Non-Compliant"
+        r.save()
+
+
 @sched.scheduled_job("interval", hours=12)
 def get_inspection_data():
     # ir = InspectionRecords.objects.all().count()
@@ -205,6 +216,9 @@ def get_inspection_data():
         save_restaurants(restaurant_df, inspection_df)
         # print(inspection_df)
         # save_inspections(inspection_df)
+
+    # populate the mopd_compliance_status attribute in Restaurant
+    populate_mopd_compliance_status()
 
 
 sched.start()

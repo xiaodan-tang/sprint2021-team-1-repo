@@ -12,3 +12,5 @@ env/
 venv.bak/
 .DS_Store
 README.md
+restaurant/migrations/*
+user/migrations/*

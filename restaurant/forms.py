@@ -115,7 +115,7 @@ class SearchFilterForm(forms.Form):
         ("waffles", "waffles"),
         ("wraps", "wraps"),
     ]
-    CHOICES_COMPLIANCE = [("All", "All"), ("Compliant", "Compliant")]
+
     CHOICES_RATING = [("5", "5"), ("4", "4"), ("3", "3"), ("2", "2"), ("1", "1")]
 
     CHOICES_SORT = [
@@ -144,18 +144,9 @@ class SearchFilterForm(forms.Form):
     price_3 = forms.BooleanField(label="price_3", required=False)
     price_4 = forms.BooleanField(label="price_4", required=False)
 
-    All = forms.ChoiceField(
-        label="All",
-        widget=forms.RadioSelect,
-        choices=CHOICES_COMPLIANCE,
-        required=False,
-    )
-    Compliant = forms.ChoiceField(
-        label="All",
-        widget=forms.RadioSelect,
-        choices=CHOICES_COMPLIANCE,
-        required=False,
-    )
+    All = forms.BooleanField(label="All", required=False)
+    COVIDCompliant = forms.BooleanField(label="COVID-19 Compliant", required=False)
+    MOPDCompliant = forms.BooleanField(label="MOPD Compliant", required=False)
 
     fav = forms.BooleanField(label="fav", required=False)
 
@@ -203,6 +194,11 @@ class SearchFilterForm(forms.Form):
         return rating_filter
 
     def get_compliant_filter(self):
-        if self.cleaned_data.get("All") == "Compliant":
-            return "Compliant"
-        return None
+        compliant_filter = []
+        if self.cleaned_data.get("All"):
+            return None
+        if self.cleaned_data.get("COVIDCompliant"):
+            compliant_filter.append("COVIDCompliant")
+        if self.cleaned_data.get("MOPDCompliant"):
+            compliant_filter.append("MOPDCompliant")
+        return compliant_filter

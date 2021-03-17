@@ -56,6 +56,23 @@ class Restaurant(models.Model):
     compliant_status = models.CharField(
         max_length=200, default=None, blank=True, null=True
     )
+    mopd_compliance_status = models.CharField(
+        max_length=200, default=None, blank=True, null=True
+    )
+
+    def is_accessible_compliant(self):
+        restaurant_street_number = self.business_address.split()[0]
+        q_result = (
+            AccessibilityRecord.objects.filter(
+                restaurant_name__iexact=self.restaurant_name
+            )
+            .filter(street_number=restaurant_street_number)
+            .first()
+        )
+        if q_result:
+            return q_result.compliant
+        else:
+            return False
 
     class Meta:
         unique_together = (("restaurant_name", "business_address", "postcode"),)
@@ -91,6 +108,25 @@ class InspectionRecords(models.Model):
             self.postcode,
             self.business_address,
             self.business_id,
+        )
+
+
+class AccessibilityRecord(models.Model):
+    restaurant_name = models.CharField(max_length=200)
+    compliant = models.BooleanField(default=False)
+    business_address = models.CharField(max_length=200)
+    street_number = models.CharField(max_length=200)
+    street_name = models.CharField(max_length=200)
+    city = models.CharField(max_length=200)
+    postcode = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return "{} {} {} {} {}".format(
+            self.restaurant_name,
+            self.business_address,
+            self.city,
+            self.postcode,
+            self.compliant,
         )
 
 
