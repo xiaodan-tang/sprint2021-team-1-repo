@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from restaurant.models import Restaurant, Categories
 from phonenumber_field.modelfields import PhoneNumberField
 
-
 from datetime import datetime
 
 
