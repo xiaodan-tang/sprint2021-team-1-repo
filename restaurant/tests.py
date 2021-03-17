@@ -1262,20 +1262,21 @@ class RestaurantRecommendationsTest(TestCase):
 
 class FAQTest(TestCase):
     """ Test FAQ Model"""
+
     def setUp(self):
         self.faq1 = FAQ.objects.create(
             question="This is a sample question test",
-            answer="This is a sample answer test"
+            answer="This is a sample answer test",
         )
 
         self.faq2 = FAQ.objects.create(
             question="Here is a second test for a question",
-            answer="Here is a second test for a test"
+            answer="Here is a second test for a test",
         )
 
         self.faq3 = FAQ.objects.create(
             question="This a sample question for test3",
-            answer="This a sample answer for test3"
+            answer="This a sample answer for test3",
         )
 
     def test_str_representation(self):
@@ -1287,31 +1288,26 @@ class FAQTest(TestCase):
 
         correct = "{} {}".format(self.faq3.question, self.faq3.answer)
         self.assertEqual(str(self.faq3), correct)
-    
+
     def test_question_field(self):
-        question1 = getattr(self.faq1, 'question')
-        question2 = getattr(self.faq2, 'question')
-        question3 = getattr(self.faq3, 'question')
-        '''
-        question1 = self.faq1._meta.get_field('question')
-        question2 = self.faq2._meta.get_field('question')
-        question3 = self.faq3._meta.get_field('question')
-        '''
+        question1 = getattr(self.faq1, "question")
+        question2 = getattr(self.faq2, "question")
+        question3 = getattr(self.faq3, "question")
+
         self.assertEqual("This is a sample question test", question1)
         self.assertEqual("Here is a second test for a question", question2)
         self.assertEqual("This a sample question for test3", question3)
 
-        
     def test_answer_field(self):
-        answer1 = getattr(self.faq1, 'answer')
-        answer2 = getattr(self.faq2, 'answer')
-        answer3 = getattr(self.faq3, 'answer')
+        answer1 = getattr(self.faq1, "answer")
+        answer2 = getattr(self.faq2, "answer")
+        answer3 = getattr(self.faq3, "answer")
 
         self.assertEqual("This is a sample answer test", answer1)
         self.assertEqual("Here is a second test for a test", answer2)
         self.assertEqual("This a sample answer for test3", answer3)
 
     def test_question_max_length(self):
-        max_length = self.faq1._meta.get_field('question').max_length
+        max_length = self.faq1._meta.get_field("question").max_length
 
         self.assertEqual(max_length, 200)
