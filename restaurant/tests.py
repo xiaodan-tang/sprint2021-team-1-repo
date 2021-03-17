@@ -1159,7 +1159,6 @@ class GetFilteredRestaurantsTests(TestCase):
         self.assertEqual(details.business_id, filtered_restaurants[0].business_id)
 
 
-
 class RestaurantRecommendationsTest(TestCase):
     """ Test Recommend Restaurants module"""
 
@@ -1191,6 +1190,7 @@ class RestaurantRecommendationsTest(TestCase):
         self.assertIsNotNone(self.dummy_user2.preferences.all())
         self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
 
+
 @mock.patch("user.models.Review.objects")
 class EditCommentTests(BaseTest):
     def test_edit_comment(self, queryset):
@@ -1207,4 +1207,3 @@ class EditCommentTests(BaseTest):
             "/restaurant/profile/restaurant_id/comment/comment_id/put"
         )
         self.assertEqual(response.status_code, 302)
-
