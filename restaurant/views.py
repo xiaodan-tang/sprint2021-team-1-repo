@@ -10,8 +10,6 @@ import random
 
 from .models import Restaurant, FAQ
 
-from django.views.decorators.csrf import csrf_exempt
-
 from .forms import (
     # QuestionnaireForm,
     SearchFilterForm,
