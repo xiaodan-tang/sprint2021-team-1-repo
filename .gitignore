@@ -14,5 +14,3 @@ venv
 *venv/
 venv.bak/
 README.md
-restaurant/migrations/*
-user/migrations/*
