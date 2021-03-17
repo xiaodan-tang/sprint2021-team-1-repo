@@ -2,8 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
-
-from .models import User_Profile
+from .models import User_Profile, Review
 from restaurant.models import Categories
 import json
 
@@ -84,6 +83,43 @@ def register(request):
         form = UserCreationForm()
     return render(
         request=request, template_name="register.html", context={"form": form}
+    )
+
+
+# @login_required()
+def user_reviews(request):
+    if not request.user.is_authenticated:
+        return redirect("user:login")
+    user = request.user
+    internal_reviews = list(
+        Review.objects.filter(user=user)
+        .order_by("-time")
+        .all()[:50]
+        .values(
+            "user",
+            "user__username",
+            "user__user_profile__photo",
+            "id",
+            "rating",
+            "rating_safety",
+            "rating_door",
+            "rating_table",
+            "rating_bathroom",
+            "rating_path",
+            "time",
+            "content",
+            "restaurant__restaurant_name",
+            "restaurant__yelp_detail__img_url",
+            "restaurant__id",
+        )
+    )
+    return render(
+        request=request,
+        template_name="profile_review.html",
+        context={
+            "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+            "user_id": request.user.id,
+        },
     )
 
 
