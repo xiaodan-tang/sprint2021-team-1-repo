@@ -38,7 +38,6 @@ from .utils import (
     questionnaire_report,
     questionnaire_statistics,
 )
-from user.models import Review
 
 from dinesafelysite.views import index
 
@@ -1296,4 +1295,3 @@ class EditCommentTests(BaseTest):
             "/restaurant/profile/restaurant_id/comment/comment_id/put"
         )
         self.assertEqual(response.status_code, 302)
-
