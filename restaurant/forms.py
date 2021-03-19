@@ -125,6 +125,7 @@ class SearchFilterForm(forms.Form):
         ("ratedlow", "ratedlow"),
         ("pricehigh", "pricehigh"),
         ("pricelow", "pricelow"),
+        ("distance", "distance"),
     ]
 
     keyword = forms.CharField(label="keyword", required=False)

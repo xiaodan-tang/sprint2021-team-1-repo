@@ -236,4 +236,4 @@ def get_faqs_list(request):
     context = {
         "faqs_list": faqs_list,
     }
-    return render(request, "faqs.html", context)
+    return render(request=request, template_name="faqs.html", context=context)
