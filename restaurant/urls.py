@@ -4,6 +4,7 @@ from restaurant import views
 
 app_name = "restaurant"
 urlpatterns = [
+    path("faqs", views.get_faqs_list, name="faqs"),
     path("profile/<restaurant_id>/", views.get_restaurant_profile, name="profile"),
     path(
         "inspection_records/<restaurant_id>",
@@ -28,5 +29,4 @@ urlpatterns = [
         name="delete_favorite_restaurant",
     ),
     path("chatbot/keywordtest", views.chatbot_keyword, name="chatbottest"),
-    path("faqs", views.get_faqs_list, name="faqs"),
 ]
