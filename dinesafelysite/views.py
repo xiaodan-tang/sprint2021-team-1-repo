@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from restaurant.utils import get_compliant_restaurant_list
-from restaurant.utils import get_filtered_restaurants
-from restaurant.models import Restaurant
+from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
 
 # from .models import Restaurant
 
@@ -17,23 +16,24 @@ def index(request):
         1,
         RESTAURANT_NUMBER,
         rating_filter=[3, 3.5, 4, 4.5, 5],
-        compliant_filter="Compliant",
+        compliant_filter=["COVIDCompliant"],
     )
 
-    # below is for recomendation
-    recommended_restaurants = []
+    # below is for recommendation
+    recommended_restaurants_list = []
     if request.user and request.user.is_authenticated:
         categories = [category.category for category in request.user.preferences.all()]
         recommended_restaurants = get_filtered_restaurants(
-            limit=Restaurant.objects.all().count(),
+            limit=RESTAURANT_NUMBER,
             category=categories,
             rating=[3.0, 3.5, 4.0, 4.5, 5.0],
-            compliant="Compliant",
+            compliant=["COVIDCompliant"],
         )
+        recommended_restaurants_list = restaurants_to_dict(recommended_restaurants)
 
     parameter_dict = {
         "restaurant_list": restaurant_list,
-        "recommended_restaurant_list": recommended_restaurants,
+        "recommended_restaurant_list": recommended_restaurants_list,
     }
     return render(request, "index.html", parameter_dict)
 

@@ -8,7 +8,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 import random
 
-from .models import Restaurant
+from .models import Restaurant, FAQ
+
 from .forms import (
     # QuestionnaireForm,
     SearchFilterForm,
@@ -272,7 +273,7 @@ def chatbot_keyword(request):
                 category=data["category"],
                 neighborhood=data["location"],
                 rating=[3.0, 3.5, 4.0, 4.5, 5.0],
-                compliant="Compliant",
+                compliant=["COVIDCompliant"],
             )
 
             # If number > 3, we pick 3 random restaurants in that list to recommend to user.
@@ -285,3 +286,11 @@ def chatbot_keyword(request):
             return JsonResponse(response)
         except AttributeError as e:
             return HttpResponseBadRequest(e)
+
+
+def get_faqs_list(request):
+    faqs_list = FAQ.objects.all()
+    context = {
+        "faqs_list": faqs_list,
+    }
+    return render(request, "faqs.html", context)
