@@ -222,12 +222,16 @@ $(document).ready(function(){
                   event.preventDefault();
                   let sort_option = document.getElementById("form_sort").value;
                   if (sort_option == "distance") {
+                      if (!apiFound) {
+                          setGooglePlacesAPIScript();
+                      }
                       $("#modalUserLocationForm").modal();
                   } else {
                       clearRestaurant();
                       create_post();
                   }
               });
+              var google_api_key = null;
               function create_post() {
                   var form = new FormData(document.getElementById("search_filter_form"));
                   $.ajax({
@@ -238,6 +242,7 @@ $(document).ready(function(){
                       contentType: false,
                       success : function(json) {
                           page_global += 1;
+                          google_api_key = json.google_key;
                           loadRestaurant(json.restaurant_list, json.restaurant_number)
                       },
                       error : function(xhr,errmsg,err) {
@@ -298,6 +303,16 @@ $(document).ready(function(){
             z-index: 10000 !important;
         }
         </style>
+        <script>
+            var apiFound = false;
+            function setGooglePlacesAPIScript() {
+                let apiScript = document.createElement("script");
+                apiScript.src = "https://maps.googleapis.com/maps/api/js?key="+google_api_key+"&callback=initAutocomplete&libraries=places&v=weekly";
+                apiScript.async = true;
+                document.getElementById("topSection").appendChild(apiScript);
+                apiFound = true;
+            }
+        </script>
         <script>
             // Google Autocomplete for user location
             let autocomplete;
@@ -690,8 +705,4 @@ $(document).ready(function(){
         };
     </script>
 </div>
-<script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTSJ4sFfdO3Rhf2qGJWS4GzitiEMibQCs&callback=initAutocomplete&libraries=places&v=weekly"
-      async
-    ></script>
 {% endblock %}
