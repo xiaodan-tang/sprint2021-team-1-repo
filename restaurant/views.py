@@ -134,8 +134,8 @@ def get_restaurants_list(request, page):
     if request.method == "POST":
         form = SearchFilterForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data.get("form_location"))
-            print(form.cleaned_data.get("form_geocode"))
+            # print(form.cleaned_data.get("form_location"))
+            # print(form.cleaned_data.get("form_geocode"))
             restaurant_list = get_restaurant_list(
                 page,
                 6,
@@ -148,6 +148,7 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                form.cleaned_data.get("form_geocode"),
             )
 
             if request.user.is_authenticated:
@@ -166,6 +167,7 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                form.cleaned_data.get("form_geocode"),
             )
             parameter_dict = {
                 "restaurant_number": restaurant_number,
