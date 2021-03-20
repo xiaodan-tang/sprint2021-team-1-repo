@@ -235,6 +235,8 @@ $(document).ready(function(){
                       success : function(json) {
                           page_global += 1;
                           google_api_key = json.google_key;
+                          document.getElementById("form_location").value = json.user_location;
+                          document.getElementById("form_geocode").value = json.user_geocode;
                           loadRestaurant(json.restaurant_list, json.restaurant_number)
                       },
                       error : function(xhr,errmsg,err) {
@@ -307,9 +309,13 @@ $(document).ready(function(){
             }
         </script>
         <style>
-        .pac-container {
-            z-index: 10000 !important;
-        }
+            .pac-container {
+                z-index: 10000 !important;
+            }
+            #showUserCurrLoc {
+                display: none;
+                cursor: pointer;
+            }
         </style>
         <script>
             var apiFound = false;
@@ -367,6 +373,9 @@ $(document).ready(function(){
             <div class="d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
                 <div class="mr-3">
                     <p class="mb-3 mb-md-0"><strong id="res_count"></strong> results found</p>
+                </div>
+                <div class="mr-3" id="showUserCurrLoc">
+                    <i class="fas fa-search-location"></i></i> <strong id="user_curr_loc" onclick="checkSortOption()"></strong>
                 </div>
                 <div>
                     <label class="form-label mr-2" for="form_sort">Sort by</label>
@@ -437,6 +446,12 @@ $(document).ready(function(){
              var restaurant_list = [];
              restaurant_list = JSON.parse(restaurant_list_json);
              document.getElementById("res_count").innerHTML = restaurant_number;
+             document.getElementById("user_curr_loc").innerHTML = document.getElementById("form_location").value;
+             if (document.getElementById("form_sort").value == "distance") {
+                 document.getElementById("showUserCurrLoc").style.display = "block";
+             } else {
+                 document.getElementById("showUserCurrLoc").style.display = "none";
+             }
              for(var i = 0; i < restaurant_list.length; i++)
              {
 

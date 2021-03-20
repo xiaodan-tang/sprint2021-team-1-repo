@@ -134,8 +134,14 @@ def get_restaurants_list(request, page):
     if request.method == "POST":
         form = SearchFilterForm(request.POST)
         if form.is_valid():
-            # print(form.cleaned_data.get("form_location"))
-            # print(form.cleaned_data.get("form_geocode"))
+            # Update user_location and user_geocode in session, session will expire after 5 minutes
+            request.session.set_expiry(300)
+            recorded_location = request.session.get("user_location", None)
+            updated_location = form.cleaned_data.get("form_location")
+            if updated_location and recorded_location != updated_location:
+                request.session["user_location"] = form.cleaned_data.get("form_location")
+                request.session["user_geocode"] = form.cleaned_data.get("form_geocode")
+
             restaurant_list = get_restaurant_list(
                 page,
                 6,
@@ -174,6 +180,8 @@ def get_restaurants_list(request, page):
                 "restaurant_list": json.dumps(restaurant_list, cls=DjangoJSONEncoder),
                 "page": page,
                 "google_key": settings.GOOGLE_MAP_KEY,
+                "user_location": request.session.get("user_location", None),
+                "user_geocode": request.session.get("user_geocode", None),
             }
             return JsonResponse(parameter_dict)
         else:
