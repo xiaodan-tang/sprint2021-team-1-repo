@@ -1265,7 +1265,6 @@ class RestaurantRecommendationsTest(TestCase):
         self.assertIsNotNone(self.dummy_user2.preferences.all())
         self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
 
-
     def test_index_view_recommendation(self):
         # test user with preferences
         request1 = self.factory.get("index")
@@ -1296,4 +1295,3 @@ class EditCommentTests(BaseTest):
             "/restaurant/profile/restaurant_id/comment/comment_id/put"
         )
         self.assertEqual(response.status_code, 302)
-
