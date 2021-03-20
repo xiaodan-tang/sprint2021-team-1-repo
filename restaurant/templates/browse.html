@@ -220,16 +220,8 @@ $(document).ready(function(){
             // Submit post on submit
               $('#search_filter_form').on('submit', function(event){
                   event.preventDefault();
-                  let sort_option = document.getElementById("form_sort").value;
-                  if (sort_option == "distance") {
-                      if (!apiFound) {
-                          setGooglePlacesAPIScript();
-                      }
-                      $("#modalUserLocationForm").modal();
-                  } else {
-                      clearRestaurant();
-                      create_post();
-                  }
+                  clearRestaurant();
+                  create_post();
               });
               var google_api_key = null;
               function create_post() {
@@ -289,15 +281,31 @@ $(document).ready(function(){
                     <div class="modal-body mx-3">
                         <div class="md-form mb-5">
                             <i class="fas fa-location-arrow"></i>
-                            <input id="location" class="form-control validate">
+                            <input form="search_filter_form" id="form_location" name="form_location" class="form-control validate" type="search">
+                        </div>
+                        <div class="md-form mb-5">
+                            <input form="search_filter_form" id="form_geocode" name="form_geocode" class="form-control validate" type="hidden">
                         </div>
                     </div>
                     <div class="modal-footer d-flex justify-content-center">
-                        <button class="btn btn-default" id="setUserLocation" onclick="getGeocode()">Find</button>
+                        <button class="btn btn-default" id="setUserLocation" onclick="setLocation()" type="button">Find</button>
                     </div>
                 </div>
             </div>
         </div>
+        <script>
+            function checkSortOption() {
+                let sort_option = document.getElementById("form_sort").value;
+                if (sort_option == "distance") {
+                    if (!apiFound) {
+                        setGooglePlacesAPIScript();
+                    }
+                    $("#modalUserLocationForm").modal();
+                } else {
+                    document.getElementById('filterbtn').click();
+                }
+            }
+        </script>
         <style>
         .pac-container {
             z-index: 10000 !important;
@@ -319,7 +327,7 @@ $(document).ready(function(){
             let address1Field;
 
             function initAutocomplete() {
-                address1Field = document.querySelector("#location");
+                address1Field = document.querySelector("#form_location");
                 // Create the autocomplete object, restricting the search predictions to
                 // addresses in the US.
                 autocomplete = new google.maps.places.Autocomplete(address1Field, {
@@ -334,23 +342,27 @@ $(document).ready(function(){
             }
         </script>
         <script>
+            function setLocation() {
+                getGeocode();
+                $('#modalUserLocationForm').modal('hide');
+            }
+
+            var user_geocode = null;
             function getGeocode() {
                 let geocoder = new google.maps.Geocoder();
-                let address = document.getElementById("location").value;
+                let address = document.getElementById("form_location").value;
                 geocoder.geocode({ 'address': address }, function(results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
-                        // results[0].geometry.location.lat()
-                        // results[0].geometry.location.lng()
-                        alert(""+results[0].geometry.location.lat()+results[0].geometry.location.lng());
+                        user_geocode = results[0].geometry.location.lat() + "," + results[0].geometry.location.lng();
+                        document.getElementById("form_geocode").value = user_geocode;
+                        document.getElementById('filterbtn').click();
                     } else {
-                        alert(address);
+                        alert('Geocode was not successful for the following reason: ' + status);
                     }
-                    $('#modalUserLocationForm').modal('hide');
-                    clearRestaurant();
-                    create_post();
                 });
             }
         </script>
+
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
                 <div class="mr-3">
@@ -358,7 +370,7 @@ $(document).ready(function(){
                 </div>
                 <div>
                     <label class="form-label mr-2" for="form_sort">Sort by</label>
-                    <select form="search_filter_form" class="selectpicker" name="form_sort" id="form_sort" data-style="btn-selectpicker" title="Select" onchange="document.getElementById('filterbtn').click();">
+                    <select form="search_filter_form" class="selectpicker" name="form_sort" id="form_sort" data-style="btn-selectpicker" title="Select" onchange="checkSortOption()">
                         <option value="none">None</option>
                         {% if request.user.is_authenticated %}
                         <option value="recommended">Recommended</option>

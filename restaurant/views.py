@@ -134,6 +134,8 @@ def get_restaurants_list(request, page):
     if request.method == "POST":
         form = SearchFilterForm(request.POST)
         if form.is_valid():
+            print(form.cleaned_data.get("form_location"))
+            print(form.cleaned_data.get("form_geocode"))
             restaurant_list = get_restaurant_list(
                 page,
                 6,
