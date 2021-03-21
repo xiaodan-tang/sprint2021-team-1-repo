@@ -167,6 +167,7 @@ def delete_comment(request, restaurant_id, comment_id):
     Comment.objects.get(pk=comment_id).delete()
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
+
 def get_inspection_info(request, restaurant_id):
     try:
         restaurant = Restaurant.objects.get(pk=restaurant_id)
