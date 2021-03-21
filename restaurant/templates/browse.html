@@ -356,7 +356,6 @@ $(document).ready(function(){
 
             function setLocation() {
                 let geocoder = new google.maps.Geocoder();
-                {#let address = document.getElementById("form_location").value;#}
                 geocoder.geocode({ 'address': address1Field.value }, function(results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         document.getElementById("form_autocomplete").value = address1Field.value;

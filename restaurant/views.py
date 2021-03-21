@@ -177,7 +177,7 @@ def get_restaurants_list(request, page):
                 "restaurant_number": restaurant_number,
                 "restaurant_list": json.dumps(restaurant_list, cls=DjangoJSONEncoder),
                 "page": page,
-                "google_key": settings.GOOGLE_MAP_KEY,
+                "google_key": settings.GOOGLE_MAP_KEY_PLACES,
                 "user_location": user_location,
                 "user_geocode": user_geocode,
             }
