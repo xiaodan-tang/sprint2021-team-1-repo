@@ -1,2 +1,38 @@
-{% extends 'base.html' %} {% load static %} {% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %} FAQs {% endblock %} {% block content %}
+    <style>
+        .container {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+        .collapsible {
+            background-color: #777;
+            color: white;
+            cursor: pointer;
+            padding: 18px;
+            width: 90%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .content {
+            padding: 10px;
+            display: block;
+            overflow: hidden;
+            width: 90%;
+        }
+
+    </style>
+    <div class="container">
+        <h2>Frequently Asked Questions</h2>
+        {% for faq in faqs_list %}
+            <div>
+                <button type="button" class="collapsible">Q: {{ faq.question }}</button>
+                <div class="content">
+                    <p>{{ faq.answer }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

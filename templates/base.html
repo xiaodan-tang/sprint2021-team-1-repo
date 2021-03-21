@@ -64,6 +64,8 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a> </li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:browse' %}">Restaurants</a> </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:faqs' %}">FAQS</a> </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'user:contact_form' %}">Contact Us</a> </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'chatbot:chatbot' %}">Chatbot</a> </li>
                     <li class="nav-item dropdown">
@@ -79,7 +81,6 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'user:login' %}">Log in</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'user:register' %}">Register</a></li>
                     {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'user:contact_form' %}">Contact Us</a> </li>
 <!--                    <li class="nav-item mt-3 mt-lg-0 ml-lg-3 d-lg-none d-xl-inline-block"><a class="btn btn-primary" href="user-add-0.html">Add a listing</a></li>-->
                 </ul>
             </div>
