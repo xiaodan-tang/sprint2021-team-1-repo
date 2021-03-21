@@ -41,7 +41,7 @@ from .utils import (
 
 from dinesafelysite.views import index
 
-from user.models import Review
+from user.models import Review, Comment
 
 
 import json
@@ -117,6 +117,23 @@ def create_yelp_restaurant_details(
 
 def create_faq(question, answer):
     return FAQ.objects.create(question=question, answer=answer)
+
+
+def create_internal_review(user, restaurant, content, rating):
+    return Review.objects.create(
+        user=user,
+        restaurant=restaurant,
+        content=content,
+        rating=rating,
+    )
+
+
+def create_comment(user, review, text):
+    return Comment.objects.create(
+        user=user,
+        review=review,
+        text=text,
+    )
 
 
 class MockResponse:
@@ -1294,4 +1311,60 @@ class EditCommentTests(BaseTest):
         response = self.c.get(
             "/restaurant/profile/restaurant_id/comment/comment_id/put"
         )
+        self.assertEqual(response.status_code, 302)
+
+
+class DeleteCommentTest(BaseTest):
+    @mock.patch("user.models.Comment.objects")
+    def test_delete_comment(self, queryset):
+        queryset.delete.return_value = None
+        queryset.filter.return_value = queryset
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment_delete/comment_id"
+        )
+        self.assertEqual(response.status_code, 302)
+
+
+class CommentTest(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize dummy user
+        self.dummy_user = get_user_model().objects.create(
+            username="testuser",
+            email="test@gmail.com",
+        )
+        self.dummy_user.set_password("test1234Comment")
+        self.dummy_user.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_internal_review(
+            self.dummy_user,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+    def test_delete_comment(self):
+        self.dummy_comment = create_comment(
+            self.dummy_user, self.temp_review, "comment for test deleting comment"
+        )
+        rest_id = self.temp_restaurant.id
+        comm_id = self.dummy_comment.id
+        print("test comment:", self.dummy_comment)
+        delete_url = (
+            "/restaurant/profile/" + str(rest_id) + "/comment_delete/" + str(comm_id)
+        )
+        response = self.c.get(delete_url)
         self.assertEqual(response.status_code, 302)
