@@ -15,13 +15,10 @@ from .forms import (
     SearchFilterForm,
 )
 
-# from user.models import User_Profile
-from user.forms import UserQuestionaireForm
-from user.models import Review
 
-# from user.forms import
-# from '../user/forms' import UserQuestionnaireForm
-# from '../user/models' import UserModel
+from user.forms import UserQuestionaireForm
+from user.models import Review, Comment
+
 
 from .utils import (
     query_yelp,
@@ -165,6 +162,10 @@ def edit_comment(request, restaurant_id, comment_id, action):
         messages.success(request, "success")
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
+
+def delete_comment(request, restaurant_id, comment_id):
+    Comment.objects.get(pk=comment_id).delete()
+    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 def get_inspection_info(request, restaurant_id):
     try:
