@@ -32,6 +32,11 @@ urlpatterns = [
         views.edit_comment,
         name="edit_comment",
     ),
+    path(
+        "profile/<restaurant_id>/comment_delete/<comment_id>",
+        views.delete_comment,
+        name="delete_comment",
+    ),
     path("chatbot/keywordtest", views.chatbot_keyword, name="chatbottest"),
     path("faqs", views.get_faqs_list, name="faqs"),
 ]
