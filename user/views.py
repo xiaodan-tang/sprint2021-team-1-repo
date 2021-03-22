@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-from .models import User_Profile, Preferences
+from .models import User_Profile, Preferences, Review
+from restaurant.models import Categories
 import json
 
 # from django.contrib.auth.decorators import login_required
@@ -87,6 +88,43 @@ def register(request):
 
 
 # @login_required()
+def user_reviews(request):
+    if not request.user.is_authenticated:
+        return redirect("user:login")
+    user = request.user
+    internal_reviews = list(
+        Review.objects.filter(user=user)
+        .order_by("-time")
+        .all()[:50]
+        .values(
+            "user",
+            "user__username",
+            "user__user_profile__photo",
+            "id",
+            "rating",
+            "rating_safety",
+            "rating_door",
+            "rating_table",
+            "rating_bathroom",
+            "rating_path",
+            "time",
+            "content",
+            "restaurant__restaurant_name",
+            "restaurant__yelp_detail__img_url",
+            "restaurant__id",
+        )
+    )
+    return render(
+        request=request,
+        template_name="profile_review.html",
+        context={
+            "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+            "user_id": request.user.id,
+        },
+    )
+
+
+# @login_required()
 def post_logout(request):
     logout(request)
     return redirect("user:login")
@@ -124,6 +162,10 @@ def profile(request):
             "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
             "user_profile": user_profile,
             "profile_pic": "" if user_profile is None else user_profile.photo,
+            "user_price_pref": [],
+            "user_neighborhood_pref": [],
+            "user_compliance_pref": [],
+            "user_rating_pref": [],
         },
     )
 
