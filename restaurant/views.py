@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadReque
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
-
+from datetime import datetime
 import random
 
 from .models import Restaurant, FAQ
@@ -151,7 +151,7 @@ def get_restaurant_profile(request, restaurant_id):
         )
 
 
-def edit_comment(request, restaurant_id, comment_id, action):
+def edit_review(request, restaurant_id, comment_id, action):
     if action == "delete":
         Review.objects.filter(id=comment_id).delete()
     if action == "put":
@@ -160,6 +160,15 @@ def edit_comment(request, restaurant_id, comment_id, action):
         review.content = request.POST.get("content")
         review.save()
         messages.success(request, "success")
+    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
+
+
+def edit_comment(request, restaurant_id, review_id):
+    review = Review.objects.get(pk=review_id)
+    comment = Comment(user=request.user, review=review)
+    comment.text = request.GET.get("text")
+    comment.time = datetime.now()
+    comment.save()
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 

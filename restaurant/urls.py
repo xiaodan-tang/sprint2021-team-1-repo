@@ -29,6 +29,11 @@ urlpatterns = [
     ),
     path(
         "profile/<restaurant_id>/comment/<comment_id>/<action>",
+        views.edit_review,
+        name="edit_review",
+    ),
+    path(
+        "profile/<restaurant_id>/comment_edit/<review_id>",
         views.edit_comment,
         name="edit_comment",
     ),
