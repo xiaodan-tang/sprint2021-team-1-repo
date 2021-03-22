@@ -223,6 +223,7 @@ $(document).ready(function(){
                   clearRestaurant();
                   create_post();
               });
+              var google_api_key = null;
               function create_post() {
                   var form = new FormData(document.getElementById("search_filter_form"));
                   $.ajax({
@@ -233,6 +234,10 @@ $(document).ready(function(){
                       contentType: false,
                       success : function(json) {
                           page_global += 1;
+                          google_api_key = json.google_key;
+                          document.getElementById("form_autocomplete").value = json.user_location;
+                          document.getElementById("form_location").value = json.user_location;
+                          document.getElementById("form_geocode").value = json.user_geocode;
                           loadRestaurant(json.restaurant_list, json.restaurant_number)
                       },
                       error : function(xhr,errmsg,err) {
@@ -266,14 +271,116 @@ $(document).ready(function(){
                 </div>
             </form>
         </div>
+
+        <div class="modal fade" id="modalUserLocationForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header text-center">
+                        <h4 class="modal-title w-100 font-weight-bold">What's your current location?</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body mx-3">
+                        <input form="search_filter_form" id="form_location" name="form_location" class="form-control validate" type="text">
+                        <div class="md-form mb-5">
+                            <i class="fas fa-location-arrow"></i>
+                            <input id="form_autocomplete" name="form_autocomplete" class="form-control validate" type="text" placeholder="Enter a location">
+                            <small class="form-text text-muted">We'll never share your location with anyone else.</small>
+                        </div>
+                        <input form="search_filter_form" id="form_geocode" name="form_geocode" class="form-control validate" type="text">
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button class="btn btn-primary" id="setUserLocation" onclick="setLocation();" type="button">Find</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            function checkSortOption() {
+                let sort_option = document.getElementById("form_sort").value;
+                if (sort_option == "distance" && document.getElementById("form_location").value == "") {
+                    openUserLocationForm();
+                } else {
+                    document.getElementById('filterbtn').click();
+                }
+            }
+            function openUserLocationForm() {
+                if (!apiFound) {
+                    setGooglePlacesAPIScript();
+                }
+                $("#modalUserLocationForm").modal();
+            }
+        </script>
+        <style>
+            .pac-container {
+                z-index: 10000 !important;
+            }
+            #showUserCurrLoc {
+                cursor: pointer;
+            }
+            #form_location, #form_geocode, #showUserCurrLoc {
+                visibility: hidden;
+            }
+        </style>
+        <script>
+            var apiFound = false;
+            function setGooglePlacesAPIScript() {
+                let apiScript = document.createElement("script");
+                apiScript.src = "https://maps.googleapis.com/maps/api/js?key="+google_api_key+"&callback=initAutocomplete&libraries=places&v=weekly";
+                apiScript.async = true;
+                document.body.appendChild(apiScript);
+                apiFound = true;
+            }
+        </script>
+        <script>
+            // Google Autocomplete for user location
+            let autocomplete;
+            let address1Field;
+
+            function initAutocomplete() {
+                address1Field = document.querySelector("#form_autocomplete");
+                // Create the autocomplete object, restricting the search predictions to
+                // addresses in the US.
+                autocomplete = new google.maps.places.Autocomplete(address1Field, {
+                    componentRestrictions: { country: ["us"] },
+                    fields: ["address_components", "geometry"],
+                    types: ["address"],
+                });
+                address1Field.focus();
+
+                autocomplete.addListener("place_changed", function () {
+                    document.querySelector("#setUserLocation").focus();
+                });
+            }
+
+            function setLocation() {
+                let geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ 'address': address1Field.value }, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        document.getElementById("form_autocomplete").value = address1Field.value;
+                        document.getElementById("form_location").value = address1Field.value;
+                        document.getElementById("form_geocode").value = results[0].geometry.location.lat() + "," + results[0].geometry.location.lng();
+                        document.getElementById('filterbtn').click();
+                        $('#modalUserLocationForm').modal('hide');
+                    } else {
+                        alert("Please enter a valid address!");
+                    }
+                });
+            }
+        </script>
+
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
                 <div class="mr-3">
                     <p class="mb-3 mb-md-0"><strong id="res_count"></strong> results found</p>
                 </div>
+                <div class="mr-3" id="showUserCurrLoc">
+                    <i class="fas fa-search-location"></i></i> <strong id="user_curr_loc"></strong> <a class="link-primary" onclick="openUserLocationForm()">[Update location]</a>
+                </div>
                 <div>
                     <label class="form-label mr-2" for="form_sort">Sort by</label>
-                    <select form="search_filter_form" class="selectpicker" name="form_sort" id="form_sort" data-style="btn-selectpicker" title="Select" onchange="document.getElementById('filterbtn').click();">
+                    <select form="search_filter_form" class="selectpicker" name="form_sort" id="form_sort" data-style="btn-selectpicker" title="Select" onchange="checkSortOption();">
                         <option value="none">None</option>
                         {% if request.user.is_authenticated %}
                         <option value="recommended">Recommended</option>
@@ -282,6 +389,7 @@ $(document).ready(function(){
                         <option value="ratedlow">Lowest Rated</option>
                         <option value="pricehigh">Highest Price</option>
                         <option value="pricelow">Lowest Price</option>
+                        <option value="distance">Distance</option>
                     </select>
                 </div>
             </div>
@@ -339,6 +447,13 @@ $(document).ready(function(){
              var restaurant_list = [];
              restaurant_list = JSON.parse(restaurant_list_json);
              document.getElementById("res_count").innerHTML = restaurant_number;
+             // display user current location if sort by distance
+             document.getElementById("user_curr_loc").innerHTML = document.getElementById("form_location").value;
+             if (document.getElementById("form_sort").value == "distance") {
+                 document.getElementById("showUserCurrLoc").style.visibility = "visible";
+             } else {
+                 document.getElementById("showUserCurrLoc").style.visibility = "hidden";
+             }
              for(var i = 0; i < restaurant_list.length; i++)
              {
 
@@ -618,5 +733,4 @@ $(document).ready(function(){
         };
     </script>
 </div>
-
 {% endblock %}
