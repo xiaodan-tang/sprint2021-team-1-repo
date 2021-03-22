@@ -156,6 +156,7 @@ def create_report_comment(user, comment, reason):
         reason=reason,
     )
 
+
 class MockResponse:
     def __init__(self, content, status_code):
         self.content = content
@@ -1391,7 +1392,6 @@ class CommentTest(TestCase):
 
 
 class ReportTests(TestCase):
-
     def setUp(self):
         self.c = Client()
         # Initialize 2 test users
@@ -1430,17 +1430,23 @@ class ReportTests(TestCase):
         self.temp_review.save()
 
         # Initialize temp comment
-        self.temp_comment = create_comment(self.user2, self.temp_review, "comment for test report functions")
+        self.temp_comment = create_comment(
+            self.user2, self.temp_review, "comment for test report functions"
+        )
 
     def test_report_review_model(self):
-        report_ticket_review = create_report_review(self.user2, self.temp_review, "hate speech")
+        report_ticket_review = create_report_review(
+            self.user2, self.temp_review, "hate speech"
+        )
         self.assertIsNotNone(report_ticket_review)
         self.assertEqual(report_ticket_review.user.id, self.user2.id)
         self.assertEqual(report_ticket_review.review.id, self.temp_review.id)
         self.assertEqual(report_ticket_review.reason, "hate speech")
 
     def test_report_comment_model(self):
-        report_ticket_comment = create_report_comment(self.user1, self.temp_comment, "racist speech")
+        report_ticket_comment = create_report_comment(
+            self.user1, self.temp_comment, "racist speech"
+        )
         self.assertIsNotNone(report_ticket_comment)
         self.assertEqual(report_ticket_comment.user.id, self.user1.id)
         self.assertEqual(report_ticket_comment.id, self.temp_comment.id)

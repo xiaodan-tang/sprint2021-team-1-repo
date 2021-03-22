@@ -477,6 +477,7 @@ class ContactForm(forms.Form):
     subject = forms.CharField(label="Subject", max_length=120, required=True)
     message = forms.CharField(widget=forms.Textarea, required=True, max_length=300)
 
+
 # Report forms
 class Report_Review_Form(forms.Form):
     def __init__(self, data, review_id, user):
