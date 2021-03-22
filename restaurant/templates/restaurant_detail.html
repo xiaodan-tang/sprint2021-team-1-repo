@@ -810,6 +810,8 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
 const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
 const isNull = el => el === 'null' || el === null || el === undefined;
 const restaurantId = '{{ restaurant_id }}' || '';
+const userId = Number('{{ user_id | safe }}');
+
 /**
  * Rating box view
  * @param {review-id} string
@@ -993,11 +995,11 @@ class RatingReview extends HTMLElement {
             form.querySelector('input').focus();
             return;
           }
-          // TODO: form action
+
           form = document.createElement('form');
           form.setAttribute('name', 'reply-form');
-          form.setAttribute('method', 'post');
-          form.setAttribute('action', '/');
+          form.setAttribute('method', 'get');
+          form.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_edit/${this.getAttribute('review-id')}`);
           form.setAttribute('class', 'd-flex form-group mb-0');
           form.setAttribute('style', 'padding-left: 12%; align-items: baseline;');
 
@@ -1006,6 +1008,7 @@ class RatingReview extends HTMLElement {
 
           const inputBox = document.createElement('input');
           inputBox.setAttribute('class', 'form-control form-control-sm');
+          inputBox.setAttribute('name', 'text');
 
           const submitBtn = document.createElement('button');
           submitBtn.setAttribute('type', 'submit');
@@ -1032,7 +1035,13 @@ class RatingReview extends HTMLElement {
     });
   }
 
-  renderReplies () {
+  /**
+   * @params {profile} string - profile picture
+   * @params {text} string - comment
+   * @params {author} string - comment author
+   * @params {commentId} string - comment id
+   */
+  renderReplies ({ profile = DEFAULT_AVATAR, text = '', author = '', commentId = '' }) {
     const commentContainer = document.createElement('div');
     commentContainer.className = 'd-flex';
     commentContainer.setAttribute('style', 'padding-left: 12%; align-items: baseline;');
@@ -1045,30 +1054,29 @@ class RatingReview extends HTMLElement {
     
     const replyAvatar = document.createElement('img');
     replyAvatar.setAttribute('style', 'width: 40px; height: 40px; border-radius: 50%;');
-    // TODO: reply author profile
-    replyAvatar.setAttribute('src', DEFAULT_AVATAR);
+    replyAvatar.setAttribute('src', profile);
 
     const replyBox = document.createElement('div');
     replyBox.setAttribute('style', 'display: inline-block; margin-left: 1rem; width: 75%; vertical-align: middle;');
     replyBox.setAttribute('class', 'text-muted text-sm text-truncate');
-    // TODO: reply message
-    replyBox.innerText = 'Ohhh man, I hate covid.';
-
-    // TODO: show delete button on replies author
-    // TODO: delete reply form
-    const deleteForm = document.createElement('form');
-    deleteForm.setAttribute('method', 'get');
-    deleteForm.setAttribute('action', '');
-    const deleteButton = document.createElement('span');
-    deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-2');
-    deleteButton.addEventListener('click', () => {
-      // TODO: implement delete message API
-    });
-    deleteForm.appendChild(deleteButton);
+    replyBox.innerText = text;
 
     replyContainer.appendChild(replyAvatar);
     replyContainer.appendChild(replyBox);
-    replyContainer.appendChild(deleteForm);
+    if (userId === Number(author)) {
+      const deleteForm = document.createElement('form');
+      deleteForm.setAttribute('method', 'get');
+      deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
+      deleteForm.setAttribute('class', 'd-inline-block');
+      const deleteButton = document.createElement('span');
+      deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-2');
+      deleteButton.addEventListener('click', () => {
+        deleteForm.submit();
+      });
+      deleteForm.appendChild(deleteButton);
+
+      replyContainer.appendChild(deleteForm);
+    }
 
     commentContainer.appendChild(line);
     commentContainer.appendChild(replyContainer);
@@ -1108,7 +1116,6 @@ yelpReviews['reviews'].forEach(review => {
   reviewWrapper.appendChild(ratingReview);
 });
 
-const userId = Number('{{ user_id | safe }}');
 const internalReviews = {{ internal_reviews | safe }};
 internalReviews.forEach(review => {
   const reviewWrapper = document.getElementById('internal_review');
