@@ -16,7 +16,11 @@ from .forms import (
 )
 
 
-from user.forms import UserQuestionaireForm
+from user.forms import (
+    UserQuestionaireForm,
+    Report_Review_Form,
+    Report_Comment_Form,
+)
 from user.models import Review, Comment
 
 
@@ -318,3 +322,24 @@ def get_faqs_list(request):
         "faqs_list": faqs_list,
     }
     return render(request, "faqs.html", context)
+
+
+# Report Reviews & Comments
+def report_review(request, restaurant_id, review_id):
+    if request.method == "POST":
+        user = request.user
+        form = Report_Review_Form(request.POST, review_id, user)
+        form.save()
+        messages.success(request, "success")
+        url = reverse("restaurant:profile", args=[restaurant_id])
+        return HttpResponseRedirect(url)
+
+
+def report_comment(request, restaurant_id, comment_id):
+    if request.method == "POST":
+        user = request.user
+        form = Report_Comment_Form(request.POST, comment_id, user)
+        form.save()
+        messages.success(request, "success")
+        url = reverse("restaurant:profile", args=[restaurant_id])
+        return HttpResponseRedirect(url)
