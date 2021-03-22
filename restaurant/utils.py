@@ -7,6 +7,7 @@ from .models import (
     YelpRestaurantDetails,
     UserQuestionnaire,
 )
+
 import requests
 import json
 import logging
@@ -593,3 +594,20 @@ def get_compliant_restaurant_list(
         offset : offset + int(limit)  # noqa: E203
     ]
     return restaurants_to_dict(restaurants)
+
+
+def get_reviews_stats(reviews):
+    ratings, distribution = [], [0] * 6
+    for review in reviews:
+        rating = int(review["rating"])
+        ratings.append(rating)
+        distribution[rating] += 1
+
+    count, total = len(ratings), sum(ratings)
+    ratings_avg = 0 if count == 0 else round(total / count, 2)
+
+    if count != 0:
+        for i in range(6):
+            distribution[i] = round(distribution[i] / count, 2) * 100
+
+    return count, ratings_avg, distribution
