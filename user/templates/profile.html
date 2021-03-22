@@ -5,7 +5,9 @@
   <div class="container">
     <!-- Breadcrumbs -->
     <ol class="breadcrumb pl-0  justify-content-start">
-      <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'index' %}">Home</a>
+      </li>
       <li class="breadcrumb-item active">Profile</li>
     </ol>
     <div class="row gutters-sm">
@@ -13,11 +15,10 @@
         <div class="card shadow">
           <div class="card-body">
             <div class="d-flex flex-column align-items-center text-center">
-              <img id="avatar" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" class="rounded-circle"
-                width="150">
+              <img id="avatar" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" class="rounded-circle" width="150">
               <div class="mt-3">
                 <h4>{{user.username}}</h4>
-                <div class="text-muted font-size-sm" id = "test2">
+                <div class="text-muted font-size-sm" id="test2">
                   Unknown1
                 </div>
                 <button type="button" class="btn btn-link" data-toggle="modal" data-target="#pModal">Edit Profile</button>
@@ -94,7 +95,7 @@
               <div class="col-sm-3">
                 <h6 class="mb-0">Address</h6>
               </div>
-              <div class="col-sm-9 text-secondary" id = 'test1'>
+              <div class="col-sm-9 text-secondary" id='test1'>
                 test
               </div>
             </div>
@@ -102,17 +103,15 @@
         </div>
         <div class="card mt-3 shadow">
           <div class="card-body">
-            {% load socialaccount %}
-            {% get_social_accounts user as accounts %}
-            {% if accounts.facebook or accounts.google %}
-            {% else %}
+            {% load socialaccount %} {% get_social_accounts user as accounts %} {% if accounts.facebook or accounts.google %} {% else
+            %}
             <div class="row">
               <div class="col-sm-3">
                 <h6 class="mb-0">Password</h6>
               </div>
               <div class="col-sm-9 text-right">
-                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse"
-                  data-target="#updatePassword" aria-expanded="false" aria-controls="updatePassword">Update</button>
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse" data-target="#updatePassword"
+                  aria-expanded="false" aria-controls="updatePassword">Update</button>
               </div>
             </div>
             <form class="form-validate" method="post" id="update_password_form">
@@ -190,29 +189,25 @@
                   }
                 });
               };
-            </script>
-            {% endif %}
+            </script> {% endif %}
             <hr>
             <div class="row">
               <div class="col-sm-3">
                 <h6 class="mb-0">Personal Preferences</h6>
               </div>
               <div class="col-sm-9 text-right">
-                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse"
-                  data-target="#personalPreferences" aria-expanded="false"
-                  aria-controls="personalDetails">Update</button>
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse" data-target="#personalPreferences"
+                  aria-expanded="false" aria-controls="personalDetails">Update</button>
               </div>
             </div>
+            <!-- saved personal prefereces: categories -->
             <div class="row pt-4">
-              {% for pref in user_pref %}
-              {% csrf_token %}
+              {% for pref in user_pref %} {% csrf_token %}
               <ul class="list-group">
                 <li id="{{ pref.category }}" class="list-group-item">
-                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;"
-                    category="{{ pref.category }}" method="POST">
+                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref.category }}" method="POST">
                     <div class="text-secondary">{{ pref.category }}&nbsp&nbsp
-                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top"
-                        data-original-title="Remove from Preference">
+                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
                         <span aria-hidden="true">&times;</span>
                       </button>
                     </div>
@@ -221,6 +216,73 @@
               </ul>
               {% endfor %}
             </div>
+            <!-- saved personal prefereces: price -->
+            <div class="row pt-4">
+              {% for pref in user_price_pref %} {% csrf_token %}
+              <ul class="list-group">
+                <li id="{{ pref }}" class="list-group-item">
+                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
+                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
+                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  </form>
+                </li>
+              </ul>
+              {% endfor %}
+            </div>
+            <!-- saved personal prefereces: compliance -->
+            <div class="row pt-4">
+              {% for pref in user_compliance_pref %} {% csrf_token %}
+              <ul class="list-group">
+                <li id="{{ pref }}" class="list-group-item">
+                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
+                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
+                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  </form>
+                </li>
+              </ul>
+              {% endfor %}
+            </div>
+
+            <!-- saved personal prefereces: rating -->
+            <div class="row pt-4">
+              {% for pref in user_rating_pref %} {% csrf_token %}
+              <ul class="list-group">
+                <li id="{{ pref }}" class="list-group-item">
+                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
+                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
+
+                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  </form>
+                </li>
+              </ul>
+              {% endfor %}
+            </div>
+            <!-- saved personal prefereces: neighborhood -->
+            <div class="row pt-4">
+              {% for pref in user_neighborhood_pref %} {% csrf_token %}
+              <ul class="list-group">
+                <li id="{{ pref }}" class="list-group-item">
+                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
+                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
+                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  </form>
+                </li>
+              </ul>
+              {% endfor %}
+            </div>
+
             <div class="collapse" id="personalPreferences">
               {% csrf_token %}
               <form class="saved_res_remove" id="add_pref_form" name="add_pref_form" method="POST" action="">
@@ -228,10 +290,10 @@
                 <div class="row pt-4">
                   <div class="form-group col-sm-3">
 
+                    <!-- select categories-->
                     <label class="form-label" for="pref_list">Category</label>
-                    <select class="selectpicker form-control" name="pref_list" id="pref_list" multiple
-                      data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1"
-                      title="">
+                    <select class="selectpicker form-control" name="pref_list" id="pref_list" multiple data-style="btn-selectpicker" data-live-search="true"
+                      data-selected-text-format="count &gt; 1" title="">
                       <option value="newamerican">New American</option>
                       <option value="armenian">Armenian</option>
                       <option value="bars">Bars</option>
@@ -270,15 +332,102 @@
                   </div>
                   <script>
                     var pref_menu = document.getElementById("pref_list").options;
-                    for (var i = 0; i < {{user_pref_json | safe}}.length; i++) {
-                      var current_pref = {{user_pref_json | safe}} [i].category;
-                      if ($("#pref_list option[value='+current_pref+']").length == 0) {
-                        console.log(current_pref);
-                        $('#pref_list').children('option[value=' + current_pref + ']').hide();
-                      }
-                    }
+                    for (var i = 0; i < {{ user_pref_json | safe }}.length; i++) { var current_pref = {{ user_pref_json | safe } } [i].category;
+                    if ($("#pref_list option[value='+current_pref+']").length == 0) {
+                      console.log(current_pref); $('#pref_list').children('option[value=' + current_pref + ']').hide();
+                    }}
                   </script>
+
+                  <!--select price 
+                  <div class="form-group col-sm-3">
+
+                    <label class="form-label" for="pref_price">Price</label>
+                    <select class="selectpicker form-control" name="pref_price" id="pref_price" multiple data-style="btn-selectpicker" data-live-search="true"
+                      data-selected-text-format="count &gt; 1" title="">
+                      <option value="$">$</option>
+                      <option value="$$">$$</option>
+                      <option value="$$$">$$$</option>
+                      <option value="$$$$">$$$$</option>
+
+                    </select>
+                  </div>-->
+                  <!-- select compliant status 
+                  <div class="form-group col-sm-3">
+                    <label class="form-label" for="pref_compliance">Compliant Status</label>
+                    <select class="selectpicker form-control" name="pref_compliance" id="pref_compliance" multiple data-style="btn-selectpicker"
+                      data-live-search="true" data-selected-text-format="count &gt; 1" title="">
+                      <option value="COVID">COVID-19 compliant</option>
+                      <option value="MOPD">MOPD compliant</option>
+
+                    </select>
+                  </div>-->
+                  <!-- select rating 
+                  <div class="form-group col-sm-3">
+                    <label class="form-label" for="pref_rating">Rating</label>
+                    <select class="selectpicker form-control" name="pref_rating" id="pref_rating" multiple data-style="btn-selectpicker" data-live-search="true"
+                      data-selected-text-format="count &gt; 1" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+
+                    </select>
+                  </div>-->
+                  <!-- select neighborhood 
+                  <div class="form-group col-sm-3">
+                    <label class="form-label" for="pref_neighborhood">Neighborhood</label>
+                    <select class="selectpicker form-control" name="pref_neighborhood" id="pref_neighborhood" multiple data-style="btn-selectpicker"
+                      data-live-search="true" data-selected-text-format="count &gt; 1" title="">
+                      <option value="Borough Park">Borough Park</option>
+                      <option value="Bronx Park and Fordham">Bronx Park and Fordham</option>
+                      <option value="Bushwick and Williamsburg">Bushwick and Williamsburg</option>
+                      <option value="Canarsie and Flatlands">Canarsie and Flatlands</option>
+                      <option value="Central Bronx">Central Bronx</option>
+                      <option value="Central Brooklyn">Central Brooklyn</option>
+                      <option value="Central Harlem">Central Harlem</option>
+                      <option value="Central Queens">Central Queens</option>
+                      <option value="Chelsea and Clinton">Chelsea and Clinton</option>
+                      <option value="East Harlem">East Harlem</option>
+                      <option value="East New York and New Lots">East New York and New Lots</option>
+                      <option value="Flatbush">Flatbush</option>
+                      <option value="Gramercy Park and Murray Hill">Gramercy Park and Murray Hill</option>
+                      <option value="Greenpoint">Greenpoint</option>
+                      <option value="Greenwich Village and Soho">Greenwich Village and Soho</option>
+                      <option value="High Bridge and Morrisania">High Bridge and Morrisania</option>
+                      <option value="Hunts Point and Mott Haven">Hunts Point and Mott Haven</option>
+                      <option value="Inwood and Washington Heights">Inwood and Washington Heights</option>
+                      <option value="Jamaica">Jamaica</option>
+                      <option value="Kingsbridge and Riverdale">Kingsbridge and Riverdale</option>
+                      <option value="Long Island City">Long Island City</option>
+                      <option value="Lower East Side">Lower East Side</option>
+                      <option value="Lower Manhattan">Lower Manhattan</option>
+                      <option value="Mid-Island">Mid-Island</option>
+                      <option value="North Queens">North Queens</option>
+                      <option value="Northeast Queens">Northeast Queens</option>
+                      <option value="Northeast Bronx">Northeast Bronx</option>
+                      <option value="Northwest Brooklyn">Northwest Brooklyn</option>
+                      <option value="Northwest Queens">Northwest Queens</option>
+                      <option value="Port Richmond">Port Richmond</option>
+                      <option value="Rockaways">Rockaways</option>
+                      <option value="South Shore">South Shore</option>
+                      <option value="Southern Brooklyn">Southern Brooklyn</option>
+                      <option value="Southeast Bronx">Southeast Bronx</option>
+                      <option value="Southeast Queens">Southeast Queens</option>
+                      <option value="Southwest Brooklyn">Southwest Brooklyn</option>
+                      <option value="Southwest Queens">Southwest Queens</option>
+                      <option value="Stapleton and St. George">Stapleton and St. George</option>
+                      <option value="Sunset Park">Sunset Park</option>
+                      <option value="Tribeca">Tribeca</option>
+                      <option value="Upper East Side">Upper East Side</option>
+                      <option value="Upper West Side">Upper West Side</option>
+                      <option value="West Central Queens">West Central Queens</option>
+                      <option value="West Queens">West Queens</option>
+
+                    </select>
+                  </div>-->
                 </div>
+
                 <button class="btn btn-outline-primary mb-4" type="submit" data-original-title="add_preference">Save your Preferences</button>
               </form>
             </div>
@@ -287,18 +436,16 @@
               <div class="col-sm-3">
                 <h6 class="mb-0">Favorite Restaurants</h6>
                 <div class="row pt-4">
-                  {% for restaurant in favorite_restaurant_list %}
-                  {% csrf_token %}
+                  {% for restaurant in favorite_restaurant_list %} {% csrf_token %}
                   <ul class="list-group">
                     <li id="{{ restaurant.business_id }}" class="list-group-item">
-                      <form name="saved_res_remove" class="saved_res_remove" onsubmit="return false;"
-                        res_business_id="{{ restaurant.business_id }}" method="POST">
+                      <form name="saved_res_remove" class="saved_res_remove" onsubmit="return false;" res_business_id="{{ restaurant.business_id }}"
+                        method="POST">
                         <a href="../restaurant/profile/{{ restaurant.id }}" target="_blank" class="text-secondary">
                           {{ restaurant.restaurant_name }}
                         </a>
                         &nbsp&nbsp
-                        <button type="submit" class="close" aria-label="Close" data-toggle="tooltip"
-                          data-placement="top" data-original-title="Remove from Favorites">
+                        <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Favorites">
                           <span aria-hidden="true">&times;</span>
                         </button>
                       </form>
@@ -369,7 +516,8 @@
               </div>
               <div class="form-group">
                 <h6>State</h6>
-                <select class="selectpicker form-control" name="state" id="state" data-style="btn-selectpicker" data-live-search="true" data-selected-text-format="count &gt; 1" title="">
+                <select class="selectpicker form-control" name="state" id="state" multiple data-style="btn-selectpicker" data-live-search="true"
+                  data-selected-text-format="count &gt; 1" title="">
                   <option value="Alabama">Alabama</option>
                   <option value="Alaska">Alaska</option>
                   <option value="Arizona">Arizona</option>
@@ -421,7 +569,7 @@
                   <option value="West Virginia">West Virginia</option>
                   <option value="Wisconsin">Wisconsin</option>
                   <option value="Wyoming">Wyoming</option>
-              </select>
+                </select>
               </div>
               <div class="form-group">
                 <h6>City</h6>
@@ -435,8 +583,7 @@
                 <div class="row mt-3">
                   <div class="col text-center">
                     <label for="profile-pic" role="button" class="btn btn-sm btn-primary">
-                      <input type="file" class="d-none" id="profile-pic" name="profile-pic">
-                      Upload
+                      <input type="file" class="d-none" id="profile-pic" name="profile-pic"> Upload
                     </label>
                   </div>
                   <div class="col mt-2 text-center">
@@ -449,7 +596,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button class="btn btn-primary" type="submit" name="profile_form" data-toggle="tooltip" data-placement="top">Save Changes</button>
+          <button class="btn btn-primary" type="submit" name="profile_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Save Changes</button>
         </div>
       </form>
     </div>
@@ -458,7 +605,7 @@
 
 <script>
   $(document).ready(() => {
-    const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png'; 
+    const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png';
     const profilePic = '{{ profile_pic }}' || DEFAULT_PROFILE_PIC;
     $('#profile-pic-preview').attr('src', profilePic);
     $('#avatar').attr('src', profilePic);
@@ -517,11 +664,11 @@
   });
 </script>
 <script>
-  {# remove saved preference #}
   $('body').on('submit', "form[name='saved_pref_delete']", function (event) {
     var currentForm = $(this);
     event.preventDefault();
     var formData = currentForm.serialize();
+    console.log("all value is : ", formData);
     $.ajaxSetup({
       beforeSend: function (xhr, settings) {
         function getCookie(name) {
@@ -565,7 +712,7 @@
     var form_data = new FormData(document.getElementById("add_pref_form"))
     var add_form = document.getElementById("add_pref_form");
 
-    {#console.log("add form value is : ", form_data.get("pref_list"));#}
+    console.log("add form value is : ", form_data.get("pref_list"));
     $.ajaxSetup({
       beforeSend: function (xhr, settings) {
         function getCookie(name) {
@@ -603,65 +750,67 @@
     });
   });
 </script>
+
+
 <script>
-    window.onload = function(){
-      x = document.getElementById('test1');
+  window.onload = function () {
+    x = document.getElementById('test1');
 
-      var testString = '';
-      var addressList = new Array();
-      var newList = new Array();
-      
-      addressList[0] = '{{user_profile.address1}}';
-      addressList[1] = '{{user_profile.address2}}';
-      addressList[2] = '{{user_profile.city}}';
-      addressList[3] = '{{user_profile.state}}';
-      //console.log(addressList);
+    var testString = '';
+    var addressList = new Array();
+    var newList = new Array();
 
-      for(var i=0; i< addressList.length; i++) {
-        //console.log(typeof(addressList[i]))
-        if (addressList[i] != ''){
-          newList.push(addressList[i]);
-        }
+    addressList[0] = '{{user_profile.address1}}';
+    addressList[1] = '{{user_profile.address2}}';
+    addressList[2] = '{{user_profile.city}}';
+    addressList[3] = '{{user_profile.state}}';
+    //console.log(addressList);
+
+    for (var i = 0; i < addressList.length; i++) {
+      //console.log(typeof(addressList[i]))
+      if (addressList[i] != '') {
+        newList.push(addressList[i]);
       }
-      //console.log(newList)
-      for(var i=0; i< newList.length; i++) {
-        if(i == newList.length-1){
-          testString = testString + newList[i];
-        }
-        else{
-          testString = testString + newList[i] + ', '
-        }
+    }
+    //console.log(newList)
+    for (var i = 0; i < newList.length; i++) {
+      if (i == newList.length - 1) {
+        testString = testString + newList[i];
       }
-    x.innerHTML=testString;
+      else {
+        testString = testString + newList[i] + ', '
+      }
+    }
+    x.innerHTML = testString;
 
     y = document.getElementById('test2');
 
-          var testString = '';
-          var addressList = new Array();
-          var newList = new Array();
-   
-          addressList[0] = '{{user_profile.city}}';
-          addressList[1] = '{{user_profile.state}}';
-          console.log(addressList);
+    var testString = '';
+    var addressList = new Array();
+    var newList = new Array();
 
-          for(var i=0; i< addressList.length; i++) {
-            //console.log(typeof(addressList[i]))
-            if (addressList[i] != ''){
-              newList.push(addressList[i]);
-            }
-          }
-          //console.log(newList)
-          for(var i=0; i< newList.length; i++) {
-            if(i == newList.length-1){
-              testString = testString + newList[i];
-            }
-            else{
-              testString = testString + newList[i] + ', '
-            }
-          }
-        y.innerHTML=testString;
+    addressList[0] = '{{user_profile.city}}';
+    addressList[1] = '{{user_profile.state}}';
+    console.log(addressList);
 
-        $("#state option[value='{{user_profile.state}}']").prop("selected",true);
+    for (var i = 0; i < addressList.length; i++) {
+      //console.log(typeof(addressList[i]))
+      if (addressList[i] != '') {
+        newList.push(addressList[i]);
+      }
+    }
+    //console.log(newList)
+    for (var i = 0; i < newList.length; i++) {
+      if (i == newList.length - 1) {
+        testString = testString + newList[i];
+      }
+      else {
+        testString = testString + newList[i] + ', '
+      }
+    }
+    y.innerHTML = testString;
+
+    $("#state option[value='{{user_profile.state}}']").prop("selected", true);
   }
   </script>
 {% endblock %}
