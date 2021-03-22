@@ -1131,6 +1131,15 @@ internalReviews.forEach(review => {
   if (userId === review.user) {
     ratingReview.setAttribute('editable', 'editable');
   }
+  // add replies here
+  review.comments.forEach(el => {
+    ratingReview.renderReplies({
+      profile: el.profile || DEFAULT_AVATAR,
+      text: el.text,
+      author: el.author,
+      commentId: el.commentId,
+    })
+  });
   reviewWrapper.appendChild(ratingReview);
 });
 

@@ -99,6 +99,19 @@ def get_restaurant_profile(request, restaurant_id):
                 "content",
             )
         )
+        for idx in range(len(internal_reviews)):
+            comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
+            # get photo afterwards
+            comments = [
+                {
+                    "profile": el.user.user_profile.photo,
+                    "text": el.text,
+                    "author": el.user.id,
+                    "commentId": el.id,
+                }
+                for el in comments
+            ]
+            internal_reviews[idx]["comments"] = comments
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
