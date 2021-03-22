@@ -3,8 +3,7 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-from .models import User_Profile
-from restaurant.models import Categories
+from .models import User_Profile, Preferences
 import json
 
 # from django.contrib.auth.decorators import login_required
@@ -219,16 +218,15 @@ def add_preference(request):
     if request.method == "POST":
         form = UserPreferenceForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data.get("pref_list"))
             form.save(user=request.user)
             return HttpResponse("Preference Saved")
         return HttpResponseBadRequest
 
 
-def delete_preference(request, category):
+def delete_preference(request, preference_type, value):
     if request.method == "POST":
         user = request.user
-        user.preferences.remove(Categories.objects.get(category=category))
+        user.preferences.remove(Preferences.objects.filter(preferences_type=preference_type, value=value).first())
         logger.info(category)
         return HttpResponse("Preference Removed")
 

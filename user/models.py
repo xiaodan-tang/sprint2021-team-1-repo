@@ -4,9 +4,17 @@ from restaurant.models import Restaurant, Categories
 from phonenumber_field.modelfields import PhoneNumberField
 
 
+class Preferences(models.Model):
+    preference_type = models.CharField(max_length=200, blank=False)
+    value = models.CharField(max_length=200, blank=False)
+
+    def __str__(self):
+        return "{}: {}".format(self.preference_type, self.value)
+
+
 class DineSafelyUser(AbstractUser):
     favorite_restaurants = models.ManyToManyField(Restaurant, blank=True)
-    preferences = models.ManyToManyField(Categories, blank=True)
+    preferences = models.ManyToManyField(Preferences, blank=True)
 
 
 class User_Profile(models.Model):

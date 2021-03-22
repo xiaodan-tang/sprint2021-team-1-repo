@@ -391,6 +391,55 @@ class GetEmailForm(forms.Form):
 
 
 class UserPreferenceForm(forms.Form):
+    CHOICES_NEIGHBOURHOOD = [
+        ("Chelsea and Clinton", "Chelsea and Clinton"),
+        ("Lower East Side", "Lower East Side"),
+        ("Gramercy Park and Murray Hill", "Gramercy Park and Murray Hill"),
+        ("Greenwich Village and Soho", "Greenwich Village and Soho"),
+        ("Upper West Side", "Upper West Side"),
+        ("Central Harlem", "Central Harlem"),
+        ("Upper East Side", "Upper East Side"),
+        ("East Harlem", "East Harlem"),
+        ("Inwood and Washington Heights", "Inwood and Washington Heights"),
+        ("Lower Manhattan", "Lower Manhattan"),
+        ("Stapleton and St. George", "Stapleton and St. George"),
+        ("Tribeca", "Tribeca"),
+        ("Port Richmond", "Port Richmond"),
+        ("South Shore", "South Shore"),
+        ("Mid-Island", "Mid-Island"),
+        ("High Bridge and Morrisania", "High Bridge and Morrisania"),
+        ("Central Bronx", "Central Bronx"),
+        ("Hunts Point and Mott Haven", "Hunts Point and Mott Haven"),
+        ("Bronx Park and Fordham", "Bronx Park and Fordham"),
+        ("Southeast Bronx", "Southeast Bronx"),
+        ("Northeast Bronx", "Northeast Bronx"),
+        ("Kingsbridge and Riverdale", "Kingsbridge and Riverdale"),
+        ("Southeast Queens", "Southeast Queens"),
+        ("Northwest Queens", "Northwest Queens"),
+        ("Long Island City", "Long Island City"),
+        ("Northwest Brooklyn", "Northwest Brooklyn"),
+        ("Bushwick and Williamsburg", "Bushwick and Williamsburg"),
+        ("East New York and New Lots", "East New York and New Lots"),
+        ("Southwest Brooklyn", "Southwest Brooklyn"),
+        ("Flatbush", "Flatbush"),
+        ("Greenpoint", "Greenpoint"),
+        ("Central Brooklyn", "Central Brooklyn"),
+        ("Borough Park", "Borough Park"),
+        ("Sunset Park", "Sunset Park"),
+        ("Bushwick and Williamsburg", "Bushwick and Williamsburg"),
+        ("Southern Brooklyn", "Southern Brooklyn"),
+        ("Canarsie and Flatlands", "Canarsie and Flatlands"),
+        ("North Queens", "North Queens"),
+        ("Northeast Queens", "Northeast Queens"),
+        ("Central Queens", "Central Queens"),
+        ("West Queens", "West Queens"),
+        ("West Central Queens", "West Central Queens"),
+        ("Southeast Queens", "Southeast Queens"),
+        ("Jamaica", "Jamaica"),
+        ("Southwest Queens", "Southwest Queens"),
+        ("Rockaways", "Rockaways"),
+    ]
+
     CHOICES_CATEGORY = [
         ("newamerican", "newamerican"),
         ("armenian", "armenian"),
@@ -429,14 +478,50 @@ class UserPreferenceForm(forms.Form):
         ("waffles", "waffles"),
         ("wraps", "wraps"),
     ]
-    pref_list = forms.MultipleChoiceField(
-        label="pref_list", choices=CHOICES_CATEGORY, required=False
+
+    CHOICES_RATING = [("5", "5"), ("4", "4"), ("3", "3"), ("2", "2"), ("1", "1")]
+
+    CHOICES_COMPLIANCE = [("COVID-19 Compliant", "COVIDCompliant"), ("MOPD Compliant", "MOPDCompliant")]
+
+    CHOICES_PRICE = [("$", "price_1"), ("$$", "price_2"), ("$$$", "price_3"), ("$$$$", "price_4")]
+
+    category_list = forms.MultipleChoiceField(
+        label="category_list", choices=CHOICES_CATEGORY, required=False
+    )
+    neighbourhood_list = forms.MultipleChoiceField(
+        label="neighbourhood_list", choices=CHOICES_NEIGHBOURHOOD, required=False
+    )
+    rating_list = forms.MultipleChoiceField(
+        label="rating_list", choices=CHOICES_RATING, required=False
+    )
+    compliance_list = forms.MultipleChoiceField(
+            label="compliance_list", choices=CHOICES_COMPLIANCE, required=False
+    )
+    price_list =  forms.MultipleChoiceField(
+            label="price_list", choices=CHOICES_PRICE, required=False
     )
 
     def save(self, user, commit=True):
-        category_list = self.cleaned_data.get("pref_list")
+        category_list = self.cleaned_data.get("category_list")
+        neighbourhood_list = self.cleaned_data.get("neighbourhood_list")
+        rating_list = self.cleaned_data.get("rating_list")
+        compliance_list = self.cleaned_data.get("compliance_list")
+        price_list = self.cleaned_data.get("price_list")
+        # Save all new category preferences
         for category in category_list:
-            user.preferences.add(Categories.objects.get(category=category))
+            user.preferences.add(Preferences.objects.filter(preference_type="category", value=category).first())
+        # Save all new neighbourhood preferences
+        for neighbourhood in neighbourhood_list:
+            user.preferences.add(Preferences.objects.filter(preference_type="neighbourhood", value=neighbourhood).first())
+        # Save all new rating preferences
+        for rating in rating_list:
+            user.preferences.add(Preferences.objects.filter(preference_type="rating", value=rating).first())
+        # Save all new compliance preferences
+        for compliance in compliance_list:
+            user.preferences.add(Preferences.objects.filter(preference_type="compliance", value=compliance).first())
+        # Save all new price preferences
+        for price in price_list:
+            user.preferences.add(Preferences.objects.filter(preference_type="price", value=price).first())
 
 
 class ContactForm(forms.Form):
