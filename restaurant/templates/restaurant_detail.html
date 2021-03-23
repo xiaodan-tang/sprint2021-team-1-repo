@@ -366,7 +366,8 @@
         <div class="modal fade" id="report-abuse-modal" tabindex="-1" role="dialog" aria-labelledby="report-abuse-modal" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
-              <form class="form-validate" name="report-abuse" method="GET">
+              <form class="form-validate" name="report-abuse" method="POST">
+                  {% csrf_token %}
               <div class="modal-header py-2">
                 <h5 class="modal-title">Report abuse</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
