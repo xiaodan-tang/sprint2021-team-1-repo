@@ -38,7 +38,16 @@ from .utils import (
     questionnaire_report,
     questionnaire_statistics,
 )
+
 from dinesafelysite.views import index
+
+from user.models import (
+    Review,
+    Comment,
+    Report_Ticket_Review,
+    Report_Ticket_Comment,
+)
+
 
 import json
 
@@ -113,6 +122,39 @@ def create_yelp_restaurant_details(
 
 def create_faq(question, answer):
     return FAQ.objects.create(question=question, answer=answer)
+
+
+def create_internal_review(user, restaurant, content, rating):
+    return Review.objects.create(
+        user=user,
+        restaurant=restaurant,
+        content=content,
+        rating=rating,
+    )
+
+
+def create_comment(user, review, text):
+    return Comment.objects.create(
+        user=user,
+        review=review,
+        text=text,
+    )
+
+
+def create_report_review(user, review, reason):
+    return Report_Ticket_Review.objects.create(
+        user=user,
+        review=review,
+        reason=reason,
+    )
+
+
+def create_report_comment(user, comment, reason):
+    return Report_Ticket_Comment.objects.create(
+        user=user,
+        comment=comment,
+        reason=reason,
+    )
 
 
 class MockResponse:
@@ -552,6 +594,21 @@ class UserQuestionnaireFormTests(BaseTest):
         }
         form = QuestionnaireForm(self.form_valid)
         self.assertTrue(form.is_valid())
+
+    def leave_rating(self):
+        self.form = {
+            "content": "test",
+            "rating": "2",
+            "rating_safety": "1",
+            "rating_entry": "1",
+            "rating_door": "1",
+            "rating_table": "1",
+            "rating_bathroom": "1",
+            "rating_path": "1",
+        }
+        form = QuestionnaireForm(self.form)
+        response = self.c.post("/restaurant/profile/1/", form)
+        self.assertEqual(response.status_code, 302)
 
     def test_form_submission(self):
         create_restaurant(
@@ -1258,6 +1315,178 @@ class RestaurantRecommendationsTest(TestCase):
         request2.user = self.dummy_user2
         response2 = index(request2)
         self.assertEqual(response2.status_code, 200)
+
+
+@mock.patch("user.models.Review.objects")
+class EditCommentTests(BaseTest):
+    def test_edit_review(self, queryset):
+        queryset.delete.return_value = None
+        queryset.filter.return_value = queryset
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment/comment_id/delete"
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_delete_rating(self, queryset):
+        queryset.get.return_value = mock.Mock(spec=Review)
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment/comment_id/put"
+        )
+        self.assertEqual(response.status_code, 302)
+
+
+class CreateCommentTest(BaseTest):
+    @mock.patch("user.models.Review.objects")
+    @mock.patch("user.models.Comment.__init__", mock.Mock(return_value=None))
+    @mock.patch("user.models.Comment.save", mock.Mock(return_value=None))
+    def test_edit_comment(self, queryset):
+        queryset.get.return_value = None
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment_edit/review_id"
+        )
+        self.assertEqual(response.status_code, 302)
+
+
+class DeleteCommentTest(BaseTest):
+    @mock.patch("user.models.Comment.objects")
+    def test_delete_comment(self, queryset):
+        queryset.delete.return_value = None
+        queryset.filter.return_value = queryset
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment_delete/comment_id"
+        )
+        self.assertEqual(response.status_code, 302)
+
+
+class CommentTest(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize dummy user
+        self.dummy_user = get_user_model().objects.create(
+            username="testuser",
+            email="test@gmail.com",
+        )
+        self.dummy_user.set_password("test1234Comment")
+        self.dummy_user.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_internal_review(
+            self.dummy_user,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+    def test_delete_comment(self):
+        self.dummy_comment = create_comment(
+            self.dummy_user, self.temp_review, "comment for test deleting comment"
+        )
+        rest_id = self.temp_restaurant.id
+        comm_id = self.dummy_comment.id
+        print("test comment:", self.dummy_comment)
+        delete_url = (
+            "/restaurant/profile/" + str(rest_id) + "/comment_delete/" + str(comm_id)
+        )
+        response = self.c.get(delete_url)
+        self.assertEqual(response.status_code, 302)
+
+
+class ReportTests(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize 2 test users
+        self.user1 = get_user_model().objects.create(
+            username="user1",
+            email="test1@gmail.com",
+        )
+        self.user1.set_password("test1234Report")
+        self.user1.save()
+
+        self.user2 = get_user_model().objects.create(
+            username="user2",
+            email="test2@gmail.com",
+        )
+        self.user2.set_password("test4321Report")
+        self.user2.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_internal_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+        # Initialize temp comment
+        self.temp_comment = create_comment(
+            self.user2, self.temp_review, "comment for test report functions"
+        )
+
+    def test_report_review_model(self):
+        report_ticket_review = create_report_review(
+            self.user2, self.temp_review, "hate speech"
+        )
+        self.assertIsNotNone(report_ticket_review)
+        self.assertEqual(report_ticket_review.user.id, self.user2.id)
+        self.assertEqual(report_ticket_review.review.id, self.temp_review.id)
+        self.assertEqual(report_ticket_review.reason, "hate speech")
+
+    def test_report_comment_model(self):
+        report_ticket_comment = create_report_comment(
+            self.user1, self.temp_comment, "racist speech"
+        )
+        self.assertIsNotNone(report_ticket_comment)
+        self.assertEqual(report_ticket_comment.user.id, self.user1.id)
+        self.assertEqual(report_ticket_comment.id, self.temp_comment.id)
+        self.assertEqual(report_ticket_comment.reason, "racist speech")
+
+    def test_report_review_view(self):
+        self.c.login(username="user2", password="test4321Report")
+        rest_id = self.temp_restaurant.id
+        review_id = self.temp_review.id
+        url = "/restaurant/report/" + str(rest_id) + "/review/" + str(review_id)
+        form = {
+            "reason": "hate speech",
+        }
+        response = self.c.post(url, form)
+        self.assertEqual(response.status_code, 302)
+        self.c.logout()
+
+    def test_report_comment_view(self):
+        self.c.login(username="user1", password="test1234Report")
+        rest_id = self.temp_restaurant.id
+        comm_id = self.temp_comment.id
+        url = "/restaurant/report/" + str(rest_id) + "/comment/" + str(comm_id)
+        form = {
+            "reason": "racist speech",
+        }
+        response = self.c.post(url, form)
+        self.assertEqual(response.status_code, 302)
+        self.c.logout()
 
 
 class FAQTest(TestCase):
