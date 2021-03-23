@@ -1,12 +1,8 @@
 {% extends 'base.html' %} {% load static %} {% block title %} FAQs {% endblock %} {% block content %}
     <style>
-        .container {
-            margin-top: 50px;
-            margin-bottom: 50px;
-        }
         .collapsible {
-            background-color: #777;
-            color: white;
+            background-color: rgb(228, 228, 228);
+            color: rgb(41, 41, 41);
             cursor: pointer;
             padding: 18px;
             width: 90%;
@@ -14,25 +10,76 @@
             text-align: left;
             outline: none;
             font-size: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            margin: 10px;
+        }
+
+        .active, .collapsible:hover {
+            background-color: rgb(228, 228, 228);
+            outline: none;
         }
 
         .content {
-            padding: 10px;
-            display: block;
+            padding: 0 18px;
+            display: none;
             overflow: hidden;
             width: 90%;
+            background-color: #ffffff;
+            transition: transform .5s linear;
         }
 
+        .container-fluid{
+            margin-left: 100px;
+            margin-right: 100px;
+        }
+
+        .inner-container {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+        
+        .fa-arrow-right{
+            transform: rotate(0deg);
+            transition: transform .5s linear;
+        }
+
+        .fa-arrow-right.open{
+            transform: rotate(90deg);
+            transition: transform .5s linear;
+            }
+
     </style>
-    <div class="container">
-        <h2>Frequently Asked Questions</h2>
-        {% for faq in faqs_list %}
-            <div>
-                <button type="button" class="collapsible">Q: {{ faq.question }}</button>
+    <div class="container-fluid">
+        <div class="inner-container">
+            <h2>Frequently Asked Questions</h2>
+            {% for faq in faqs_list %}
+            <div class="col-md-10">
+                <button type="button" class="collapsible"><i id="icon" class="fa fa-arrow-right"></i>  Q: {{ faq.question }}</button>
                 <div class="content">
                     <p>{{ faq.answer }}</p>
                 </div>
             </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        var i;
+    
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                var icon = this.childNodes[0];
+                if (content.style.display === "block") {
+                    content.style.display = "none";
+                    icon.className = 'fa fa-arrow-right'; 
+                } else {
+                    content.style.display = "block";
+                    icon.className = 'fa fa-arrow-right open';
+                }
+            });
+        }
+    </script>
 {% endblock %}
