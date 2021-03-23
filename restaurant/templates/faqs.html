@@ -1,10 +1,10 @@
 {% extends 'base.html' %} {% load static %} {% block title %} FAQs {% endblock %} {% block content %}
     <style>
         .collapsible {
-            background-color: rgb(228, 228, 228);
+            background-color: rgb(241, 241, 241);
             color: rgb(41, 41, 41);
             cursor: pointer;
-            padding: 18px;
+            padding: 22px;
             width: 90%;
             border: none;
             text-align: left;
@@ -13,10 +13,11 @@
             border-radius: 5px;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
             margin: 10px;
+            transition: transform 5s linear;
         }
 
         .active, .collapsible:hover {
-            background-color: rgb(228, 228, 228);
+            background-color: rgb(241, 241, 241);
             outline: none;
         }
 
@@ -26,7 +27,7 @@
             overflow: hidden;
             width: 90%;
             background-color: #ffffff;
-            transition: transform .5s linear;
+            transition: transform 5s linear;
         }
 
         .container-fluid{
@@ -55,7 +56,7 @@
             <h2>Frequently Asked Questions</h2>
             {% for faq in faqs_list %}
             <div class="col-md-10">
-                <button type="button" class="collapsible"><i id="icon" class="fa fa-arrow-right"></i>  Q: {{ faq.question }}</button>
+                <button type="button" class="collapsible" style="outline:none;"><i id="icon" class="fa fa-arrow-right"></i>  Q: {{ faq.question }}</button>
                 <div class="content">
                     <p>{{ faq.answer }}</p>
                 </div>
