@@ -18,8 +18,8 @@ urlpatterns = [
     ),
     path("forget_password", views.forget_password, name="forget_password"),
     path("verification", views.forget_password, name="verification"),
-    path("account_details", views.account_details, name="account_details"),
     path("profile", views.profile, name="profile"),
+    path("facing_page/<user_id>", views.user_facing, name="user_facing"),
     path("user_reviews", views.user_reviews, name="user_reviews"),
     path("update_password", views.update_password, name="update_password"),
     path(

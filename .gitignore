@@ -14,3 +14,8 @@ venv
 *venv/
 venv.bak/
 README.md
+!restaurant/migrations/__init__.py
+!user/migrations/__init__.py
+restaurant/migrations/*
+user/migrations/*
+*.icloud
