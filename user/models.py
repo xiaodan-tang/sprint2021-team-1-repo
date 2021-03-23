@@ -8,6 +8,7 @@ from datetime import datetime
 class Preferences(models.Model):
     preference_type = models.CharField(max_length=200, blank=False)
     value = models.CharField(max_length=200, blank=False)
+    display_value = models.CharField(max_length=200, blank=False)
 
     def __str__(self):
         return "{}: {}".format(self.preference_type, self.value)

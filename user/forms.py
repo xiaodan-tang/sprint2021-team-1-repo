@@ -15,8 +15,7 @@ import boto3
 import random
 import string
 
-from .models import User_Profile
-from restaurant.models import Categories
+from .models import User_Profile, Preferences
 
 logger = logging.getLogger(__name__)
 
@@ -425,49 +424,49 @@ class GetEmailForm(forms.Form):
 
 class UserPreferenceForm(forms.Form):
     CHOICES_NEIGHBOURHOOD = [
-        ("Chelsea and Clinton", "Chelsea and Clinton"),
-        ("Lower East Side", "Lower East Side"),
-        ("Gramercy Park and Murray Hill", "Gramercy Park and Murray Hill"),
-        ("Greenwich Village and Soho", "Greenwich Village and Soho"),
-        ("Upper West Side", "Upper West Side"),
-        ("Central Harlem", "Central Harlem"),
-        ("Upper East Side", "Upper East Side"),
-        ("East Harlem", "East Harlem"),
-        ("Inwood and Washington Heights", "Inwood and Washington Heights"),
-        ("Lower Manhattan", "Lower Manhattan"),
-        ("Stapleton and St. George", "Stapleton and St. George"),
+        ("Chelsea_and_Clinton", "Chelsea and Clinton"),
+        ("Lower_East_Side", "Lower East Side"),
+        ("Gramercy_Park_and_Murray_Hill", "Gramercy Park and Murray Hill"),
+        ("Greenwich_Village_and_Soho", "Greenwich Village and Soho"),
+        ("Upper_West_Side", "Upper West Side"),
+        ("Central_Harlem", "Central Harlem"),
+        ("Upper_East_Side", "Upper East Side"),
+        ("East_Harlem", "East Harlem"),
+        ("Inwood_and_Washington_Heights", "Inwood and Washington Heights"),
+        ("Lower_Manhattan", "Lower Manhattan"),
+        ("Stapleton_and_St_George", "Stapleton and St. George"),
         ("Tribeca", "Tribeca"),
-        ("Port Richmond", "Port Richmond"),
-        ("South Shore", "South Shore"),
+        ("Port_Richmond", "Port Richmond"),
+        ("South_Shore", "South Shore"),
         ("Mid-Island", "Mid-Island"),
-        ("High Bridge and Morrisania", "High Bridge and Morrisania"),
-        ("Central Bronx", "Central Bronx"),
-        ("Hunts Point and Mott Haven", "Hunts Point and Mott Haven"),
-        ("Bronx Park and Fordham", "Bronx Park and Fordham"),
-        ("Southeast Bronx", "Southeast Bronx"),
-        ("Northeast Bronx", "Northeast Bronx"),
-        ("Kingsbridge and Riverdale", "Kingsbridge and Riverdale"),
-        ("Southeast Queens", "Southeast Queens"),
-        ("Northwest Queens", "Northwest Queens"),
-        ("Long Island City", "Long Island City"),
-        ("Northwest Brooklyn", "Northwest Brooklyn"),
-        ("Bushwick and Williamsburg", "Bushwick and Williamsburg"),
-        ("East New York and New Lots", "East New York and New Lots"),
-        ("Southwest Brooklyn", "Southwest Brooklyn"),
+        ("HighPBridge and Morrisania", "High Bridge and Morrisania"),
+        ("Central_Bronx", "Central Bronx"),
+        ("Hunts_Point_and_Mott_Haven", "Hunts Point and Mott Haven"),
+        ("Bronx_Park_and_Fordham", "Bronx Park and Fordham"),
+        ("Southeast_Bronx", "Southeast Bronx"),
+        ("Northeast_Bronx", "Northeast Bronx"),
+        ("Kingsbridge_and_Riverdale", "Kingsbridge and Riverdale"),
+        ("Southeast_Queens", "Southeast Queens"),
+        ("Northwest_Queens", "Northwest Queens"),
+        ("Long_Island_City", "Long Island City"),
+        ("Northwest_Brooklyn", "Northwest Brooklyn"),
+        ("Bushwick_and_Williamsburg", "Bushwick and Williamsburg"),
+        ("East_New_York_and_New_Lots", "East New York and New Lots"),
+        ("Southwest_Brooklyn", "Southwest Brooklyn"),
         ("Flatbush", "Flatbush"),
         ("Greenpoint", "Greenpoint"),
-        ("Central Brooklyn", "Central Brooklyn"),
-        ("Borough Park", "Borough Park"),
-        ("Sunset Park", "Sunset Park"),
-        ("Bushwick and Williamsburg", "Bushwick and Williamsburg"),
-        ("Southern Brooklyn", "Southern Brooklyn"),
-        ("Canarsie and Flatlands", "Canarsie and Flatlands"),
-        ("North Queens", "North Queens"),
-        ("Northeast Queens", "Northeast Queens"),
-        ("Central Queens", "Central Queens"),
-        ("West Queens", "West Queens"),
-        ("West Central Queens", "West Central Queens"),
-        ("Southeast Queens", "Southeast Queens"),
+        ("Central_Brooklyn", "Central Brooklyn"),
+        ("Borough_Park", "Borough Park"),
+        ("Sunset_Park", "Sunset Park"),
+        ("Bushwick_and_Williamsburg", "Bushwick and Williamsburg"),
+        ("Southern_Brooklyn", "Southern Brooklyn"),
+        ("Canarsie_and_Flatlands", "Canarsie and Flatlands"),
+        ("North_Queens", "North Queens"),
+        ("Northeast_Queens", "Northeast Queens"),
+        ("Central_Queens", "Central Queens"),
+        ("West_Queens", "West Queens"),
+        ("West_Central Queens", "West Central Queens"),
+        ("Southeast_Queens", "Southeast Queens"),
         ("Jamaica", "Jamaica"),
         ("Southwest Queens", "Southwest Queens"),
         ("Rockaways", "Rockaways"),
@@ -514,9 +513,9 @@ class UserPreferenceForm(forms.Form):
 
     CHOICES_RATING = [("5", "5"), ("4", "4"), ("3", "3"), ("2", "2"), ("1", "1")]
 
-    CHOICES_COMPLIANCE = [("COVID-19 Compliant", "COVIDCompliant"), ("MOPD Compliant", "MOPDCompliant")]
+    CHOICES_COMPLIANCE = [("COVIDCompliant", "COVID-19 Compliant"), ("MOPDCompliant", "MOPD Compliant")]
 
-    CHOICES_PRICE = [("$", "price_1"), ("$$", "price_2"), ("$$$", "price_3"), ("$$$$", "price_4")]
+    CHOICES_PRICE = [("price_1", "$"), ("price_2", "$$"), ("price_3", "$$$"), ("price_4", "$$$$")]
 
     category_list = forms.MultipleChoiceField(
         label="category_list", choices=CHOICES_CATEGORY, required=False
@@ -535,11 +534,11 @@ class UserPreferenceForm(forms.Form):
     )
 
     def save(self, user, commit=True):
-        category_list = self.cleaned_data.get("category_list")
-        neighbourhood_list = self.cleaned_data.get("neighbourhood_list")
-        rating_list = self.cleaned_data.get("rating_list")
-        compliance_list = self.cleaned_data.get("compliance_list")
-        price_list = self.cleaned_data.get("price_list")
+        category_list = self.cleaned_data.get("category_list", [])
+        neighbourhood_list = self.cleaned_data.get("neighbourhood_list", [])
+        rating_list = self.cleaned_data.get("rating_list", [])
+        compliance_list = self.cleaned_data.get("compliance_list", [])
+        price_list = self.cleaned_data.get("price_list", [])
         # Save all new category preferences
         for category in category_list:
             user.preferences.add(Preferences.objects.filter(preference_type="category", value=category).first())
