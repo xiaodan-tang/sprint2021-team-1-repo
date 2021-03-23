@@ -1335,6 +1335,18 @@ class EditCommentTests(BaseTest):
         self.assertEqual(response.status_code, 302)
 
 
+class CreateCommentTest(BaseTest):
+    @mock.patch("user.models.Review.objects")
+    @mock.patch("user.models.Comment.__init__", mock.Mock(return_value=None))
+    @mock.patch("user.models.Comment.save", mock.Mock(return_value=None))
+    def test_edit_comment(self, queryset):
+        queryset.get.return_value = None
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment_edit/review_id"
+        )
+        self.assertEqual(response.status_code, 302)
+
+
 class DeleteCommentTest(BaseTest):
     @mock.patch("user.models.Comment.objects")
     def test_delete_comment(self, queryset):
