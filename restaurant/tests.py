@@ -45,6 +45,7 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 
+
 def create_restaurant(
     restaurant_name, business_address, yelp_detail, postcode, business_id
 ):
@@ -1435,9 +1436,15 @@ class SortTest(TestCase):
             sort_option="distance",
             user_geocode="40.7992147,-73.954758",
         )
-        self.assertEqual(self.restaurant1.business_id, filtered_restaurants[0].business_id)
-        self.assertEqual(self.restaurant2.business_id, filtered_restaurants[1].business_id)
-        self.assertEqual(self.restaurant3.business_id, filtered_restaurants[2].business_id)
+        self.assertEqual(
+            self.restaurant1.business_id, filtered_restaurants[0].business_id
+        )
+        self.assertEqual(
+            self.restaurant2.business_id, filtered_restaurants[1].business_id
+        )
+        self.assertEqual(
+            self.restaurant3.business_id, filtered_restaurants[2].business_id
+        )
 
         # Test check user location
         default_location = "Central Park North, New York, NY, USA"
@@ -1448,12 +1455,16 @@ class SortTest(TestCase):
         request = self.factory.get("restaurant:browse")
         request.user = self.dummy_user
         # - should return default location and geocode for the first time (location & geocode hasn't been setup)
-        response_location, response_geocode = check_user_location(request.user, None, None)
+        response_location, response_geocode = check_user_location(
+            request.user, None, None
+        )
         self.assertEqual(response_location, default_location)
         self.assertEqual(response_geocode, default_geocode)
         # - should update current_location & current_geocode in user model for the second time
         # - should return updated location & geocode
-        response_location, response_geocode = check_user_location(request.user, form_location, form_geocode)
+        response_location, response_geocode = check_user_location(
+            request.user, form_location, form_geocode
+        )
         self.assertEqual(response_location, form_location)
         self.assertEqual(response_geocode, form_geocode)
         self.assertEqual(response_location, self.dummy_user.current_location)
@@ -1463,14 +1474,17 @@ class SortTest(TestCase):
         request = self.factory.get("restaurant:browse")
         request.user = AnonymousUser()
         # - should return default location and geocode for the first time
-        response_location, response_geocode = check_user_location(request.user, None, None)
+        response_location, response_geocode = check_user_location(
+            request.user, None, None
+        )
         self.assertEqual(response_location, default_location)
         self.assertEqual(response_geocode, default_geocode)
         # - should return updated location and geocode if changed location
-        response_location, response_geocode = check_user_location(request.user, form_location, form_geocode)
+        response_location, response_geocode = check_user_location(
+            request.user, form_location, form_geocode
+        )
         self.assertEqual(response_location, form_location)
         self.assertEqual(response_geocode, form_geocode)
-
 
     def test_sort_by_price(self):
         # Test sort form of pricelow and pricehigh can be successfully submitted in browse
@@ -1497,9 +1511,15 @@ class SortTest(TestCase):
             limit=3,
             sort_option="pricelow",
         )
-        self.assertEqual(self.restaurant1.business_id, filtered_restaurants[0].business_id)
-        self.assertEqual(self.restaurant3.business_id, filtered_restaurants[1].business_id)
-        self.assertEqual(self.restaurant2.business_id, filtered_restaurants[2].business_id)
+        self.assertEqual(
+            self.restaurant1.business_id, filtered_restaurants[0].business_id
+        )
+        self.assertEqual(
+            self.restaurant3.business_id, filtered_restaurants[1].business_id
+        )
+        self.assertEqual(
+            self.restaurant2.business_id, filtered_restaurants[2].business_id
+        )
 
         # Test restaurants' order is correct if sort by pricehigh
         # Order should be restaurant2, restaurant3, restaurant1
@@ -1508,9 +1528,15 @@ class SortTest(TestCase):
             limit=3,
             sort_option="pricehigh",
         )
-        self.assertEqual(self.restaurant2.business_id, filtered_restaurants[0].business_id)
-        self.assertEqual(self.restaurant3.business_id, filtered_restaurants[1].business_id)
-        self.assertEqual(self.restaurant1.business_id, filtered_restaurants[2].business_id)
+        self.assertEqual(
+            self.restaurant2.business_id, filtered_restaurants[0].business_id
+        )
+        self.assertEqual(
+            self.restaurant3.business_id, filtered_restaurants[1].business_id
+        )
+        self.assertEqual(
+            self.restaurant1.business_id, filtered_restaurants[2].business_id
+        )
 
     def test_sort_by_rating(self):
         # Test sort form of ratedlow and ratedhigh can be successfully submitted in browse
@@ -1537,9 +1563,15 @@ class SortTest(TestCase):
             limit=3,
             sort_option="ratedlow",
         )
-        self.assertEqual(self.restaurant3.business_id, filtered_restaurants[0].business_id)
-        self.assertEqual(self.restaurant2.business_id, filtered_restaurants[1].business_id)
-        self.assertEqual(self.restaurant1.business_id, filtered_restaurants[2].business_id)
+        self.assertEqual(
+            self.restaurant3.business_id, filtered_restaurants[0].business_id
+        )
+        self.assertEqual(
+            self.restaurant2.business_id, filtered_restaurants[1].business_id
+        )
+        self.assertEqual(
+            self.restaurant1.business_id, filtered_restaurants[2].business_id
+        )
 
         # Test restaurants' order is correct if sort by ratedhigh
         # Order should be restaurant1, restaurant2, restaurant3
@@ -1548,6 +1580,12 @@ class SortTest(TestCase):
             limit=3,
             sort_option="ratedhigh",
         )
-        self.assertEqual(self.restaurant1.business_id, filtered_restaurants[0].business_id)
-        self.assertEqual(self.restaurant2.business_id, filtered_restaurants[1].business_id)
-        self.assertEqual(self.restaurant3.business_id, filtered_restaurants[2].business_id)
+        self.assertEqual(
+            self.restaurant1.business_id, filtered_restaurants[0].business_id
+        )
+        self.assertEqual(
+            self.restaurant2.business_id, filtered_restaurants[1].business_id
+        )
+        self.assertEqual(
+            self.restaurant3.business_id, filtered_restaurants[2].business_id
+        )
