@@ -830,7 +830,7 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
 })
 
 const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
-const isNull = el => el === 'null' || el === null || el === undefined;
+const isNull = el => el === 'null' || el === 'None' || el === null || el === undefined;
 const restaurantId = '{{ restaurant_id }}' || '';
 const userId = Number('{{ user_id | safe }}');
 const REPORT_TYPE = {
@@ -1111,16 +1111,20 @@ class RatingReview extends HTMLElement {
 
     replyContainer.appendChild(replyAvatar);
     replyContainer.appendChild(replyBox);
+    
+    const deleteForm = document.createElement('form');
+    deleteForm.setAttribute('method', 'get');
+    deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
+    deleteForm.setAttribute('class', 'd-inline-block');
     if (userId === Number(author)) {
-      const deleteForm = document.createElement('form');
-      deleteForm.setAttribute('method', 'get');
-      deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
-      deleteForm.setAttribute('class', 'd-inline-block');
       const deleteButton = document.createElement('span');
       deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-1');
       deleteButton.addEventListener('click', () => {
         deleteForm.submit();
       });
+      deleteForm.appendChild(deleteButton);
+    }
+    if (!isNull(userId)) {
       const reportButton = document.createElement('span');
       reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
       reportButton.addEventListener('click', () => {
@@ -1128,11 +1132,10 @@ class RatingReview extends HTMLElement {
         __data__.reportAbuse.type = REPORT_TYPE.COMMENT;
         __data__.reportAbuse.id = commentId;
       });
-      deleteForm.appendChild(deleteButton);
       deleteForm.appendChild(reportButton);
-
-      replyContainer.appendChild(deleteForm);
     }
+
+    replyContainer.appendChild(deleteForm);
 
     commentContainer.appendChild(line);
     commentContainer.appendChild(replyContainer);
