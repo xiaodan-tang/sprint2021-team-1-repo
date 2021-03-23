@@ -1487,7 +1487,8 @@ class ReportTests(TestCase):
         response = self.c.post(url, form)
         self.assertEqual(response.status_code, 302)
         self.c.logout()
-        
+
+
 class FAQTest(TestCase):
     """ Test FAQ Model"""
 
