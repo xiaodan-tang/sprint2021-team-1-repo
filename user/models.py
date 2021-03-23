@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from restaurant.models import Restaurant, Categories
 from phonenumber_field.modelfields import PhoneNumberField
 
-
 from datetime import datetime
 
 
@@ -123,3 +122,61 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user.username} review on {self.restaurant.restaurant_name}"
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="comments"
+    )
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="comments"
+    )
+    text = models.CharField(max_length=512)
+    time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-time"]
+
+    def __str__(self):
+        comment_user = self.user.username
+        reviewer = self.review.user.username
+        restaurant = self.review.restaurant.restaurant_name
+        return f"{comment_user} comment on {reviewer}'s review for {restaurant}"
+
+
+class Report_Ticket_Review(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="report_reviews"
+    )
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="report_tickets"
+    )
+    reason = models.CharField(max_length=512)
+    time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-time"]
+
+    def __str__(self):
+        reporter = self.user.username
+        reported_user = self.review.user.username
+        return f"{reporter}'s report ticket on {reported_user}'s review"
+
+
+class Report_Ticket_Comment(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="report_comments"
+    )
+    comment = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name="report_tickets"
+    )
+    reason = models.CharField(max_length=512)
+    time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-time"]
+
+    def __str__(self):
+        reporter = self.user.username
+        reported_user = self.comment.user.username
+        return f"{reporter}'s report ticket on {reported_user}'s comment"

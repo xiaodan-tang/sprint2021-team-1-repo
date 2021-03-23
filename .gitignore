@@ -18,3 +18,4 @@ README.md
 !user/migrations/__init__.py
 restaurant/migrations/*
 user/migrations/*
+*.icloud
