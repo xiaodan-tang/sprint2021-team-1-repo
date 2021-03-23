@@ -363,6 +363,27 @@
             </div>
           </div>
         </div>
+        <div class="modal fade" id="report-abuse-modal" tabindex="-1" role="dialog" aria-labelledby="report-abuse-modal" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <form class="form-validate" name="report-abuse" method="GET">
+              <div class="modal-header py-2">
+                <h5 class="modal-title">Report abuse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <textarea class="form-control" name="reason" cols="30" rows="6"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" type="submit">Submit</button>
+              </div>
+             </form>
+            </div>
+          </div>
+        </div>
 
 
         <!-- Modal -->
@@ -811,7 +832,25 @@ const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0i
 const isNull = el => el === 'null' || el === null || el === undefined;
 const restaurantId = '{{ restaurant_id }}' || '';
 const userId = Number('{{ user_id | safe }}');
-
+const REPORT_TYPE = {
+  REVIEW: 'REVIEW',
+  COMMENT: 'COMMENT'
+};
+let __data__ = {
+  reportAbuse: {
+    type: null,
+    id: null
+  }
+};
+document.forms['report-abuse'].addEventListener('submit', e => {
+  e.preventDefault();
+  if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
+    e.target.setAttribute('action', `/restaurant/report/${restaurantId}/review/${__data__.reportAbuse.id}`);
+  } else {
+    e.target.setAttribute('action', `/restaurant/report/${restaurantId}/comment/${__data__.reportAbuse.id}`);
+  }
+  e.target.submit();
+});
 /**
  * Rating box view
  * @param {review-id} string
@@ -967,7 +1006,7 @@ class RatingReview extends HTMLElement {
     }
 
     new Array().forEach.call(this.dropdownWrapper.children, el => this.dropdownWrapper.removeChild(el));
-    ['Edit', 'Delete', 'Reply'].forEach((el, index) => {
+    ['Edit', 'Delete', 'Reply', 'Report'].forEach((el, index) => {
       if (!editable && index != 2) return;
       const anchor = document.createElement('a');
       anchor.setAttribute('class', 'dropdown-item small py-2');
@@ -1030,6 +1069,14 @@ class RatingReview extends HTMLElement {
 
           this.rootDiv.appendChild(form);
         });
+      } else if (index === 3) {
+        anchor.addEventListener('click', e => {
+          e.preventDefault();
+          this.dropdownWrapper.classList.remove('show');
+          $('#report-abuse-modal').modal('show');
+          __data__.reportAbuse.type = REPORT_TYPE.REVIEW;
+          __data__.reportAbuse.id = this.getAttribute('review-id');
+        });
       }
       this.dropdownWrapper.appendChild(anchor);
     });
@@ -1057,7 +1104,7 @@ class RatingReview extends HTMLElement {
     replyAvatar.setAttribute('src', profile);
 
     const replyBox = document.createElement('div');
-    replyBox.setAttribute('style', 'display: inline-block; margin-left: 1rem; width: 75%; vertical-align: middle;');
+    replyBox.setAttribute('style', 'display: inline-block; margin-left: 1rem; width: 70%; vertical-align: middle;');
     replyBox.setAttribute('class', 'text-muted text-sm text-truncate');
     replyBox.innerText = text;
 
@@ -1069,11 +1116,19 @@ class RatingReview extends HTMLElement {
       deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
       deleteForm.setAttribute('class', 'd-inline-block');
       const deleteButton = document.createElement('span');
-      deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-2');
+      deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-1');
       deleteButton.addEventListener('click', () => {
         deleteForm.submit();
       });
+      const reportButton = document.createElement('span');
+      reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
+      reportButton.addEventListener('click', () => {
+        $('#report-abuse-modal').modal('show');
+        __data__.reportAbuse.type = REPORT_TYPE.COMMENT;
+        __data__.reportAbuse.id = commentId;
+      });
       deleteForm.appendChild(deleteButton);
+      deleteForm.appendChild(reportButton);
 
       replyContainer.appendChild(deleteForm);
     }
