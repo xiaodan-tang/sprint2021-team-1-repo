@@ -58,258 +58,267 @@ $(document).ready(function(){
                 <p class="mb-3 mb-md-0"><strong id="res_count"></strong> results found</p>
             </div>
             <div class="d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
-                <form class="pr-xl-3" style="display: flex; flex-flow: row wrap; align-items: center;" action="" method="POST" id="search_filter_form" name="search_filter_form">
-                    {% csrf_token %}
+                <div>
+                    <form class="pr-xl-3" style="display: flex; flex-flow: row wrap; align-items: center;" action="" method="POST" id="search_filter_form" name="search_filter_form">
+                        {% csrf_token %}
 
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label" for="keyword">Search by restaurant name</label>
-                        <div class="input-label-absolute input-label-absolute-right">
-                            <div class="label-absolute"><i class="fa fa-search"></i></div>
-                            <input class="form-control pr-4" type="search" name="keyword" placeholder="Restaurant Name"
-                                   id="keyword"></div>
-                    </div>
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label" for="neighbourhood">Filter by Neighborhood</label>
-                        <select class="selectpicker form-control" name="neighbourhood" id="neighbourhood" multiple
-                                data-style="btn-selectpicker" data-live-search="true"
-                                data-selected-text-format="count &gt; 1" title="">
-                            <option value="Borough Park">Borough Park</option>
-                            <option value="Bronx Park and Fordham">Bronx Park and Fordham</option>
-                            <option value="Bushwick and Williamsburg">Bushwick and Williamsburg</option>
-                            <option value="Canarsie and Flatlands">Canarsie and Flatlands</option>
-                            <option value="Central Bronx">Central Bronx</option>
-                            <option value="Central Brooklyn">Central Brooklyn</option>
-                            <option value="Central Harlem">Central Harlem</option>
-                            <option value="Central Queens">Central Queens</option>
-                            <option value="Chelsea and Clinton">Chelsea and Clinton</option>
-                            <option value="East Harlem">East Harlem</option>
-                            <option value="East New York and New Lots">East New York and New Lots</option>
-                            <option value="Flatbush">Flatbush</option>
-                            <option value="Gramercy Park and Murray Hill">Gramercy Park and Murray Hill</option>
-                            <option value="Greenpoint">Greenpoint</option>
-                            <option value="Greenwich Village and Soho">Greenwich Village and Soho</option>
-                            <option value="High Bridge and Morrisania">High Bridge and Morrisania</option>
-                            <option value="Hunts Point and Mott Haven">Hunts Point and Mott Haven</option>
-                            <option value="Inwood and Washington Heights">Inwood and Washington Heights</option>
-                            <option value="Jamaica">Jamaica</option>
-                            <option value="Kingsbridge and Riverdale">Kingsbridge and Riverdale</option>
-                            <option value="Long Island City">Long Island City</option>
-                            <option value="Lower East Side">Lower East Side</option>
-                            <option value="Lower Manhattan">Lower Manhattan</option>
-                            <option value="Mid-Island">Mid-Island</option>
-                            <option value="North Queens">North Queens</option>
-                            <option value="Northeast Queens">Northeast Queens</option>
-                            <option value="Northeast Bronx">Northeast Bronx</option>
-                            <option value="Northwest Brooklyn">Northwest Brooklyn</option>
-                            <option value="Northwest Queens">Northwest Queens</option>
-                            <option value="Port Richmond">Port Richmond</option>
-                            <option value="Rockaways">Rockaways</option>
-                            <option value="South Shore">South Shore</option>
-                            <option value="Southern Brooklyn">Southern Brooklyn</option>
-                            <option value="Southeast Bronx">Southeast Bronx</option>
-                            <option value="Southeast Queens">Southeast Queens</option>
-                            <option value="Southwest Brooklyn">Southwest Brooklyn</option>
-                            <option value="Southwest Queens">Southwest Queens</option>
-                            <option value="Stapleton and St. George">Stapleton and St. George</option>
-                            <option value="Sunset Park">Sunset Park</option>
-                            <option value="Tribeca">Tribeca</option>
-                            <option value="Upper East Side">Upper East Side</option>
-                            <option value="Upper West Side">Upper West Side</option>
-                            <option value="West Central Queens">West Central Queens</option>
-                            <option value="West Queens">West Queens</option>
-                        </select>
-                    </div>
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label" for="category">Filter by Category</label>
-                        <select class="selectpicker form-control" name="category" id="category" multiple
-                                data-style="btn-selectpicker" data-live-search="true"
-                                data-selected-text-format="count &gt; 1" title="">
-                            <option value="armenian">Armenian</option>
-                            <option value="barbeque">Barbeque</option>
-                            <option value="bars">Bars</option>
-                            <option value="bistros">Bistros</option>
-                            <option value="burgers">Burgers</option>
-                            <option value="chinese">Chinese</option>
-                            <option value="danish">Danish</option>
-                            <option value="diners">Diners</option>
-                            <option value="ethiopian">Ethiopian</option>
-                            <option value="filipino">Filipino</option>
-                            <option value="french">French</option>
-                            <option value="georgian">Georgian</option>
-                            <option value="german">German</option>
-                            <option value="greek">Greek</option>
-                            <option value="hotdog">Hot dog</option>
-                            <option value="italian">Italian</option>
-                            <option value="japanese">Japanese</option>
-                            <option value="jewish">Jewish</option>
-                            <option value="kebab">Kebab</option>
-                            <option value="korean">Korean</option>
-                            <option value="kosher">Kosher</option>
-                            <option value="mexican">Mexican</option>
-                            <option value="newamerican">New American</option>
-                            <option value="noodles">Noodles</option>
-                            <option value="pizza">Pizza</option>
-                            <option value="salad">Salad</option>
-                            <option value="sandwiches">Sandwiches</option>
-                            <option value="seafood">Seafood</option>
-                            <option value="sushi">Sushi</option>
-                            <option value="tapassmallplates">Tapas/Small plates</option>
-                            <option value="vegan">Vegan</option>
-                            <option value="vegetarian">Vegetarian</option>
-                            <option value="vietnamese">Vietnamese</option>
-                            <option value="waffles">Waffles</option>
-                            <option value="wraps">Wraps</option>
-                        </select>
-                    </div>
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label">Filter by Price</label>
-                        <ul class="list-unstyled mb-0">
-                            <li>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="price_1" name="price_1"
-                                           value="$">
-                                    <label class="custom-control-label" for="price_1">$</label>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="price_2" name="price_2"
-                                           value="$$">
-                                    <label class="custom-control-label" for="price_2">$$</label>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="price_3" name="price_3"
-                                           value="$$$">
-                                    <label class="custom-control-label" for="price_3">$$$</label>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="price_4" name="price_4"
-                                           value="$$$$">
-                                    <label class="custom-control-label" for="price_4">$$$$</label>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label">Filter by Compliant Status</label>
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" id="All" name="All" type="checkbox" value="All">
-                                <label class="custom-control-label" for="All">All</label>
-                            </div>
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" id="COVIDCompliant" name="COVIDCompliant" type="checkbox" value="COVIDCompliant">
-                                <label class="custom-control-label" for="COVIDCompliant">COVID-19 Compliant</label>
-                            </div>
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" id="MOPDCompliant" name="MOPDCompliant" type="checkbox" value="MOPDCompliant">
-                                <label class="custom-control-label" for="MOPDCompliant">MOPD Compliant</label>
-                            </div>
+                        <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                            <label class="form-label" for="keyword">Search by restaurant name</label>
+                            <div class="input-label-absolute input-label-absolute-right">
+                                <div class="label-absolute"><i class="fa fa-search"></i></div>
+                                <input class="form-control pr-4" type="search" name="keyword" placeholder="Restaurant Name"
+                                    id="keyword"></div>
                         </div>
-                    </div>
-                    {% if request.user.is_authenticated %}
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label">Filter by Favorites</label>
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" type="checkbox" id="fav" name="fav" value="fav">
-                                <label class="custom-control-label" for="fav"
-                                >Favorites</label>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                        <label class="form-label">Filter by Rating</label>
-                        <div class="form-group">
-                            <select class="selectpicker form-control" name="rating" id="rating" multiple data-style="btn-selectpicker" title="">
-                                <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
-                                <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
-                                <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
-                                <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
-                                <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                        <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                            <label class="form-label" for="neighbourhood">Filter by Neighborhood</label>
+                            <select class="selectpicker form-control" name="neighbourhood" id="neighbourhood" multiple
+                                    data-style="btn-selectpicker" data-live-search="true"
+                                    data-selected-text-format="count &gt; 1" title="">
+                                <option value="Borough Park">Borough Park</option>
+                                <option value="Bronx Park and Fordham">Bronx Park and Fordham</option>
+                                <option value="Bushwick and Williamsburg">Bushwick and Williamsburg</option>
+                                <option value="Canarsie and Flatlands">Canarsie and Flatlands</option>
+                                <option value="Central Bronx">Central Bronx</option>
+                                <option value="Central Brooklyn">Central Brooklyn</option>
+                                <option value="Central Harlem">Central Harlem</option>
+                                <option value="Central Queens">Central Queens</option>
+                                <option value="Chelsea and Clinton">Chelsea and Clinton</option>
+                                <option value="East Harlem">East Harlem</option>
+                                <option value="East New York and New Lots">East New York and New Lots</option>
+                                <option value="Flatbush">Flatbush</option>
+                                <option value="Gramercy Park and Murray Hill">Gramercy Park and Murray Hill</option>
+                                <option value="Greenpoint">Greenpoint</option>
+                                <option value="Greenwich Village and Soho">Greenwich Village and Soho</option>
+                                <option value="High Bridge and Morrisania">High Bridge and Morrisania</option>
+                                <option value="Hunts Point and Mott Haven">Hunts Point and Mott Haven</option>
+                                <option value="Inwood and Washington Heights">Inwood and Washington Heights</option>
+                                <option value="Jamaica">Jamaica</option>
+                                <option value="Kingsbridge and Riverdale">Kingsbridge and Riverdale</option>
+                                <option value="Long Island City">Long Island City</option>
+                                <option value="Lower East Side">Lower East Side</option>
+                                <option value="Lower Manhattan">Lower Manhattan</option>
+                                <option value="Mid-Island">Mid-Island</option>
+                                <option value="North Queens">North Queens</option>
+                                <option value="Northeast Queens">Northeast Queens</option>
+                                <option value="Northeast Bronx">Northeast Bronx</option>
+                                <option value="Northwest Brooklyn">Northwest Brooklyn</option>
+                                <option value="Northwest Queens">Northwest Queens</option>
+                                <option value="Port Richmond">Port Richmond</option>
+                                <option value="Rockaways">Rockaways</option>
+                                <option value="South Shore">South Shore</option>
+                                <option value="Southern Brooklyn">Southern Brooklyn</option>
+                                <option value="Southeast Bronx">Southeast Bronx</option>
+                                <option value="Southeast Queens">Southeast Queens</option>
+                                <option value="Southwest Brooklyn">Southwest Brooklyn</option>
+                                <option value="Southwest Queens">Southwest Queens</option>
+                                <option value="Stapleton and St. George">Stapleton and St. George</option>
+                                <option value="Sunset Park">Sunset Park</option>
+                                <option value="Tribeca">Tribeca</option>
+                                <option value="Upper East Side">Upper East Side</option>
+                                <option value="Upper West Side">Upper West Side</option>
+                                <option value="West Central Queens">West Central Queens</option>
+                                <option value="West Queens">West Queens</option>
                             </select>
                         </div>
-                    </div>
-                    <div>
-                        <button style="margin: 5px 10px 5px 0;" class="btn btn-primary" id="filterbtn" type="submit"><i class="fas fa-filter mr-1"></i>Filter</button>
-                        <script>
-                            var restaurant_content_list = null;
-                          // Submit post on submit
-                            $('#search_filter_form').on('submit', function(event){
-                                event.preventDefault();
+                        <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                            <label class="form-label" for="category">Filter by Category</label>
+                            <select class="selectpicker form-control" name="category" id="category" multiple
+                                    data-style="btn-selectpicker" data-live-search="true"
+                                    data-selected-text-format="count &gt; 1" title="">
+                                <option value="armenian">Armenian</option>
+                                <option value="barbeque">Barbeque</option>
+                                <option value="bars">Bars</option>
+                                <option value="bistros">Bistros</option>
+                                <option value="burgers">Burgers</option>
+                                <option value="chinese">Chinese</option>
+                                <option value="danish">Danish</option>
+                                <option value="diners">Diners</option>
+                                <option value="ethiopian">Ethiopian</option>
+                                <option value="filipino">Filipino</option>
+                                <option value="french">French</option>
+                                <option value="georgian">Georgian</option>
+                                <option value="german">German</option>
+                                <option value="greek">Greek</option>
+                                <option value="hotdog">Hot dog</option>
+                                <option value="italian">Italian</option>
+                                <option value="japanese">Japanese</option>
+                                <option value="jewish">Jewish</option>
+                                <option value="kebab">Kebab</option>
+                                <option value="korean">Korean</option>
+                                <option value="kosher">Kosher</option>
+                                <option value="mexican">Mexican</option>
+                                <option value="newamerican">New American</option>
+                                <option value="noodles">Noodles</option>
+                                <option value="pizza">Pizza</option>
+                                <option value="salad">Salad</option>
+                                <option value="sandwiches">Sandwiches</option>
+                                <option value="seafood">Seafood</option>
+                                <option value="sushi">Sushi</option>
+                                <option value="tapassmallplates">Tapas/Small plates</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="vegetarian">Vegetarian</option>
+                                <option value="vietnamese">Vietnamese</option>
+                                <option value="waffles">Waffles</option>
+                                <option value="wraps">Wraps</option>
+                            </select>
+                        </div>
+                        <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                            <label class="form-label">Filter by Price</label>
+                            <ul class="list-unstyled mb-0">
+                                <li>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="price_1" name="price_1"
+                                            value="$">
+                                        <label class="custom-control-label" for="price_1">$</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="price_2" name="price_2"
+                                            value="$$">
+                                        <label class="custom-control-label" for="price_2">$$</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="price_3" name="price_3"
+                                            value="$$$">
+                                        <label class="custom-control-label" for="price_3">$$$</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="price_4" name="price_4"
+                                            value="$$$$">
+                                        <label class="custom-control-label" for="price_4">$$$$</label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div style="display: flex; flex-flow: row wrap; align-items: center;">
+
+                            <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                                <label class="form-label">Filter by Compliant Status</label>
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" id="All" name="All" type="checkbox" value="All">
+                                        <label class="custom-control-label" for="All">All</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" id="COVIDCompliant" name="COVIDCompliant" type="checkbox" value="COVIDCompliant">
+                                        <label class="custom-control-label" for="COVIDCompliant">COVID-19 Compliant</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" id="MOPDCompliant" name="MOPDCompliant" type="checkbox" value="MOPDCompliant">
+                                        <label class="custom-control-label" for="MOPDCompliant">MOPD Compliant</label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if request.user.is_authenticated %}
+                            <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                                <label class="form-label">Filter by Favorites</label>
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="fav" name="fav" value="fav">
+                                        <label class="custom-control-label" for="fav"
+                                        >Favorites</label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="mb-4" style="margin: 5px 10px 5px 0;">
+                                <label class="form-label">Filter by Rating</label>
+                                <div class="form-group">
+                                    <select class="selectpicker form-control" name="rating" id="rating" multiple data-style="btn-selectpicker" title="">
+                                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button style="margin: 5px 10px 5px 0;" class="btn btn-primary" id="filterbtn" type="submit"><i class="fas fa-filter mr-1"></i>Filter</button>
+                            <script>
+                                var restaurant_content_list = null;
+                            // Submit post on submit
+                                $('#search_filter_form').on('submit', function(event){
+                                    event.preventDefault();
+                                    clearRestaurant();
+                                    create_post();
+                                });
+                                function create_post() {
+                                    var form = new FormData(document.getElementById("search_filter_form"));
+                                    $.ajax({
+                                        url : "search_filter/restaurants_list/1",
+                                        type : "POST",
+                                        data : form,
+                                        processData: false,
+                                        contentType: false,
+                                        success : function(json) {
+                                            page_global += 1;
+                                            loadRestaurant(json.restaurant_list, json.restaurant_number)
+                                        },
+                                        error : function(xhr,errmsg,err) {
+                                        console.log('Error')
+                                        }
+                                    });
+                                };
+                            </script>
+                            <button style="margin: 5px 10px 5px 0;" class="btn btn-secondary" type="reset" onclick="resetForm(event, $(this));"><i
+                                class="fas fa-filter mr-1"></i>Reset
+                            </button>
+                            <script>
+                                function resetForm(e, thisobj) {
+                                thisform = thisobj.closest('form');
+                                selectbox_in_form = thisform.find('select');
+        
+                                // completely remove selected when it has been assigned.
+                                selectbox_in_form.find('option:selected').removeAttr('selected');
+                                selectbox_in_form.val('');
+                                selectbox_in_form.change();
+        
+                                delete selectbox_in_form;
+                                delete thisform;
+                                var search_filter_form = document.getElementById("search_filter_form");
+                                search_filter_form.reset();
                                 clearRestaurant();
                                 create_post();
-                            });
-                            function create_post() {
-                                var form = new FormData(document.getElementById("search_filter_form"));
-                                $.ajax({
-                                    url : "search_filter/restaurants_list/1",
-                                    type : "POST",
-                                    data : form,
-                                    processData: false,
-                                    contentType: false,
-                                    success : function(json) {
-                                        page_global += 1;
-                                        loadRestaurant(json.restaurant_list, json.restaurant_number)
-                                    },
-                                    error : function(xhr,errmsg,err) {
-                                      console.log('Error')
-                                    }
-                                });
-                            };
-              
-                                  </script>
-                        <button style="margin: 5px 10px 5px 0;" class="btn btn-secondary" type="reset" onclick="resetForm(event, $(this));"><i
-                            class="fas fa-filter mr-1"></i>Reset
-                        </button>
-                        <script>
-                            function resetForm(e, thisobj) {
-                             thisform = thisobj.closest('form');
-                               selectbox_in_form = thisform.find('select');
-       
-                               // completely remove selected when it has been assigned.
-                               selectbox_in_form.find('option:selected').removeAttr('selected');
-                               selectbox_in_form.val('');
-                               selectbox_in_form.change();
-       
-                               delete selectbox_in_form;
-                               delete thisform;
-                               var search_filter_form = document.getElementById("search_filter_form");
-                               search_filter_form.reset();
-                               clearRestaurant();
-                               create_post();
-                           }// resetForm
-                           </script>
+                            }// resetForm
+                            </script>
                         </div>
-                </form>
-                <div>
-                    <label class="form-label mr-2" for="form_sort">Sort by</label>
-                    <select form="search_filter_form" class="selectpicker" name="form_sort" id="form_sort" data-style="btn-selectpicker" title="Select" onchange="document.getElementById('filterbtn').click();">
-                        <option value="none">None</option>
-                        {% if request.user.is_authenticated %}
-                        <option value="recommended">Recommended</option>
-                        {% endif %}
-                        <option value="ratedhigh">Highest Rated</option>
-                        <option value="ratedlow">Lowest Rated</option>
-                        <option value="pricehigh">Highest Price</option>
-                        <option value="pricelow">Lowest Price</option>
-                    </select>
+                    </form>
+                    <div>
+                        <label class="form-label mr-2" for="form_sort">Sort by</label>
+                        <select form="search_filter_form" class="selectpicker" name="form_sort" id="form_sort" data-style="btn-selectpicker" title="Select" onchange="document.getElementById('filterbtn').click();">
+                            <option value="none">None</option>
+                            {% if request.user.is_authenticated %}
+                            <option value="recommended">Recommended</option>
+                            {% endif %}
+                            <option value="ratedhigh">Highest Rated</option>
+                            <option value="ratedlow">Lowest Rated</option>
+                            <option value="pricehigh">Highest Price</option>
+                            <option value="pricelow">Lowest Price</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+
                 <div class="row-box">
                     <div class="column-box">
                         <div id="res_list_group" class="row"></div>
                     </div>
 
                     <div class="column-box">
+
                     </div>
-                  </div>
+                </div>
+                
             </div>
+            
             <div class="text-center">
                 <button type="button" class="btn btn-dark mb-2" onclick="load_more()" id="load_button">Load More</button>
                 <a href="#topSection" id="myBtn" class="btn-primary float-right mb-2 rounded-circle" data-toggle="tooltip" data-placement="top" data-original-title="Scroll to top">
