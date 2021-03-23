@@ -21,6 +21,37 @@ from restaurant.models import Categories
 logger = logging.getLogger(__name__)
 
 
+class UserQuestionaireForm(forms.Form):
+    def __init__(self, data, restaurant_id):
+        self.restaurant_id = restaurant_id
+        self.user_id = data["user_id"]
+        self.rating = data["rating"]
+        self.rating_safety = data["rating_safety"]
+        self.rating_entry = data["rating_entry"]
+        self.rating_door = data["rating_door"]
+        self.rating_table = data["rating_table"]
+        self.rating_bathroom = data["rating_bathroom"]
+        self.rating_path = data["rating_path"]
+        # self.restaurant_business_id = data.restaurant_business_id # not sure if needed
+        self.content = data["content"]
+
+    def save(self):
+        user = get_user_model().objects.get(pk=self.user_id)
+        ret = user.reviews.create(
+            rating=self.rating,
+            rating_safety=self.rating_safety,
+            rating_entry=self.rating_entry,
+            rating_door=self.rating_door,
+            rating_table=self.rating_table,
+            rating_bathroom=self.rating_bathroom,
+            rating_path=self.rating_path,
+            content=self.content,
+            restaurant_id=self.restaurant_id,
+        )
+        ret.save()
+        return ret
+
+
 class ProfileUpdateForm(forms.Form):
     STATE_CHOICES = [
         ("Alabama", "Alabama"),
@@ -77,7 +108,9 @@ class ProfileUpdateForm(forms.Form):
     ]
 
     user_id = forms.CharField(label="user_id")
-    username = forms.CharField(label="username", min_length=4, max_length=150)
+    username = forms.CharField(
+        label="username", min_length=4, max_length=150, required=False
+    )
     firstname = forms.CharField(
         label="firstname", min_length=1, max_length=150, required=False
     )
@@ -91,7 +124,7 @@ class ProfileUpdateForm(forms.Form):
         label="address1", min_length=1, max_length=150, required=False
     )
     address2 = forms.CharField(
-        label="cddress2", min_length=1, max_length=150, required=False
+        label="address2", min_length=1, max_length=150, required=False
     )
     city = forms.CharField(label="city", min_length=1, max_length=64, required=False)
     zip_code = forms.CharField(

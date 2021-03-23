@@ -3,20 +3,32 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.serializers.json import DjangoJSONEncoder
+
 import random
 
 from .models import Restaurant, FAQ
 
-from django.views.decorators.csrf import csrf_exempt
 from .forms import (
-    QuestionnaireForm,
+    # QuestionnaireForm,
     SearchFilterForm,
 )
+
+# from user.models import User_Profile
+from user.forms import UserQuestionaireForm
+from user.models import Review
+
+# from user.forms import
+# from '../user/forms' import UserQuestionnaireForm
+# from '../user/models' import UserModel
+
 from .utils import (
     query_yelp,
     query_inspection_record,
     get_latest_inspection_record,
     get_restaurant_list,
+    get_reviews_stats,
     get_latest_feedback,
     get_average_safety_rating,
     get_total_restaurant_number,
@@ -25,11 +37,11 @@ from .utils import (
     questionnaire_statistics,
     get_filtered_restaurants,
     restaurants_to_dict,
+    check_user_location,
 )
 
 from django.http import HttpResponse
 from django.http import HttpResponseNotFound
-from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 import json
 import logging
@@ -39,13 +51,13 @@ logger = logging.getLogger(__name__)
 
 def get_restaurant_profile(request, restaurant_id):
 
-    if request.method == "POST" and "questionnaire_form" in request.POST:
-        form = QuestionnaireForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "success")
-            url = reverse("restaurant:profile", args=[restaurant_id])
-            return HttpResponseRedirect(url)
+    if request.method == "POST" and "content" in request.POST:
+        form = UserQuestionaireForm(request.POST, restaurant_id)
+        # if form.is_valid():
+        form.save()
+        messages.success(request, "success")
+        url = reverse("restaurant:profile", args=[restaurant_id])
+        return HttpResponseRedirect(url)
 
     try:
         csv_file = get_csv_from_github()
@@ -71,6 +83,29 @@ def get_restaurant_profile(request, restaurant_id):
         average_safety_rating = get_average_safety_rating(restaurant.business_id)
 
         statistics_dict = questionnaire_statistics(restaurant.business_id)
+        internal_reviews = list(
+            Review.objects.filter(restaurant=Restaurant(pk=restaurant.pk))
+            .select_related("user")
+            .order_by("-time")
+            .all()[:50]
+            .values(
+                "user",
+                "user__username",
+                "user__user_profile__photo",
+                "id",
+                "rating",
+                "rating_safety",
+                "rating_door",
+                "rating_table",
+                "rating_bathroom",
+                "rating_path",
+                "time",
+                "content",
+            )
+        )
+        reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
+            internal_reviews
+        )
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
@@ -86,7 +121,13 @@ def get_restaurant_profile(request, restaurant_id):
                     user.favorite_restaurants.all().filter(id=restaurant_id)
                 )
                 > 0,
+                # Internal reviews
+                "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+                "reviews_count": reviews_count,
+                "ratings_avg": ratings_avg,
+                "distribution": ratings_distribution,
                 "statistics_dict": statistics_dict,
+                "user_id": request.user.id,
             }
         else:
             parameter_dict = {
@@ -99,6 +140,11 @@ def get_restaurant_profile(request, restaurant_id):
                 "latest_feedback": feedback,
                 "average_safety_rating": average_safety_rating,
                 "statistics_dict": statistics_dict,
+                # Internal reviews
+                "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+                "reviews_count": reviews_count,
+                "ratings_avg": ratings_avg,
+                "distribution": ratings_distribution,
             }
 
         return render(request, "restaurant_detail.html", parameter_dict)
@@ -107,6 +153,18 @@ def get_restaurant_profile(request, restaurant_id):
         return HttpResponseNotFound(
             "Restaurant ID {} does not exist".format(restaurant_id)
         )
+
+
+def edit_comment(request, restaurant_id, comment_id, action):
+    if action == "delete":
+        Review.objects.filter(id=comment_id).delete()
+    if action == "put":
+        review = Review.objects.get(id=comment_id)
+        review.rating = request.POST.get("rating")
+        review.content = request.POST.get("content")
+        review.save()
+        messages.success(request, "success")
+    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
 def get_inspection_info(request, restaurant_id):
@@ -134,6 +192,11 @@ def get_restaurants_list(request, page):
     if request.method == "POST":
         form = SearchFilterForm(request.POST)
         if form.is_valid():
+            user_location, user_geocode = check_user_location(
+                request.user,
+                form.cleaned_data.get("form_location"),
+                form.cleaned_data.get("form_geocode"),
+            )
             restaurant_list = get_restaurant_list(
                 page,
                 6,
@@ -146,6 +209,7 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                user_geocode,
             )
 
             if request.user.is_authenticated:
@@ -164,11 +228,15 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                user_geocode,
             )
             parameter_dict = {
                 "restaurant_number": restaurant_number,
                 "restaurant_list": json.dumps(restaurant_list, cls=DjangoJSONEncoder),
                 "page": page,
+                "google_key": settings.GOOGLE_MAP_KEY_PLACES,
+                "user_location": user_location,
+                "user_geocode": user_geocode,
             }
             return JsonResponse(parameter_dict)
         else:
@@ -236,4 +304,4 @@ def get_faqs_list(request):
     context = {
         "faqs_list": faqs_list,
     }
-    return render(request, "faqs.html", context)
+    return render(request=request, template_name="faqs.html", context=context)
