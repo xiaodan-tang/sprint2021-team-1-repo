@@ -41,7 +41,12 @@ from .utils import (
 
 from dinesafelysite.views import index
 
-from user.models import Review, Comment
+from user.models import (
+    Review,
+    Comment,
+    Report_Ticket_Review,
+    Report_Ticket_Comment,
+)
 
 
 import json
@@ -133,6 +138,22 @@ def create_comment(user, review, text):
         user=user,
         review=review,
         text=text,
+    )
+
+
+def create_report_review(user, review, reason):
+    return Report_Ticket_Review.objects.create(
+        user=user,
+        review=review,
+        reason=reason,
+    )
+
+
+def create_report_comment(user, comment, reason):
+    return Report_Ticket_Comment.objects.create(
+        user=user,
+        comment=comment,
+        reason=reason,
     )
 
 
@@ -1368,3 +1389,89 @@ class CommentTest(TestCase):
         )
         response = self.c.get(delete_url)
         self.assertEqual(response.status_code, 302)
+
+
+class ReportTests(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize 2 test users
+        self.user1 = get_user_model().objects.create(
+            username="user1",
+            email="test1@gmail.com",
+        )
+        self.user1.set_password("test1234Report")
+        self.user1.save()
+
+        self.user2 = get_user_model().objects.create(
+            username="user2",
+            email="test2@gmail.com",
+        )
+        self.user2.set_password("test4321Report")
+        self.user2.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_internal_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+        # Initialize temp comment
+        self.temp_comment = create_comment(
+            self.user2, self.temp_review, "comment for test report functions"
+        )
+
+    def test_report_review_model(self):
+        report_ticket_review = create_report_review(
+            self.user2, self.temp_review, "hate speech"
+        )
+        self.assertIsNotNone(report_ticket_review)
+        self.assertEqual(report_ticket_review.user.id, self.user2.id)
+        self.assertEqual(report_ticket_review.review.id, self.temp_review.id)
+        self.assertEqual(report_ticket_review.reason, "hate speech")
+
+    def test_report_comment_model(self):
+        report_ticket_comment = create_report_comment(
+            self.user1, self.temp_comment, "racist speech"
+        )
+        self.assertIsNotNone(report_ticket_comment)
+        self.assertEqual(report_ticket_comment.user.id, self.user1.id)
+        self.assertEqual(report_ticket_comment.id, self.temp_comment.id)
+        self.assertEqual(report_ticket_comment.reason, "racist speech")
+
+    def test_report_review_view(self):
+        self.c.login(username="user2", password="test4321Report")
+        rest_id = self.temp_restaurant.id
+        review_id = self.temp_review.id
+        url = "/restaurant/report/" + str(rest_id) + "/review/" + str(review_id)
+        form = {
+            "reason": "hate speech",
+        }
+        response = self.c.post(url, form)
+        self.assertEqual(response.status_code, 302)
+        self.c.logout()
+
+    def test_report_comment_view(self):
+        self.c.login(username="user1", password="test1234Report")
+        rest_id = self.temp_restaurant.id
+        comm_id = self.temp_comment.id
+        url = "/restaurant/report/" + str(rest_id) + "/comment/" + str(comm_id)
+        form = {
+            "reason": "racist speech",
+        }
+        response = self.c.post(url, form)
+        self.assertEqual(response.status_code, 302)
+        self.c.logout()
