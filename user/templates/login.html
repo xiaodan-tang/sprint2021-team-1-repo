@@ -8,6 +8,18 @@
                 <div class="mb-5">
                     <h2>Welcome back</h2>
                 </div>
+                <div>
+                    {% if messages  %}
+                        <ul class="messages text-muted" id="messages" >
+                            {% for message in messages %}
+                            <div{% if message.tags %} class="{{ message.tags }} text-muted" id="messages" {% endif %}>
+                                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}{% endif %}
+                                {{ message }}
+                            </div>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
                 <form class="form-validate" method="post">
                     {% csrf_token %}
                     <div class="form-group">
@@ -62,6 +74,7 @@
                     <p class="text-center"><small class="text-muted text-center">Don't have an account yet? <a href="{% url 'user:register' %}">Sign Up </a></small></p>
                     <p class="text-center"><small class="text-muted text-center">Don't want to login? <a href="{% url 'index' %}">Exit</a></small></p>
             </div>
+
         </div>
         <div class="col-md-4 col-lg-6 col-xl-7 d-none d-md-block">
             <!-- Image-->
@@ -69,4 +82,21 @@
         </div>
     </div>
 </div>
+
+
+<script>
+// suppose the `id` attribute of element is `message_container`.
+var message_ele = document.getElementById("messages");
+message_ele.style.color = 'red';
+message_ele.style.margin = "20px";
+message_ele.style.fontWeight = "900";
+message_ele.style.width = "50%";
+message_ele.style.display = "inline-block";
+setTimeout(function(){ 
+   message_ele.style.display = "none"; 
+}, 2000);
+// Timeout is 3 sec, you can change it
+</script>
+
+
 {% endblock %}
