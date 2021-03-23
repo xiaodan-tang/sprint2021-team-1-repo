@@ -13,7 +13,6 @@
             border-radius: 5px;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
             margin: 10px;
-            transition: transform 5s linear;
         }
 
         .active, .collapsible:hover {
@@ -27,7 +26,7 @@
             overflow: hidden;
             width: 90%;
             background-color: #ffffff;
-            transition: transform 5s linear;
+            text-align: left;
         }
 
         .container-fluid{
@@ -39,7 +38,7 @@
             margin-top: 50px;
             margin-bottom: 50px;
         }
-        
+
         .fa-arrow-right{
             transform: rotate(0deg);
             transition: transform .5s linear;
@@ -48,22 +47,23 @@
         .fa-arrow-right.open{
             transform: rotate(90deg);
             transition: transform .5s linear;
-            }
-
+        }
     </style>
-    <div class="container-fluid">
-        <div class="inner-container">
-            <h2>Frequently Asked Questions</h2>
-            {% for faq in faqs_list %}
-            <div class="col-md-10">
-                <button type="button" class="collapsible" style="outline:none;"><i id="icon" class="fa fa-arrow-right"></i>  Q: {{ faq.question }}</button>
-                <div class="content">
-                    <p>{{ faq.answer }}</p>
+        <div class="container">
+            <center>
+                <div class="inner-container">
+                    <h2>Frequently Asked Questions</h2>
+                    {% for faq in faqs_list %}
+                    <div class="col-md-10">
+                        <button type="button" class="collapsible" style="outline:none;"><i id="icon" class="fa fa-arrow-right"></i>  Q: {{ faq.question }}</button>
+                        <div class="content">
+                            <p>{{ faq.answer }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-            </div>
-            {% endfor %}
+            </center>
         </div>
-    </div>
     <script>
         var coll = document.getElementsByClassName("collapsible");
         var i;
