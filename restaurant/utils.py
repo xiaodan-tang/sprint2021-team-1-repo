@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.forms.models import model_to_dict
+from django.db.models import F
 from .models import (
     InspectionRecords,
     Restaurant,
@@ -161,6 +162,7 @@ def get_total_restaurant_number(
     sort_option=None,
     favorite_filter=None,
     user=None,
+    user_geocode=None,
 ):
     if (
         keyword
@@ -184,6 +186,7 @@ def get_total_restaurant_number(
             sort_option,
             favorite_filter,
             user,
+            user_geocode,
         )
         return restaurants.count()
 
@@ -204,6 +207,7 @@ def get_restaurant_list(
     sort_option=None,
     favorite_filter=None,
     user=None,
+    user_geocode=None,
 ):
     page = int(page) - 1
     offset = int(page) * int(limit)
@@ -230,6 +234,7 @@ def get_restaurant_list(
             sort_option,
             favorite_filter,
             user,
+            user_geocode,
         )
         return restaurants_to_dict(restaurants)
     else:
@@ -253,6 +258,7 @@ def get_filtered_restaurants(
     sort_option=None,
     favorite_filter=None,
     user=None,
+    user_geocode=None,
 ):
     filters = {}
 
@@ -280,6 +286,7 @@ def get_filtered_restaurants(
             keyword_filter["mopd_compliance_status__iexact"] = "Compliant"
 
     value = None
+    user_lat, user_lng = None, None
     if sort_option:
         if sort_option == "ratedhigh":
             value = "-yelp_detail__rating"
@@ -289,6 +296,10 @@ def get_filtered_restaurants(
             value = "-yelp_detail__price"
         elif sort_option == "pricelow":
             value = "yelp_detail__price"
+        elif sort_option == "distance":
+            loc = user_geocode.split(",")
+            user_lat = float(loc[0])
+            user_lng = float(loc[1])
 
     if user and user.is_authenticated and sort_option == "recommended":
         preferred_categories = []
@@ -344,6 +355,19 @@ def get_filtered_restaurants(
                     .distinct()
                     .filter(**keyword_filter)[offset : offset + int(limit)]
                 )
+            elif user_lat and user_lng:
+                filtered_restaurants = user.favorite_restaurants.all()
+                filtered_restaurants = (
+                    filtered_restaurants.filter(
+                        business_id__in=YelpRestaurantDetails.objects.filter(**filters)
+                    )
+                    .order_by(
+                        (user_lat - F("yelp_detail__latitude")) ** 2
+                        + (user_lng - F("yelp_detail__longitude")) ** 2
+                    )
+                    .distinct()
+                    .filter(**keyword_filter)[offset : offset + int(limit)]
+                )
             else:
                 filtered_restaurants = user.favorite_restaurants.all()
                 filtered_restaurants = (
@@ -364,6 +388,18 @@ def get_filtered_restaurants(
             .distinct()
             .filter(**keyword_filter)[offset : offset + int(limit)]
         )
+    elif user_lat and user_lng:
+        filtered_restaurants = (
+            Restaurant.objects.filter(
+                business_id__in=YelpRestaurantDetails.objects.filter(**filters)
+            )
+            .order_by(
+                (user_lat - F("yelp_detail__latitude")) ** 2
+                + (user_lng - F("yelp_detail__longitude")) ** 2
+            )
+            .distinct()
+            .filter(**keyword_filter)[offset : offset + int(limit)]
+        )
     else:
         filtered_restaurants = (
             Restaurant.objects.filter(
@@ -375,6 +411,27 @@ def get_filtered_restaurants(
         )
 
     return filtered_restaurants
+
+
+def check_user_location(user, form_location, form_geocode):
+    default_location = "Central Park North, New York, NY, USA"
+    default_geocode = "40.7992147,-73.954758"
+
+    if user.is_authenticated:
+        if form_location and form_geocode:
+            user.current_location = form_location
+            user.current_geocode = form_geocode
+            user.save()
+            return user.current_location, user.current_geocode
+        elif user.current_location and user.current_geocode:
+            return user.current_location, user.current_geocode
+        else:
+            return default_location, default_geocode
+    else:
+        if form_location and form_geocode:
+            return form_location, form_geocode
+        else:
+            return default_location, default_geocode
 
 
 def get_latest_feedback(business_id):

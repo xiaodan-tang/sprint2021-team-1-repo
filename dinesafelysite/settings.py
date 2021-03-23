@@ -259,3 +259,5 @@ MEDIAFILES_DIRS = [
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_MEDIA_LOCATION)
 
 DEFAULT_FILE_STORAGE = "dinesafelysite.storage_backends.MediaStorage"
+
+GOOGLE_MAP_KEY_PLACES = os.environ.get("GOOGLE_MAP_KEY_PLACES")

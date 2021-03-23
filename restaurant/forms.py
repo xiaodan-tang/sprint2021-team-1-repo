@@ -125,6 +125,7 @@ class SearchFilterForm(forms.Form):
         ("ratedlow", "ratedlow"),
         ("pricehigh", "pricehigh"),
         ("pricelow", "pricelow"),
+        ("distance", "distance"),
     ]
 
     keyword = forms.CharField(label="keyword", required=False)
@@ -153,6 +154,9 @@ class SearchFilterForm(forms.Form):
     rating = forms.MultipleChoiceField(
         label="rating", choices=CHOICES_RATING, required=False
     )
+
+    form_location = forms.CharField(label="form_location", required=False)
+    form_geocode = forms.CharField(label="form_geocode", required=False)
 
     def clean_keyword(self):
         keyword = self.cleaned_data.get("keyword")
