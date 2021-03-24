@@ -274,6 +274,7 @@ $(document).ready(function(){
                                 clearRestaurant();
                                 create_post();
                             });
+                            var google_api_key = null;
                             function create_post() {
                                 var form = new FormData(document.getElementById("search_filter_form"));
                                 $.ajax({
@@ -284,11 +285,11 @@ $(document).ready(function(){
                                     contentType: false,
                                     success : function(json) {
                                         page_global += 1;
-                                        loadRestaurant(json.restaurant_list, json.restaurant_number)
                                         google_api_key = json.google_key;
                                         document.getElementById("form_autocomplete").value = json.user_location;
                                         document.getElementById("form_location").value = json.user_location;
                                         document.getElementById("form_geocode").value = json.user_geocode;
+                                        loadRestaurant(json.restaurant_list, json.restaurant_number)
                                         var i = 0;
                                         for(i = 0; i < restaurant_list.length; ++i) {
                                             var lat_restaurant = restaurant_list[i].yelp_info.latitude;
