@@ -9,6 +9,12 @@ from datetime import datetime
 class DineSafelyUser(AbstractUser):
     favorite_restaurants = models.ManyToManyField(Restaurant, blank=True)
     preferences = models.ManyToManyField(Categories, blank=True)
+    current_location = models.CharField(
+        max_length=200, default=None, blank=True, null=True
+    )
+    current_geocode = models.CharField(
+        max_length=200, default=None, blank=True, null=True
+    )
 
 
 class User_Profile(models.Model):

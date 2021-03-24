@@ -21,9 +21,10 @@ def save_profile(sender, instance, **kwargs):
 
 @receiver(pre_social_login)
 def handle_duplicate_email(sender, request, sociallogin, **kwargs):
+    email = None
     if "email" in sociallogin.account.extra_data:
         email = sociallogin.account.extra_data["email"]
-    if get_user_model().objects.filter(email=email).exists():
+    if email and get_user_model().objects.filter(email=email).exists():
         user = get_user_model().objects.get(email=email)
         if not list(user.socialaccount_set.all()):
             messages.error(request, "Account already exists.")
