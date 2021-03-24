@@ -264,6 +264,7 @@ $(document).ready(function(){
                                 create_post();
                             });
                             
+                            var google_api_key = null;
                             function create_post() {
                                 var form = new FormData(document.getElementById("search_filter_form"));
                                 $.ajax({
@@ -274,6 +275,10 @@ $(document).ready(function(){
                                     contentType: false,
                                     success : function(json) {
                                         page_global += 1;
+                                        google_api_key = json.google_key;
+                                        document.getElementById("form_autocomplete").value = json.user_location;
+                                        document.getElementById("form_location").value = json.user_location;
+                                        document.getElementById("form_geocode").value = json.user_geocode;
                                         loadRestaurant(json.restaurant_list, json.restaurant_number)
 
                                         // Parsing and converting the fetched data into an array
