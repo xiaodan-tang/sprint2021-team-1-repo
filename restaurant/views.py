@@ -38,6 +38,7 @@ from .utils import (
     questionnaire_statistics,
     get_filtered_restaurants,
     restaurants_to_dict,
+    check_user_location,
 )
 
 from django.http import HttpResponse
@@ -219,6 +220,11 @@ def get_restaurants_list(request, page):
     if request.method == "POST":
         form = SearchFilterForm(request.POST)
         if form.is_valid():
+            user_location, user_geocode = check_user_location(
+                request.user,
+                form.cleaned_data.get("form_location"),
+                form.cleaned_data.get("form_geocode"),
+            )
             restaurant_list = get_restaurant_list(
                 page,
                 6,
@@ -231,6 +237,7 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                user_geocode,
             )
 
             if request.user.is_authenticated:
@@ -249,11 +256,15 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                user_geocode,
             )
             parameter_dict = {
                 "restaurant_number": restaurant_number,
                 "restaurant_list": json.dumps(restaurant_list, cls=DjangoJSONEncoder),
                 "page": page,
+                "google_key": settings.GOOGLE_MAP_KEY_PLACES,
+                "user_location": user_location,
+                "user_geocode": user_geocode,
             }
             return JsonResponse(parameter_dict)
         else:
@@ -321,7 +332,7 @@ def get_faqs_list(request):
     context = {
         "faqs_list": faqs_list,
     }
-    return render(request, "faqs.html", context)
+    return render(request=request, template_name="faqs.html", context=context)
 
 
 # Report Reviews & Comments
