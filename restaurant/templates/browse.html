@@ -16,6 +16,12 @@
       clear: both;
     }
 
+    .g-map-class {
+        height: 300px;
+        width: 400px;
+        padding: 10px;
+    }
+
     @media screen and (max-width: 600px) {
         .column-box {
             width: 100%;
@@ -249,7 +255,22 @@ $(document).ready(function(){
 
                         <div>
                             <button style="margin: 5px 10px 5px 0;" class="btn btn-primary" id="filterbtn" type="submit"><i class="fas fa-filter mr-1"></i>Filter</button>
+                            <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiQF_JcDdxbM-BwnYhVo3J_uzIq1D76GU&callback=initMap"></script>
                             <script>
+                                function initMap(map) {
+                                    map = new google.maps.Map(document.getElementById("map"), {
+                                        center: { lat: 40.7128, lng: -74.0060},
+                                        zoom: 14,
+                                    });
+                                }
+                                function addMarker(coords, restaurantName) {
+                                    var marker = new google.maps.Marker({
+                                    position: coords,
+                                    map,
+                                    title: restaurant_name,
+                                    icon: image
+                                    })
+                                }
                                 var restaurant_content_list = null;
                             // Submit post on submit
                                 $('#search_filter_form').on('submit', function(event){
@@ -268,6 +289,13 @@ $(document).ready(function(){
                                         success : function(json) {
                                             page_global += 1;
                                             loadRestaurant(json.restaurant_list, json.restaurant_number)
+                                            var i = 0;
+                                            for(i = 0; i < restaurant_list.length; ++i) {
+                                                var lat_restaurant = restaurant_list[i].yelp_info.latitude;
+                                                var long_restaurant = restaurant_list[i].yelp_info.longitude;
+                                                var restaurant_name = restaurant_list[i].yelp_info.name;
+                                                addMarker({lat: lat_restaurant, lng: long_restaurant}, restaurant_name)
+                                            }
                                         },
                                         error : function(xhr,errmsg,err) {
                                         console.log('Error')
@@ -317,7 +345,7 @@ $(document).ready(function(){
                 <div class="row-box">
                     <div class="column-box">
                         <div class="hundred-width" style="width:100%;">
-                            <h1>MAP</h1>
+                            <div id="map"></div>
                         </div>
                     </div>
                     <div class="column-box">
