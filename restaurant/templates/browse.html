@@ -4,17 +4,24 @@
       box-sizing: border-box;
     }
     /* Create two equal columns that floats next to each other */
-    .column {
+    .column-box {
       float: left;
       width: 50%;
       padding: 10px;
     }
     /* Clear floats after the columns */
-    .row:after {
+    .row-box:after {
       content: "";
       display: table;
       clear: both;
     }
+
+    @media screen and (max-width: 600px) {
+        .column-box {
+            width: 100%;
+        }
+    }
+
     </style>
 <script>
 $(document).ready(function(){
@@ -309,22 +316,24 @@ $(document).ready(function(){
 
                 <div class="row-box">
                     <div class="column-box">
+                        <div class="hundred-width" style="width:100%;">
+                            <h1>MAP</h1>
+                        </div>
+                    </div>
+                    <div class="column-box">
                         <div id="res_list_group" class="row"></div>
                     </div>
-
-                    <div class="column-box">
-
-                    </div>
                 </div>
-                
+                <center>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-dark mb-2" onclick="load_more()" id="load_button">Load More</button>
+                        <a href="#topSection" id="myBtn" class="btn-primary float-right mb-2 rounded-circle" data-toggle="tooltip" data-placement="top" data-original-title="Scroll to top">
+                            <i class="fa fa-arrow-up m-2"></i>
+                        </a>
+                    </div>
+                </center>
             </div>
             
-            <div class="text-center">
-                <button type="button" class="btn btn-dark mb-2" onclick="load_more()" id="load_button">Load More</button>
-                <a href="#topSection" id="myBtn" class="btn-primary float-right mb-2 rounded-circle" data-toggle="tooltip" data-placement="top" data-original-title="Scroll to top">
-                    <i class="fa fa-arrow-up m-2"></i>
-                </a>
-            </div>
         </div>
         <script>
 		var page_global = 1; // Global page number
