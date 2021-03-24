@@ -862,7 +862,7 @@ document.forms['report-abuse'].addEventListener('submit', e => {
  * @param {user-name} string
  * @param {user-rating} string
  * @param {review-text} string
- * @param {editable} boolean - if this rating comment is left by the login user, this comment should be editable
+ * @param {authorId} string
  */
 class RatingReview extends HTMLElement {
   constructor () {
@@ -931,13 +931,11 @@ class RatingReview extends HTMLElement {
 
     this.rootDiv.appendChild(this.container);
     
-    this.attachOptionButton({ editable: this.hasAttribute('editable') });
-
     this.shadowRoot.appendChild(this.rootDiv);
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -962,12 +960,12 @@ class RatingReview extends HTMLElement {
       });
     } else if (name === 'review-text') {
       this.comments.innerText = newValue || '';
-    } else if (name === 'editable') {
-      this.attachOptionButton({ editable: true });
+    } else if (name === 'author-id') {
+      this.attachOptionButton({ authorId: Number(this.getAttribute('author-id') || '') });
     }
   }
 
-  attachOptionButton ({ editable = false }) {
+  attachOptionButton ({ authorId }) {
     if (!this.optionButton) {
       // option button
       const optionButtonWrapper = document.createElement('div');
@@ -1008,7 +1006,8 @@ class RatingReview extends HTMLElement {
 
     new Array().forEach.call(this.dropdownWrapper.children, el => this.dropdownWrapper.removeChild(el));
     ['Edit', 'Delete', 'Reply', 'Report'].forEach((el, index) => {
-      if (!editable && index != 2) return;
+      if (authorId !== userId && [0, 1].includes(index)) return;
+      if (authorId === userId && index === 3) return;
       const anchor = document.createElement('a');
       anchor.setAttribute('class', 'dropdown-item small py-2');
       anchor.setAttribute('href', '#');      
@@ -1124,7 +1123,7 @@ class RatingReview extends HTMLElement {
       });
       deleteForm.appendChild(deleteButton);
     }
-    if (!isNull(userId)) {
+    if (!isNull(userId) && userId != Number(author)) {
       const reportButton = document.createElement('span');
       reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
       reportButton.addEventListener('click', () => {
@@ -1181,17 +1180,14 @@ internalReviews.forEach(review => {
   const ratingReview = document.createElement('rating-review');
   ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
   ratingReview.setAttribute('profile-img-alt', review.user__username);
-  const profile_url =  "/user/facing_page/" + review.user;
-  ratingReview.setAttribute('profile-url', profile_url);
+  ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
   ratingReview.setAttribute('user-name', review.user__username);
   ratingReview.setAttribute('time-created', review.time);
   ratingReview.setAttribute('user-rating', review.rating);
   ratingReview.setAttribute('review-text', review.content);
   ratingReview.setAttribute('review-id', review.id);
   ratingReview.setAttribute('restaurant-id', restaurantId);
-  if (userId === review.user) {
-    ratingReview.setAttribute('editable', 'editable');
-  }
+  ratingReview.setAttribute('author-id', review.user);
   // add replies here
   review.comments.forEach(el => {
     ratingReview.renderReplies({
