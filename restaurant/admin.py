@@ -7,6 +7,7 @@ from .models import (
     YelpRestaurantDetails,
     Zipcodes,
     AccessibilityRecord,
+    FAQ
 )
 
 
