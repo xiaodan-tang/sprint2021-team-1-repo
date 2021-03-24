@@ -19,7 +19,6 @@ admin.site.register(Zipcodes)
 
 
 
-admin.site.register(AccessibilityRecord, FAQ)
-@admin.register(AccessibilityRecord)
+@admin.register(AccessibilityRecord, FAQ)
 class ViewAdmin(ImportExportModelAdmin):
     pass
