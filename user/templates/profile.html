@@ -105,8 +105,8 @@
         </div>
         <div class="card mt-3 shadow">
           <div class="card-body">
-            {% load socialaccount %} {% get_social_accounts user as accounts %} {% if accounts.facebook or accounts.google %} {% else
-            %}
+            {% load socialaccount %} {% get_social_accounts user as accounts %} {% if accounts.facebook or accounts.google %} 
+            {% else %}
             <div class="row">
               <div class="col-sm-3">
                 <h6 class="mb-0">Password</h6>
