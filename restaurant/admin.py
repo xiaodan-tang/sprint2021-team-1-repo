@@ -7,7 +7,6 @@ from .models import (
     YelpRestaurantDetails,
     Zipcodes,
     AccessibilityRecord,
-    FAQ,
 )
 
 
@@ -16,6 +15,7 @@ admin.site.register(InspectionRecords)
 admin.site.register(UserQuestionnaire)
 admin.site.register(YelpRestaurantDetails)
 admin.site.register(Zipcodes)
+
 
 
 admin.site.register(AccessibilityRecord, FAQ)
