@@ -10,9 +10,9 @@
                 </div>
                 <div>
                     {% if messages  %}
-                        <ul class="messages text-muted" id="messages" >
+                        <ul id="messages" class="alert alert-danger" role="alert">
                             {% for message in messages %}
-                            <div{% if message.tags %} class="{{ message.tags }} text-muted" id="messages" {% endif %}>
+                            <div{% if message.tags %} class="{{ message.tags }} alert alert-danger" id="messages" role="alert" {% endif %}>
                                 {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}{% endif %}
                                 {{ message }}
                             </div>
@@ -86,16 +86,11 @@
 
 <script>
 // suppose the `id` attribute of element is `message_container`.
-var message_ele = document.getElementById("messages");
-message_ele.style.color = 'red';
-message_ele.style.margin = "20px";
-message_ele.style.fontWeight = "900";
-message_ele.style.width = "50%";
-message_ele.style.display = "inline-block";
+let message_ele = document.getElementById("messages");
+{% comment %} message_ele.style.color = 'red'; {% endcomment %}
 setTimeout(function(){ 
    message_ele.style.display = "none"; 
-}, 2000);
-// Timeout is 3 sec, you can change it
+}, 10000);
 </script>
 
 
