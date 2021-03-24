@@ -4,17 +4,30 @@
       box-sizing: border-box;
     }
     /* Create two equal columns that floats next to each other */
-    .column {
+    .column-box {
       float: left;
       width: 50%;
       padding: 10px;
     }
     /* Clear floats after the columns */
-    .row:after {
+    .row-box:after {
       content: "";
       display: table;
       clear: both;
     }
+
+    .g-map-class {
+        height: 300px;
+        width: 400px;
+        padding: 10px;
+    }
+
+    @media screen and (max-width: 600px) {
+        .column-box {
+            width: 100%;
+        }
+    }
+
     </style>
 <script>
 $(document).ready(function(){
@@ -242,7 +255,22 @@ $(document).ready(function(){
 
                         <div>
                             <button style="margin: 5px 10px 5px 0;" class="btn btn-primary" id="filterbtn" type="submit"><i class="fas fa-filter mr-1"></i>Filter</button>
+                            <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiQF_JcDdxbM-BwnYhVo3J_uzIq1D76GU&callback=initMap"></script>
                             <script>
+                                function initMap(map) {
+                                    map = new google.maps.Map(document.getElementById("map"), {
+                                        center: { lat: 40.7128, lng: -74.0060},
+                                        zoom: 14,
+                                    });
+                                }
+                                function addMarker(coords, restaurantName) {
+                                    var marker = new google.maps.Marker({
+                                    position: coords,
+                                    map,
+                                    title: restaurant_name,
+                                    icon: image
+                                    })
+                                }
                                 var restaurant_content_list = null;
                             // Submit post on submit
                                 $('#search_filter_form').on('submit', function(event){
@@ -261,6 +289,13 @@ $(document).ready(function(){
                                         success : function(json) {
                                             page_global += 1;
                                             loadRestaurant(json.restaurant_list, json.restaurant_number)
+                                            var i = 0;
+                                            for(i = 0; i < restaurant_list.length; ++i) {
+                                                var lat_restaurant = restaurant_list[i].yelp_info.latitude;
+                                                var long_restaurant = restaurant_list[i].yelp_info.longitude;
+                                                var restaurant_name = restaurant_list[i].yelp_info.name;
+                                                addMarker({lat: lat_restaurant, lng: long_restaurant}, restaurant_name)
+                                            }
                                         },
                                         error : function(xhr,errmsg,err) {
                                         console.log('Error')
@@ -309,22 +344,24 @@ $(document).ready(function(){
 
                 <div class="row-box">
                     <div class="column-box">
+                        <div class="hundred-width" style="width:100%;">
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                    <div class="column-box">
                         <div id="res_list_group" class="row"></div>
                     </div>
-
-                    <div class="column-box">
-
-                    </div>
                 </div>
-                
+                <center>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-dark mb-2" onclick="load_more()" id="load_button">Load More</button>
+                        <a href="#topSection" id="myBtn" class="btn-primary float-right mb-2 rounded-circle" data-toggle="tooltip" data-placement="top" data-original-title="Scroll to top">
+                            <i class="fa fa-arrow-up m-2"></i>
+                        </a>
+                    </div>
+                </center>
             </div>
             
-            <div class="text-center">
-                <button type="button" class="btn btn-dark mb-2" onclick="load_more()" id="load_button">Load More</button>
-                <a href="#topSection" id="myBtn" class="btn-primary float-right mb-2 rounded-circle" data-toggle="tooltip" data-placement="top" data-original-title="Scroll to top">
-                    <i class="fa fa-arrow-up m-2"></i>
-                </a>
-            </div>
         </div>
         <script>
 		var page_global = 1; // Global page number
