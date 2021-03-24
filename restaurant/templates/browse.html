@@ -252,29 +252,18 @@ $(document).ready(function(){
                                 </div>
                             </div>
                         </div>
-                        <script>
-                            function initMap(map) {
-                                map = new google.maps.Map(document.getElementById("map"), {
-                                    center: { lat: 40.7128, lng: -74.0060},
-                                    zoom: 14,
-                                });
-                            }
-                            function addMarker(coords, restaurantName) {
-                                var marker = new google.maps.Marker({
-                                position: coords,
-                                map,
-                                title: restaurant_name,
-                                icon: image
-                                })
-                            }
+                        <script type = "text/javascript">
+                            var resData = [];
+                            let map;
+
                             var restaurant_content_list = null;
-                        // Submit post on submit
+                            // Submit post on submit
                             $('#search_filter_form').on('submit', function(event){
                                 event.preventDefault();
                                 clearRestaurant();
                                 create_post();
                             });
-                            var google_api_key = null;
+                            
                             function create_post() {
                                 var form = new FormData(document.getElementById("search_filter_form"));
                                 $.ajax({
@@ -285,21 +274,79 @@ $(document).ready(function(){
                                     contentType: false,
                                     success : function(json) {
                                         page_global += 1;
-                                        google_api_key = json.google_key;
-                                        document.getElementById("form_autocomplete").value = json.user_location;
-                                        document.getElementById("form_location").value = json.user_location;
-                                        document.getElementById("form_geocode").value = json.user_geocode;
                                         loadRestaurant(json.restaurant_list, json.restaurant_number)
-                                        var i = 0;
-                                        for(i = 0; i < restaurant_list.length; ++i) {
-                                            var lat_restaurant = restaurant_list[i].yelp_info.latitude;
-                                            var long_restaurant = restaurant_list[i].yelp_info.longitude;
-                                            var restaurant_name = restaurant_list[i].yelp_info.name;
-                                            addMarker({lat: lat_restaurant, lng: long_restaurant}, restaurant_name)
+
+                                        // Parsing and converting the fetched data into an array
+                                        var respData = JSON.parse(json.restaurant_list)
+
+                                        for(var i = 0; i < respData.length; ++i){
+                                            resData.push(respData[i])
                                         }
+
+                                        // Displaying map onto the page
+                                        initMap(map);
+
                                     },
                                     error : function(xhr,errmsg,err) {
                                     console.log('Error')
+                                    }
+                                });
+                            };
+
+                            function initMap(map) {
+                                map = new google.maps.Map(document.getElementById("map"), {
+                                    center: { lat: 40.7128, lng: -74.0060},
+                                    zoom: 12,
+                                });
+                                
+                                function addMarker(coords, restaurantName) {
+                                    var marker = new google.maps.Marker({
+                                        position: coords,
+                                        map,
+                                        title: restaurantName
+                                    });
+                                
+                                }
+
+                                for(var i = 0; i < resData.length; ++i) {
+                                    var lat_restaurant = Number(resData[i].yelp_info.latitude);
+                                    var long_restaurant = Number(resData[i].yelp_info.longitude);
+                                    var restaurant_name = resData[i].yelp_info.name;
+                                            
+                                    addMarker({lat: lat_restaurant, lng: long_restaurant}, restaurant_name);
+                                }                           
+                            }
+
+                            var page_global = 1; // Global page number
+                            var restaurant_content_list = null;
+
+                            function load_more() {
+                                var form = new FormData(document.getElementById("search_filter_form"));
+                                $.ajax({
+                                    url : "search_filter/restaurants_list/" + page_global.toString(),
+                                    type : "POST",
+                                    data : form,
+                                    processData: false,
+                                    contentType: false,
+                                    success : function(json) {
+                                        restaurant_content_list = json
+                                        page_global += 1;
+                                        loadRestaurant(restaurant_content_list.restaurant_list, json.restaurant_number)
+
+                                        // Parsing the fetched data and conversion to array
+                                        var respData = JSON.parse(restaurant_content_list['restaurant_list'])
+
+                                        // Adding the fetched data to the global restaurant array
+                                        for(var i = 0; i < respData.length; ++i){
+                                            resData.push(respData[i]);
+                                        }
+
+                                        // Resdisplaying map with all the fetched data
+                                        initMap(map)
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                    console.log('Ajax request error')
                                     }
                                 });
                             };
@@ -470,30 +517,7 @@ $(document).ready(function(){
             </div>
             
         </div>
-        <script>
-		var page_global = 1; // Global page number
-        var restaurant_content_list = null;
 
-        function load_more() {
-            var form = new FormData(document.getElementById("search_filter_form"));
-            $.ajax({
-                url : "search_filter/restaurants_list/" + page_global.toString(),
-                type : "POST",
-                data : form,
-                processData: false,
-                contentType: false,
-                success : function(json) {
-                    restaurant_content_list = json
-                    page_global += 1;
-                    loadRestaurant(restaurant_content_list.restaurant_list, json.restaurant_number)
-                },
-                error : function(xhr,errmsg,err) {
-                  console.log('Ajax request error')
-                }
-            });
-        };
-
-        </script>
         <script type="text/javascript">
           function clearRestaurant() {
             var res_list_group = document.getElementById("res_list_group");
