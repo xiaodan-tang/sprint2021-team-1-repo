@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-from .models import User_Profile, Review, DineSafelyUser
+from .models import User_Profile, Preferences, Review, DineSafelyUser
 from restaurant.models import Categories
 import json
 
@@ -202,19 +202,32 @@ def profile(request):
     for pref in user_pref_list:
         pref_dic = model_to_dict(pref)
         user_pref_list_json.append(pref_dic)
+    category_pref = user.preferences.filter(preference_type="category")
+    neighbourhood_pref = user.preferences.filter(preference_type="neighbourhood")
+    rating_pref = user.preferences.filter(preference_type="rating")
+    compliance_pref = user.preferences.filter(preference_type="compliance")
+    price_pref = user.preferences.filter(preference_type="price")
+    categories = Preferences.objects.filter(preference_type="category")
+    neighbourhoods = Preferences.objects.filter(preference_type="neighbourhood")
+    user_pref = [
+        category_pref,
+        neighbourhood_pref,
+        rating_pref,
+        compliance_pref,
+        price_pref,
+    ]
+
     return render(
         request=request,
         template_name="profile.html",
         context={
             "favorite_restaurant_list": favorite_restaurant_list,
-            "user_pref": user_pref_list,
             "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
             "user_profile": user_profile,
             "profile_pic": "" if user_profile is None else user_profile.photo,
-            "user_price_pref": [],
-            "user_neighborhood_pref": [],
-            "user_compliance_pref": [],
-            "user_rating_pref": [],
+            "categories": categories,
+            "neighbourhoods": neighbourhoods,
+            "user_pref": user_pref,
         },
     )
 
@@ -271,17 +284,22 @@ def add_preference(request):
     if request.method == "POST":
         form = UserPreferenceForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data.get("pref_list"))
             form.save(user=request.user)
             return HttpResponse("Preference Saved")
-        return HttpResponseBadRequest
+        return HttpResponseBadRequest("Bad Request")
 
 
-def delete_preference(request, category):
+def delete_preference(request, preference_type, value):
     if request.method == "POST":
         user = request.user
-        user.preferences.remove(Categories.objects.get(category=category))
-        logger.info(category)
+        user.preferences.remove(
+            Preferences.objects.filter(
+                preference_type=preference_type, value=value
+            ).first()
+        )
+        logger.info(
+            "Removed preference {}: {} for {}".format(preference_type, value, user)
+        )
         return HttpResponse("Preference Removed")
 
 
