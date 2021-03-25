@@ -1293,7 +1293,9 @@ class RestaurantRecommendationsTest(TestCase):
             preference_type="price", value="price_3", display_value="$$$"
         )
         p5 = Preferences.objects.create(
-            preference_type="compliance", value="COVIDCompliant", display_value="COVID-19 Compliant"
+            preference_type="compliance",
+            value="COVIDCompliant",
+            display_value="COVID-19 Compliant",
         )
         self.dummy_user = get_user_model().objects.create(
             username="myuser",
