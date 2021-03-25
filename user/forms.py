@@ -586,3 +586,34 @@ class ContactForm(forms.Form):
     email = forms.EmailField(label="Email", required=True)
     subject = forms.CharField(label="Subject", max_length=120, required=True)
     message = forms.CharField(widget=forms.Textarea, required=True, max_length=300)
+
+
+# Report forms
+class Report_Review_Form(forms.Form):
+    def __init__(self, data, review_id, user):
+        self.review_id = review_id
+        self.reason = data["reason"]
+        self.user = user
+
+    def save(self):
+        report_ticket = self.user.report_reviews.create(
+            review_id=self.review_id,
+            reason=self.reason,
+        )
+        report_ticket.save()
+        return report_ticket
+
+
+class Report_Comment_Form(forms.Form):
+    def __init__(self, data, comment_id, user):
+        self.comment_id = comment_id
+        self.reason = data["reason"]
+        self.user = user
+
+    def save(self):
+        report_ticket = self.user.report_comments.create(
+            comment_id=self.comment_id,
+            reason=self.reason,
+        )
+        report_ticket.save()
+        return report_ticket

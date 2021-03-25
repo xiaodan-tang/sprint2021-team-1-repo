@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-from .models import User_Profile, Preferences, Review
+from .models import User_Profile, Preferences, Review, DineSafelyUser
 from restaurant.models import Categories
 import json
 
@@ -84,6 +84,55 @@ def register(request):
         form = UserCreationForm()
     return render(
         request=request, template_name="register.html", context={"form": form}
+    )
+
+
+# @login_required()
+def user_facing(request, user_id):
+    if not request.user.is_authenticated:
+        return redirect("user:login")
+    user = DineSafelyUser.objects.get(pk=user_id)
+    user_profile = User_Profile.objects.get(user=user)
+    favorite_restaurant_list = user.favorite_restaurants.all()
+    user_pref_list = user.preferences.all()
+    user_pref_list_json = []
+    internal_reviews = list(
+        Review.objects.filter(user=user)
+        .order_by("-time")
+        .all()[:50]
+        .values(
+            "user",
+            "user__username",
+            "user__user_profile__photo",
+            "id",
+            "rating",
+            "rating_safety",
+            "rating_door",
+            "rating_table",
+            "rating_bathroom",
+            "rating_path",
+            "time",
+            "content",
+            "restaurant__restaurant_name",
+            "restaurant__yelp_detail__img_url",
+            "restaurant__id",
+        )
+    )
+    for pref in user_pref_list:
+        pref_dic = model_to_dict(pref)
+        user_pref_list_json.append(pref_dic)
+    return render(
+        request=request,
+        template_name="facing_page.html",
+        context={
+            "favorite_restaurant_list": favorite_restaurant_list,
+            "user_pref": user_pref_list,
+            "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
+            "user_profile": user_profile,
+            "profile_pic": "" if user_profile is None else user_profile.photo,
+            "internal_reviews": json.dumps(internal_reviews, cls=DjangoJSONEncoder),
+            "facing_page_user_id": user.username,
+        },
     )
 
 
@@ -179,44 +228,6 @@ def profile(request):
             "categories": categories,
             "neighbourhoods": neighbourhoods,
             "user_pref": user_pref,
-        },
-    )
-
-
-# @login_required()
-def account_details(request):
-    if not request.user.is_authenticated:
-        return redirect("user:login")
-
-    user = request.user
-    if request.method == "POST":
-        form = ProfileUpdateForm(user=user, data=request.POST)
-        if form.is_valid():
-            profile_pic = (
-                form.save_image(request.FILES["profile-pic"])
-                if "profile-pic" in request.FILES
-                else None
-            )
-            User_Profile.objects.update_or_create(
-                user=user, defaults={"photo": profile_pic}
-            )
-            form.save()
-            return redirect("user:account_details")
-    user_profile = User_Profile.objects.get(user=user)
-    favorite_restaurant_list = user.favorite_restaurants.all()
-    user_pref_list = user.preferences.all()
-    user_pref_list_json = []
-    for pref in user_pref_list:
-        pref_dic = model_to_dict(pref)
-        user_pref_list_json.append(pref_dic)
-    return render(
-        request=request,
-        template_name="profile.html",
-        context={
-            "favorite_restaurant_list": favorite_restaurant_list,
-            "user_pref": user_pref_list,
-            "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
-            "user_profile": user_profile,
         },
     )
 
