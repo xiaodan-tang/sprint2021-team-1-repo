@@ -442,10 +442,10 @@ class TestForgetPasswordView(BaseTest):
 class TestAddPrefView(BaseTest):
     def test_add_pref_valid(self):
         self.c.login(username="myuser", password="pass123")
-        Preferences.objects.create(
+        p1 = Preferences.objects.create(
             preference_type="category", value="pizza", display_value="Pizza"
         )
-        Preferences.objects.create(
+        p2 = Preferences.objects.create(
             preference_type="rating", value="4", display_value="4 Stars"
         )
         url = reverse("user:add_preference")
@@ -461,6 +461,8 @@ class TestAddPrefView(BaseTest):
         self.assertTrue(user_pref_form.is_valid())
         response = self.c.post(path=url, data=form_data)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(str(p1), "category: pizza")
+        self.assertEqual(str(p2), "rating: 4")
 
 
 class TestDeletePrefView(BaseTest):

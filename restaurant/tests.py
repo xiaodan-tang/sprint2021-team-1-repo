@@ -1286,12 +1286,24 @@ class RestaurantRecommendationsTest(TestCase):
         p2 = Preferences.objects.create(
             preference_type="rating", value="4", display_value="4 Stars"
         )
+        p3 = Preferences.objects.create(
+            preference_type="neighbourhood", value="Jamaica", display_value="Jamaica"
+        )
+        p4 = Preferences.objects.create(
+            preference_type="price", value="price_3", display_value="$$$"
+        )
+        p5 = Preferences.objects.create(
+            preference_type="compliance", value="COVIDCompliant", display_value="COVID-19 Compliant"
+        )
         self.dummy_user = get_user_model().objects.create(
             username="myuser",
             email="abcd@gmail.com",
         )
         self.dummy_user.preferences.add(p1)
         self.dummy_user.preferences.add(p2)
+        self.dummy_user.preferences.add(p3)
+        self.dummy_user.preferences.add(p4)
+        self.dummy_user.preferences.add(p5)
 
         self.dummy_user2 = get_user_model().objects.create(
             username="myuser2",
@@ -1307,9 +1319,12 @@ class RestaurantRecommendationsTest(TestCase):
         ]
 
         preferences.sort()
-        self.assertEqual(len(self.dummy_user.preferences.all()), 2)
+        self.assertEqual(len(self.dummy_user.preferences.all()), 5)
         self.assertEqual(preferences[0], "4")
-        self.assertEqual(preferences[1], "pizza")
+        self.assertEqual(preferences[1], "COVIDCompliant")
+        self.assertEqual(preferences[2], "Jamaica")
+        self.assertEqual(preferences[3], "pizza")
+        self.assertEqual(preferences[4], "price_3")
         self.assertIsNotNone(self.dummy_user2.preferences.all())
         self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
 
