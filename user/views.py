@@ -160,7 +160,13 @@ def profile(request):
     price_pref = user.preferences.filter(preference_type="price")
     categories = Preferences.objects.filter(preference_type="category")
     neighbourhoods = Preferences.objects.filter(preference_type="neighbourhood")
-    user_pref = [category_pref, neighbourhood_pref, rating_pref, compliance_pref, price_pref]
+    user_pref = [
+        category_pref,
+        neighbourhood_pref,
+        rating_pref,
+        compliance_pref,
+        price_pref,
+    ]
 
     return render(
         request=request,
@@ -275,8 +281,14 @@ def add_preference(request):
 def delete_preference(request, preference_type, value):
     if request.method == "POST":
         user = request.user
-        user.preferences.remove(Preferences.objects.filter(preference_type=preference_type, value=value).first())
-        logger.info("Removed preference {}: {} for {}".format(preference_type, value, user))
+        user.preferences.remove(
+            Preferences.objects.filter(
+                preference_type=preference_type, value=value
+            ).first()
+        )
+        logger.info(
+            "Removed preference {}: {} for {}".format(preference_type, value, user)
+        )
         return HttpResponse("Preference Removed")
 
 

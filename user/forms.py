@@ -513,9 +513,17 @@ class UserPreferenceForm(forms.Form):
 
     CHOICES_RATING = [("5", "5"), ("4", "4"), ("3", "3"), ("2", "2"), ("1", "1")]
 
-    CHOICES_COMPLIANCE = [("COVIDCompliant", "COVID-19 Compliant"), ("MOPDCompliant", "MOPD Compliant")]
+    CHOICES_COMPLIANCE = [
+        ("COVIDCompliant", "COVID-19 Compliant"),
+        ("MOPDCompliant", "MOPD Compliant"),
+    ]
 
-    CHOICES_PRICE = [("price_1", "$"), ("price_2", "$$"), ("price_3", "$$$"), ("price_4", "$$$$")]
+    CHOICES_PRICE = [
+        ("price_1", "$"),
+        ("price_2", "$$"),
+        ("price_3", "$$$"),
+        ("price_4", "$$$$"),
+    ]
 
     category_list = forms.MultipleChoiceField(
         label="category_list", choices=CHOICES_CATEGORY, required=False
@@ -527,10 +535,10 @@ class UserPreferenceForm(forms.Form):
         label="rating_list", choices=CHOICES_RATING, required=False
     )
     compliance_list = forms.MultipleChoiceField(
-            label="compliance_list", choices=CHOICES_COMPLIANCE, required=False
+        label="compliance_list", choices=CHOICES_COMPLIANCE, required=False
     )
-    price_list =  forms.MultipleChoiceField(
-            label="price_list", choices=CHOICES_PRICE, required=False
+    price_list = forms.MultipleChoiceField(
+        label="price_list", choices=CHOICES_PRICE, required=False
     )
 
     def save(self, user, commit=True):
@@ -541,19 +549,37 @@ class UserPreferenceForm(forms.Form):
         price_list = self.cleaned_data.get("price_list", [])
         # Save all new category preferences
         for category in category_list:
-            user.preferences.add(Preferences.objects.filter(preference_type="category", value=category).first())
+            user.preferences.add(
+                Preferences.objects.filter(
+                    preference_type="category", value=category
+                ).first()
+            )
         # Save all new neighbourhood preferences
         for neighbourhood in neighbourhood_list:
-            user.preferences.add(Preferences.objects.filter(preference_type="neighbourhood", value=neighbourhood).first())
+            user.preferences.add(
+                Preferences.objects.filter(
+                    preference_type="neighbourhood", value=neighbourhood
+                ).first()
+            )
         # Save all new rating preferences
         for rating in rating_list:
-            user.preferences.add(Preferences.objects.filter(preference_type="rating", value=rating).first())
+            user.preferences.add(
+                Preferences.objects.filter(
+                    preference_type="rating", value=rating
+                ).first()
+            )
         # Save all new compliance preferences
         for compliance in compliance_list:
-            user.preferences.add(Preferences.objects.filter(preference_type="compliance", value=compliance).first())
+            user.preferences.add(
+                Preferences.objects.filter(
+                    preference_type="compliance", value=compliance
+                ).first()
+            )
         # Save all new price preferences
         for price in price_list:
-            user.preferences.add(Preferences.objects.filter(preference_type="price", value=price).first())
+            user.preferences.add(
+                Preferences.objects.filter(preference_type="price", value=price).first()
+            )
 
 
 class ContactForm(forms.Form):

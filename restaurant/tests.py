@@ -18,6 +18,7 @@ from .models import (
     AccessibilityRecord,
     FAQ,
 )
+from user.models import Preferences
 from .views import (
     get_inspection_info,
     get_landing_page,
@@ -1219,13 +1220,18 @@ class RestaurantRecommendationsTest(TestCase):
     def setUp(self):
         Categories.objects.create(category="chinese", parent_category="chinese")
         Categories.objects.create(category="wine-bar", parent_category="bars")
+        p1 = Preferences.objects.create(
+            preference_type="category", value="pizza", display_value="Pizza"
+        )
+        p2 = Preferences.objects.create(
+            preference_type="rating", value="4", display_value="4 Stars"
+        )
         self.dummy_user = get_user_model().objects.create(
             username="myuser",
             email="abcd@gmail.com",
         )
-        category_list = ["chinese", "wine-bar"]
-        for category in category_list:
-            self.dummy_user.preferences.add(Categories.objects.get(category=category))
+        self.dummy_user.preferences.add(p1)
+        self.dummy_user.preferences.add(p2)
 
         self.dummy_user2 = get_user_model().objects.create(
             username="myuser2",
@@ -1236,13 +1242,14 @@ class RestaurantRecommendationsTest(TestCase):
 
     def test_recommendation(self):
 
-        categories = [
-            category.category for category in self.dummy_user.preferences.all()
+        preferences = [
+            preference.value for preference in self.dummy_user.preferences.all()
         ]
-        categories.sort()
+
+        preferences.sort()
         self.assertEqual(len(self.dummy_user.preferences.all()), 2)
-        self.assertEqual(categories[0], "chinese")
-        self.assertEqual(categories[1], "wine-bar")
+        self.assertEqual(preferences[0], "4")
+        self.assertEqual(preferences[1], "pizza")
         self.assertIsNotNone(self.dummy_user2.preferences.all())
         self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
 
