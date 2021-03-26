@@ -121,9 +121,9 @@ $(document).ready(function() {
       return false;
     }
     d = new Date()
-       if (m != d.getMinutes()) {
+        if (m != d.getMinutes()) {
           m = d.getMinutes();
-       }
+        }
     if (m < 10) {
         $('<div class="media col-md-9 col-xl-7 ml-auto mb-3"><div class="media-body mr-3"><div class="bg-primary rounded p-4 mb-2"><p class="text-sm mb-0 text-white">' + msg + '</p></div><p class="small ml-3">' + d.getHours() + ':0' + m + '</p></div><img class="avatar avatar-border-white" src="https://dine-safely.s3.amazonaws.com/icon-user-1.png" alt="user" /></div>').appendTo($('.mCSB_container')).addClass('new');
     } else {
