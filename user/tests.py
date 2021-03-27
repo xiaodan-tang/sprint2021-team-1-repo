@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from .models import Preferences
+from .models import Preferences, RestaurantQuestion, RestaurantAnswer
+from restaurant.tests import create_restaurant
 from .forms import (
     UserCreationForm,
     ResetPasswordForm,
@@ -537,3 +538,71 @@ class TestContactFormView(BaseTest):
             {},
         )
         self.assertEqual(response.status_code, 200)
+
+
+class TestRestaurantQuestionModel(BaseTest):
+    def test_restaurant_question_str_function(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        q1 = RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        self.assertEqual(str(q1), "myuser question for JUST SALAD")
+
+    def test_question_related_name(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        user_questions = self.dummy_user.questions.first()
+        restaurant_questions = restaurant.questions.first()
+        self.assertEqual(user_questions.question, "Test question??")
+        self.assertEqual(restaurant_questions.question, "Test question??")
+
+
+class TestRestaurantAnswerModel(BaseTest):
+    def test_restaurant_answer_str_function(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        q1 = RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        a1 = RestaurantAnswer.objects.create(
+            user=self.dummy_user, question=q1, text="test answer!!"
+        )
+        self.assertEqual(str(a1), "myuser answered myuser's question for JUST SALAD")
+
+    def test_answers_related_name(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        q1 = RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        RestaurantAnswer.objects.create(
+            user=self.dummy_user, question=q1, text="test answer!!"
+        )
+        user_answers = self.dummy_user.answers.first()
+        question_answers = q1.answers.first()
+        self.assertEqual(user_answers.text, "test answer!!")
+        self.assertEqual(question_answers.text, "test answer!!")
