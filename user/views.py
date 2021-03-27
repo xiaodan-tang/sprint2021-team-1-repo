@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
+
 from .models import User_Profile, Review, DineSafelyUser
 from restaurant.models import Categories
 import json
@@ -211,6 +212,10 @@ def profile(request):
             "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
             "user_profile": user_profile,
             "profile_pic": "" if user_profile is None else user_profile.photo,
+            "user_price_pref": [],
+            "user_neighborhood_pref": [],
+            "user_compliance_pref": [],
+            "user_rating_pref": [],
         },
     )
 
