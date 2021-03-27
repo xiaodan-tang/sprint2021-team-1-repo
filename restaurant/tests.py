@@ -1330,7 +1330,6 @@ class EditCommentTests(BaseTest):
         )
         self.assertEqual(response.status_code, 302)
 
-
     def test_delete_comment(self, queryset):
         queryset.get.return_value = mock.Mock(spec=Review)
         response = self.c.get(
