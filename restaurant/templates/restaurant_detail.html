@@ -363,6 +363,28 @@
             </div>
           </div>
         </div>
+        <div class="modal fade" id="report-abuse-modal" tabindex="-1" role="dialog" aria-labelledby="report-abuse-modal" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <form class="form-validate" name="report-abuse" method="POST">
+                  {% csrf_token %}
+              <div class="modal-header py-2">
+                <h5 class="modal-title">Report abuse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <textarea class="form-control" name="reason" cols="30" rows="6"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" type="submit">Submit</button>
+              </div>
+             </form>
+            </div>
+          </div>
+        </div>
 
 
         <!-- Modal -->
@@ -808,8 +830,28 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
 })
 
 const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
-const isNull = el => el === 'null' || el === null || el === undefined;
+const isNull = el => el === 'null' || el === 'None' || el === null || el === undefined;
 const restaurantId = '{{ restaurant_id }}' || '';
+const userId = Number('{{ user_id | safe }}');
+const REPORT_TYPE = {
+  REVIEW: 'REVIEW',
+  COMMENT: 'COMMENT'
+};
+let __data__ = {
+  reportAbuse: {
+    type: null,
+    id: null
+  }
+};
+document.forms['report-abuse'].addEventListener('submit', e => {
+  e.preventDefault();
+  if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
+    e.target.setAttribute('action', `/restaurant/report/${restaurantId}/review/${__data__.reportAbuse.id}`);
+  } else {
+    e.target.setAttribute('action', `/restaurant/report/${restaurantId}/comment/${__data__.reportAbuse.id}`);
+  }
+  e.target.submit();
+});
 /**
  * Rating box view
  * @param {review-id} string
@@ -820,7 +862,7 @@ const restaurantId = '{{ restaurant_id }}' || '';
  * @param {user-name} string
  * @param {user-rating} string
  * @param {review-text} string
- * @param {editable} boolean - if this rating comment is left by the login user, this comment should be editable
+ * @param {authorId} string
  */
 class RatingReview extends HTMLElement {
   constructor () {
@@ -830,7 +872,10 @@ class RatingReview extends HTMLElement {
     this.addStyles();
 
     this.rootDiv = document.createElement('div');
-    this.rootDiv.className = 'media d-block d-sm-flex review';
+
+    this.container = document.createElement('div');
+    this.container.className = 'media d-block d-sm-flex review';
+    this.container.setAttribute('style', 'border-bottom: 0; padding-bottom: 0;')
 
     // left side
     const userProfile = document.createElement('div');
@@ -881,18 +926,16 @@ class RatingReview extends HTMLElement {
     
     ratingBody.appendChild(this.comments);
 
-    this.rootDiv.appendChild(userProfile);
-    this.rootDiv.appendChild(ratingBody);
+    this.container.appendChild(userProfile);
+    this.container.appendChild(ratingBody);
 
-    if (this.hasAttribute('editable')) {
-      this.attachOptionButton();
-    }
-
+    this.rootDiv.appendChild(this.container);
+    
     this.shadowRoot.appendChild(this.rootDiv);
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -917,38 +960,54 @@ class RatingReview extends HTMLElement {
       });
     } else if (name === 'review-text') {
       this.comments.innerText = newValue || '';
-    } else if (name === 'editable') {
-      this.attachOptionButton();
+    } else if (name === 'author-id') {
+      this.attachOptionButton({ authorId: Number(this.getAttribute('author-id') || '') });
     }
   }
 
-  attachOptionButton () {
-    if (this.optionButton) return;
-    // option button
-    const optionButtonWrapper = document.createElement('div');
-    optionButtonWrapper.setAttribute('class', 'dropdown');
+  attachOptionButton ({ authorId }) {
+    if (!this.optionButton) {
+      // option button
+      const optionButtonWrapper = document.createElement('div');
+      optionButtonWrapper.setAttribute('class', 'dropdown');
 
-    this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    this.optionButton.setAttribute('viewBox', '0 0 24 24');
-    this.optionButton.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    this.optionButton.setAttribute('style', 'display: inline-block; width: 1rem; height: 1rem; cursor: pointer;');
-    this.optionButton.setAttribute('class', 'dropdown-toggle');
-    this.optionButton.setAttribute('type', 'button');
+      this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      this.optionButton.setAttribute('viewBox', '0 0 24 24');
+      this.optionButton.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      this.optionButton.setAttribute('style', 'display: inline-block; width: 1rem; height: 1rem; cursor: pointer;');
+      this.optionButton.setAttribute('class', 'dropdown-toggle');
+      this.optionButton.setAttribute('type', 'button');
 
-    const optionWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    const optionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    optionPath.setAttribute('d', 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
-    optionWrapper.appendChild(optionPath);
-    this.optionButton.appendChild(optionWrapper);
+      const optionWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const optionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      optionPath.setAttribute('d', 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+      optionWrapper.appendChild(optionPath);
+      this.optionButton.appendChild(optionWrapper);
 
-    // dropdown button wrapper
-    const dropdownWrapper = document.createElement('div');
-    dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
+      // dropdown button wrapper
+      this.dropdownWrapper = document.createElement('div');
+      this.dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
 
-    this.deleteForm = document.createElement('form');
-    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
+      this.deleteForm = document.createElement('form');
+      this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
 
-    ['Edit', 'Delete'].forEach((el, index) => {
+      optionButtonWrapper.appendChild(this.optionButton);
+      optionButtonWrapper.appendChild(this.dropdownWrapper);
+      optionButtonWrapper.appendChild(this.deleteForm);
+      optionButtonWrapper.addEventListener('mouseover', () => {
+        this.dropdownWrapper.classList.add('show');
+      });
+      this.dropdownWrapper.addEventListener('mouseout', () => {
+        this.dropdownWrapper.classList.remove('show');
+      });
+
+      this.container.appendChild(optionButtonWrapper);
+    }
+
+    new Array().forEach.call(this.dropdownWrapper.children, el => this.dropdownWrapper.removeChild(el));
+    ['Edit', 'Delete', 'Reply', 'Report'].forEach((el, index) => {
+      if (authorId !== userId && [0, 1].includes(index)) return;
+      if (authorId === userId && index === 3) return;
       const anchor = document.createElement('a');
       anchor.setAttribute('class', 'dropdown-item small py-2');
       anchor.setAttribute('href', '#');      
@@ -964,23 +1023,123 @@ class RatingReview extends HTMLElement {
           content.dispatchEvent(new Event('change'));
           document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
         });
-      } else {
+      } else if (index === 1) {
         anchor.addEventListener('click', () => this.deleteForm.submit());
+      } else if (index === 2) {
+        anchor.addEventListener('click', e => {
+          e.preventDefault();
+          this.dropdownWrapper.classList.remove('show');
+          let form = this.rootDiv.querySelector('form[name="reply-form"]');
+          if (form) {
+            form.querySelector('input').focus();
+            return;
+          }
+
+          form = document.createElement('form');
+          form.setAttribute('name', 'reply-form');
+          form.setAttribute('method', 'get');
+          form.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_edit/${this.getAttribute('review-id')}`);
+          form.setAttribute('class', 'd-flex form-group mb-0');
+          form.setAttribute('style', 'padding-left: 12%; align-items: baseline;');
+
+          const line = document.createElement('div');
+          line.setAttribute('style', 'border-bottom: 2px solid #e7e7e7; border-left: 2px solid #e7e7e7; border-radius: 5px; height: 40px; width: 50px;');
+
+          const inputBox = document.createElement('input');
+          inputBox.setAttribute('class', 'form-control form-control-sm');
+          inputBox.setAttribute('name', 'text');
+
+          const submitBtn = document.createElement('button');
+          submitBtn.setAttribute('type', 'submit');
+          submitBtn.setAttribute('class', 'btn btn-sm btn-primary ml-2');
+          submitBtn.innerText = 'Submit';
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.setAttribute('type', 'button');
+          cancelBtn.setAttribute('class', 'btn btn-sm btn-secondary ml-2');
+          cancelBtn.innerText = 'Cancel';
+          cancelBtn.addEventListener('click', () => {
+            this.rootDiv.removeChild(form);
+          });
+
+          form.appendChild(line);
+          form.appendChild(inputBox);
+          form.appendChild(submitBtn);
+          form.appendChild(cancelBtn);
+
+          this.rootDiv.appendChild(form);
+        });
+      } else if (index === 3) {
+        anchor.addEventListener('click', e => {
+          e.preventDefault();
+          this.dropdownWrapper.classList.remove('show');
+          $('#report-abuse-modal').modal('show');
+          __data__.reportAbuse.type = REPORT_TYPE.REVIEW;
+          __data__.reportAbuse.id = this.getAttribute('review-id');
+        });
       }
-      dropdownWrapper.appendChild(anchor);
+      this.dropdownWrapper.appendChild(anchor);
     });
+  }
 
-    optionButtonWrapper.appendChild(this.optionButton);
-    optionButtonWrapper.appendChild(dropdownWrapper);
-    optionButtonWrapper.appendChild(this.deleteForm);
-    optionButtonWrapper.addEventListener('mouseover', () => {
-      dropdownWrapper.classList.add('show');
-    });
-    dropdownWrapper.addEventListener('mouseout', () => {
-      dropdownWrapper.classList.remove('show');
-    });
+  /**
+   * @params {profile} string - profile picture
+   * @params {text} string - comment
+   * @params {author} string - comment author
+   * @params {commentId} string - comment id
+   */
+  renderReplies ({ profile = DEFAULT_AVATAR, text = '', author = '', commentId = '' }) {
+    const commentContainer = document.createElement('div');
+    commentContainer.className = 'd-flex';
+    commentContainer.setAttribute('style', 'padding-left: 12%; align-items: baseline;');
 
-    this.rootDiv.appendChild(optionButtonWrapper);
+    const line = document.createElement('div');
+    line.setAttribute('style', 'border-bottom: 2px solid #e7e7e7; border-left: 2px solid #e7e7e7; border-radius: 5px; height: 40px; width: 50px;');
+
+    const replyContainer = document.createElement('div');
+    replyContainer.setAttribute('style', 'width: calc(100% - 50px)');
+    
+    const replyAvatar = document.createElement('img');
+    replyAvatar.setAttribute('style', 'width: 40px; height: 40px; border-radius: 50%;');
+    replyAvatar.setAttribute('src', profile);
+
+    const replyBox = document.createElement('div');
+    replyBox.setAttribute('style', 'display: inline-block; margin-left: 1rem; width: 70%; vertical-align: middle;');
+    replyBox.setAttribute('class', 'text-muted text-sm text-truncate');
+    replyBox.innerText = text;
+
+    replyContainer.appendChild(replyAvatar);
+    replyContainer.appendChild(replyBox);
+    
+    const deleteForm = document.createElement('form');
+    deleteForm.setAttribute('method', 'get');
+    deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
+    deleteForm.setAttribute('class', 'd-inline-block');
+    if (userId === Number(author)) {
+      const deleteButton = document.createElement('span');
+      deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-1');
+      deleteButton.addEventListener('click', () => {
+        deleteForm.submit();
+      });
+      deleteForm.appendChild(deleteButton);
+    }
+    if (!isNull(userId) && userId != Number(author)) {
+      const reportButton = document.createElement('span');
+      reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
+      reportButton.addEventListener('click', () => {
+        $('#report-abuse-modal').modal('show');
+        __data__.reportAbuse.type = REPORT_TYPE.COMMENT;
+        __data__.reportAbuse.id = commentId;
+      });
+      deleteForm.appendChild(reportButton);
+    }
+
+    replyContainer.appendChild(deleteForm);
+
+    commentContainer.appendChild(line);
+    commentContainer.appendChild(replyContainer);
+
+    this.rootDiv.appendChild(commentContainer);
   }
 
   // add web component styles
@@ -1015,22 +1174,29 @@ yelpReviews['reviews'].forEach(review => {
   reviewWrapper.appendChild(ratingReview);
 });
 
-const userId = Number('{{ user_id | safe }}');
 const internalReviews = {{ internal_reviews | safe }};
 internalReviews.forEach(review => {
   const reviewWrapper = document.getElementById('internal_review');
   const ratingReview = document.createElement('rating-review');
   ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
   ratingReview.setAttribute('profile-img-alt', review.user__username);
+  ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
   ratingReview.setAttribute('user-name', review.user__username);
   ratingReview.setAttribute('time-created', review.time);
   ratingReview.setAttribute('user-rating', review.rating);
   ratingReview.setAttribute('review-text', review.content);
   ratingReview.setAttribute('review-id', review.id);
   ratingReview.setAttribute('restaurant-id', restaurantId);
-  if (userId === review.user) {
-    ratingReview.setAttribute('editable', 'editable');
-  }
+  ratingReview.setAttribute('author-id', review.user);
+  // add replies here
+  review.comments.forEach(el => {
+    ratingReview.renderReplies({
+      profile: el.profile || DEFAULT_AVATAR,
+      text: el.text,
+      author: el.author,
+      commentId: el.commentId,
+    })
+  });
   reviewWrapper.appendChild(ratingReview);
 });
 

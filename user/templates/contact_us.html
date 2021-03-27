@@ -13,24 +13,26 @@
                         {% csrf_token %}
                         <div class="row d-flex justify-content-center mb-5">
                             <div class="col-md-8">
-                                <div class="form-group">
-                                    <p>
-                                    {{ form.subject.label }} <br>
-                                    {{ form.subject }}
-                                    </p>
-                                </div>
-                                <div class="form-group">
-                                    <p>
-                                    {{ form.email.label }} <br>
-                                    {{ form.email }}
-                                    </p>
-                                </div>
-                                <div class="form-group form-group-textarea mb-md-0">
-                                    <p>
-                                    {{ form.message.label }} <br>
-                                    {{ form.message }}
-                                    <p>
-                                </div>
+                                <center>
+                                        <div class="form-group">
+                                            <p>
+                                            {{ form.subject.label }} <br>
+                                            {{ form.subject }}
+                                            </p>
+                                        </div>
+                                        <div class="form-group">
+                                            <p>
+                                            {{ form.email.label }} <br>
+                                            {{ form.email }}
+                                            </p>
+                                        </div>
+                                        <div class="form-group form-group-textarea mb-md-0">
+                                            <p>
+                                            {{ form.message.label }} <br>
+                                            {{ form.message }}
+                                            <p>
+                                        </div>
+                                </center>
                             </div>
                         </div>
                         <div class="text-center">

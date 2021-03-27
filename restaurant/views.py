@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadReque
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
-
+from datetime import datetime
 import random
 
 from .models import Restaurant, FAQ
@@ -15,13 +15,14 @@ from .forms import (
     SearchFilterForm,
 )
 
-# from user.models import User_Profile
-from user.forms import UserQuestionaireForm
-from user.models import Review
 
-# from user.forms import
-# from '../user/forms' import UserQuestionnaireForm
-# from '../user/models' import UserModel
+from user.forms import (
+    UserQuestionaireForm,
+    Report_Review_Form,
+    Report_Comment_Form,
+)
+from user.models import Review, Comment
+
 
 from .utils import (
     query_yelp,
@@ -37,6 +38,7 @@ from .utils import (
     questionnaire_statistics,
     get_filtered_restaurants,
     restaurants_to_dict,
+    check_user_location,
 )
 
 from django.http import HttpResponse
@@ -102,6 +104,19 @@ def get_restaurant_profile(request, restaurant_id):
                 "content",
             )
         )
+        for idx in range(len(internal_reviews)):
+            comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
+            # get photo afterwards
+            comments = [
+                {
+                    "profile": el.user.user_profile.photo,
+                    "text": el.text,
+                    "author": el.user.id,
+                    "commentId": el.id,
+                }
+                for el in comments
+            ]
+            internal_reviews[idx]["comments"] = comments
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
@@ -154,7 +169,7 @@ def get_restaurant_profile(request, restaurant_id):
         )
 
 
-def edit_comment(request, restaurant_id, comment_id, action):
+def edit_review(request, restaurant_id, comment_id, action):
     if action == "delete":
         Review.objects.filter(id=comment_id).delete()
     if action == "put":
@@ -163,6 +178,20 @@ def edit_comment(request, restaurant_id, comment_id, action):
         review.content = request.POST.get("content")
         review.save()
         messages.success(request, "success")
+    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
+
+
+def edit_comment(request, restaurant_id, review_id):
+    review = Review.objects.get(pk=review_id)
+    comment = Comment(user=request.user, review=review)
+    comment.text = request.GET.get("text")
+    comment.time = datetime.now()
+    comment.save()
+    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
+
+
+def delete_comment(request, restaurant_id, comment_id):
+    Comment.objects.get(pk=comment_id).delete()
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
@@ -191,6 +220,11 @@ def get_restaurants_list(request, page):
     if request.method == "POST":
         form = SearchFilterForm(request.POST)
         if form.is_valid():
+            user_location, user_geocode = check_user_location(
+                request.user,
+                form.cleaned_data.get("form_location"),
+                form.cleaned_data.get("form_geocode"),
+            )
             restaurant_list = get_restaurant_list(
                 page,
                 6,
@@ -203,6 +237,7 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                user_geocode,
             )
 
             if request.user.is_authenticated:
@@ -221,11 +256,15 @@ def get_restaurants_list(request, page):
                 form.cleaned_data.get("form_sort"),
                 form.cleaned_data.get("fav"),
                 request.user,
+                user_geocode,
             )
             parameter_dict = {
                 "restaurant_number": restaurant_number,
                 "restaurant_list": json.dumps(restaurant_list, cls=DjangoJSONEncoder),
                 "page": page,
+                "google_key": settings.GOOGLE_MAP_KEY_PLACES,
+                "user_location": user_location,
+                "user_geocode": user_geocode,
             }
             return JsonResponse(parameter_dict)
         else:
@@ -293,4 +332,25 @@ def get_faqs_list(request):
     context = {
         "faqs_list": faqs_list,
     }
-    return render(request, "faqs.html", context)
+    return render(request=request, template_name="faqs.html", context=context)
+
+
+# Report Reviews & Comments
+def report_review(request, restaurant_id, review_id):
+    if request.method == "POST":
+        user = request.user
+        form = Report_Review_Form(request.POST, review_id, user)
+        form.save()
+        messages.success(request, "success")
+        url = reverse("restaurant:profile", args=[restaurant_id])
+        return HttpResponseRedirect(url)
+
+
+def report_comment(request, restaurant_id, comment_id):
+    if request.method == "POST":
+        user = request.user
+        form = Report_Comment_Form(request.POST, comment_id, user)
+        form.save()
+        messages.success(request, "success")
+        url = reverse("restaurant:profile", args=[restaurant_id])
+        return HttpResponseRedirect(url)
