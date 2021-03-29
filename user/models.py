@@ -110,6 +110,7 @@ class Review(models.Model):
     )
     time = models.DateTimeField(default=datetime.now, editable=False, db_index=True)
     content = models.TextField()
+    hidden = models.BooleanField(default=False)
 
     # Ratings
     rating = models.PositiveIntegerField(default=0)
@@ -139,6 +140,7 @@ class Comment(models.Model):
     )
     text = models.CharField(max_length=512)
     time = models.DateTimeField(auto_now_add=True)
+    hidden = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-time"]
