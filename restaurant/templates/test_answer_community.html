@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<p>User: {{ question.user.username }}</p>
+<p>Question: {{ question.question }}</p>
+<p>Time: {{ question.time }}</p>
+{% for a in answer_list %}
+    <div class="text-block">
+        <p>User: {{ a.user.username }}</p>
+        <p>Answer: {{ a.text }}</p>
+        <p>Time: {{ a.time }}</p>
+    </div>
+{% endfor %}
+<form method="POST">
+    {% csrf_token %}
+    <input class="form-control pr-4" type="text" name="answer" placeholder="Your answer" id="answer"></div>
+    <input type="submit" value="Post Answer">
+</form>
+{% endblock %}

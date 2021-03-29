@@ -1,0 +1,20 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+{% for q in question_list %}
+    <div class="text-block">
+        <p>User: {{ q.user__username }}</p>
+        <p>Question: {{ q.question }}</p>
+        <p>Time: {{ q.time }}</p>
+        {% for a in q.answers %}
+            <p>User: {{ a.user__username }}</p>
+            <p>Answer: {{ a.text }}</p>
+            <p>Time: {{ a.time }}</p>
+        {% endfor %}
+        <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">Answer</a>
+    </div>
+{% endfor %}
+<form method="POST">
+    {% csrf_token %}
+    <input class="form-control pr-4" type="text" name="question" placeholder="Your question" id="question"></div>
+    <input type="submit" value="Post Question">
+</form>
+{% endblock %}

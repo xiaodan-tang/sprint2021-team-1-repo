@@ -550,6 +550,25 @@
 
           </div>
         </div>
+        <!-- Test Ask the Community Part, Show top 3 questions and the corresponding answers -->
+        <div class="text-block">
+          <h3 class="mb-4">Ask the community</h3>
+          {% for q in restaurant_question_list %}
+            <div>
+            <p>User: {{ q.user__username }}</p>
+            <p>Question: {{ q.question }}</p>
+            <p>Time: {{ q.time }}</p>
+            {% for a in q.answers %}
+              <p>User: {{ a.user__username }}</p>
+              <p>Answer: {{ a.text }}</p>
+              <p>Time: {{ a.time }}</p>
+            {% endfor %}
+            <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">See all answers</a>
+            </div>
+          {% endfor %}
+          <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all questions or Ask a question</a>
+        </div>
+        <!-- End Test Ask the Community Part -->
         <div class="text-block">
           <h3 class="mb-4">Reviews Summary</h3>
           <div class="d-flex">
