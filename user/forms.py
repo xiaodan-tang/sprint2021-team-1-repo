@@ -15,7 +15,7 @@ import boto3
 import random
 import string
 
-from .models import User_Profile, Preferences
+from .models import User_Profile, Preferences, RestaurantQuestion, RestaurantAnswer
 
 logger = logging.getLogger(__name__)
 
@@ -617,3 +617,38 @@ class Report_Comment_Form(forms.Form):
         )
         report_ticket.save()
         return report_ticket
+
+
+# Ask the community
+class RestaurantQuestionForm(forms.Form):
+    question = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, user, restaurant, *args, **kwargs):
+        self.user = user
+        self.restaurant = restaurant
+        super(RestaurantQuestionForm, self).__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        restaurant_question = RestaurantQuestion.objects.create(
+            user=self.user,
+            restaurant=self.restaurant,
+            question=self.cleaned_data.get("question"),
+        )
+        return restaurant_question
+
+
+class RestaurantAnswerForm(forms.Form):
+    answer = forms.CharField(widget=forms.Textarea, max_length=512)
+
+    def __init__(self, user, question, *args, **kwargs):
+        self.user = user
+        self.question = question
+        super(RestaurantAnswerForm, self).__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        restaurant_answer = RestaurantAnswer.objects.create(
+            user=self.user,
+            question=self.question,
+            text=self.cleaned_data.get("answer"),
+        )
+        return restaurant_answer
