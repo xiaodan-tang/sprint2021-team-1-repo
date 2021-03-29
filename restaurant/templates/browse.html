@@ -1,34 +1,4 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
-<style>
-    * {
-      box-sizing: border-box;
-    }
-    /* Create two equal columns that floats next to each other */
-    .column-box {
-      float: left;
-      width: 50%;
-      padding: 10px;
-    }
-    /* Clear floats after the columns */
-    .row-box:after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-
-    .g-map-class {
-        height: 300px;
-        width: 400px;
-        padding: 10px;
-    }
-
-    @media screen and (max-width: 600px) {
-        .column-box {
-            width: 100%;
-        }
-    }
-
-    </style>
 <script>
 $(document).ready(function(){
   // Add smooth scrolling to all links
@@ -66,12 +36,12 @@ $(document).ready(function(){
         </div>
     </div>
     <div class="row">
-        <div style="width:100%">
+        <div class="top-container style="width:100%">
             <div class="mr-3">
                 <p class="mb-3 mb-md-0"><strong id="res_count"></strong> results found</p>
             </div>
             <div class="d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
-                <div>
+                <div class="filter-container">
                     <form class="pr-xl-3" style="display: flex; flex-flow: row wrap; align-items: center;" action="" method="POST" id="search_filter_form" name="search_filter_form">
                         {% csrf_token %}
 
@@ -81,57 +51,55 @@ $(document).ready(function(){
                                 <div class="label-absolute"><i class="fa fa-search"></i></div>
                                 <input class="form-control pr-4" type="search" name="keyword" placeholder="Restaurant Name"
                                     id="keyword"></div>
-                        </div>
-                        <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                            <label class="form-label" for="neighbourhood">Filter by Neighborhood</label>
-                            <select class="selectpicker form-control" name="neighbourhood" id="neighbourhood" multiple
-                                    data-style="btn-selectpicker" data-live-search="true"
-                                    data-selected-text-format="count &gt; 1" title="">
-                                <option value="Borough Park">Borough Park</option>
-                                <option value="Bronx Park and Fordham">Bronx Park and Fordham</option>
-                                <option value="Bushwick and Williamsburg">Bushwick and Williamsburg</option>
-                                <option value="Canarsie and Flatlands">Canarsie and Flatlands</option>
-                                <option value="Central Bronx">Central Bronx</option>
-                                <option value="Central Brooklyn">Central Brooklyn</option>
-                                <option value="Central Harlem">Central Harlem</option>
-                                <option value="Central Queens">Central Queens</option>
-                                <option value="Chelsea and Clinton">Chelsea and Clinton</option>
-                                <option value="East Harlem">East Harlem</option>
-                                <option value="East New York and New Lots">East New York and New Lots</option>
-                                <option value="Flatbush">Flatbush</option>
-                                <option value="Gramercy Park and Murray Hill">Gramercy Park and Murray Hill</option>
-                                <option value="Greenpoint">Greenpoint</option>
-                                <option value="Greenwich Village and Soho">Greenwich Village and Soho</option>
-                                <option value="High Bridge and Morrisania">High Bridge and Morrisania</option>
-                                <option value="Hunts Point and Mott Haven">Hunts Point and Mott Haven</option>
-                                <option value="Inwood and Washington Heights">Inwood and Washington Heights</option>
-                                <option value="Jamaica">Jamaica</option>
-                                <option value="Kingsbridge and Riverdale">Kingsbridge and Riverdale</option>
-                                <option value="Long Island City">Long Island City</option>
-                                <option value="Lower East Side">Lower East Side</option>
-                                <option value="Lower Manhattan">Lower Manhattan</option>
-                                <option value="Mid-Island">Mid-Island</option>
-                                <option value="North Queens">North Queens</option>
-                                <option value="Northeast Queens">Northeast Queens</option>
-                                <option value="Northeast Bronx">Northeast Bronx</option>
-                                <option value="Northwest Brooklyn">Northwest Brooklyn</option>
-                                <option value="Northwest Queens">Northwest Queens</option>
-                                <option value="Port Richmond">Port Richmond</option>
-                                <option value="Rockaways">Rockaways</option>
-                                <option value="South Shore">South Shore</option>
-                                <option value="Southern Brooklyn">Southern Brooklyn</option>
-                                <option value="Southeast Bronx">Southeast Bronx</option>
-                                <option value="Southeast Queens">Southeast Queens</option>
-                                <option value="Southwest Brooklyn">Southwest Brooklyn</option>
-                                <option value="Southwest Queens">Southwest Queens</option>
-                                <option value="Stapleton and St. George">Stapleton and St. George</option>
-                                <option value="Sunset Park">Sunset Park</option>
-                                <option value="Tribeca">Tribeca</option>
-                                <option value="Upper East Side">Upper East Side</option>
-                                <option value="Upper West Side">Upper West Side</option>
-                                <option value="West Central Queens">West Central Queens</option>
-                                <option value="West Queens">West Queens</option>
-                            </select>
+                                    <label class="form-label" for="neighbourhood">Filter by Neighborhood</label>
+                                    <select class="selectpicker form-control" name="neighbourhood" id="neighbourhood" multiple
+                                            data-style="btn-selectpicker" data-live-search="true"
+                                            data-selected-text-format="count &gt; 1" title="">
+                                        <option value="Borough Park">Borough Park</option>
+                                        <option value="Bronx Park and Fordham">Bronx Park and Fordham</option>
+                                        <option value="Bushwick and Williamsburg">Bushwick and Williamsburg</option>
+                                        <option value="Canarsie and Flatlands">Canarsie and Flatlands</option>
+                                        <option value="Central Bronx">Central Bronx</option>
+                                        <option value="Central Brooklyn">Central Brooklyn</option>
+                                        <option value="Central Harlem">Central Harlem</option>
+                                        <option value="Central Queens">Central Queens</option>
+                                        <option value="Chelsea and Clinton">Chelsea and Clinton</option>
+                                        <option value="East Harlem">East Harlem</option>
+                                        <option value="East New York and New Lots">East New York and New Lots</option>
+                                        <option value="Flatbush">Flatbush</option>
+                                        <option value="Gramercy Park and Murray Hill">Gramercy Park and Murray Hill</option>
+                                        <option value="Greenpoint">Greenpoint</option>
+                                        <option value="Greenwich Village and Soho">Greenwich Village and Soho</option>
+                                        <option value="High Bridge and Morrisania">High Bridge and Morrisania</option>
+                                        <option value="Hunts Point and Mott Haven">Hunts Point and Mott Haven</option>
+                                        <option value="Inwood and Washington Heights">Inwood and Washington Heights</option>
+                                        <option value="Jamaica">Jamaica</option>
+                                        <option value="Kingsbridge and Riverdale">Kingsbridge and Riverdale</option>
+                                        <option value="Long Island City">Long Island City</option>
+                                        <option value="Lower East Side">Lower East Side</option>
+                                        <option value="Lower Manhattan">Lower Manhattan</option>
+                                        <option value="Mid-Island">Mid-Island</option>
+                                        <option value="North Queens">North Queens</option>
+                                        <option value="Northeast Queens">Northeast Queens</option>
+                                        <option value="Northeast Bronx">Northeast Bronx</option>
+                                        <option value="Northwest Brooklyn">Northwest Brooklyn</option>
+                                        <option value="Northwest Queens">Northwest Queens</option>
+                                        <option value="Port Richmond">Port Richmond</option>
+                                        <option value="Rockaways">Rockaways</option>
+                                        <option value="South Shore">South Shore</option>
+                                        <option value="Southern Brooklyn">Southern Brooklyn</option>
+                                        <option value="Southeast Bronx">Southeast Bronx</option>
+                                        <option value="Southeast Queens">Southeast Queens</option>
+                                        <option value="Southwest Brooklyn">Southwest Brooklyn</option>
+                                        <option value="Southwest Queens">Southwest Queens</option>
+                                        <option value="Stapleton and St. George">Stapleton and St. George</option>
+                                        <option value="Sunset Park">Sunset Park</option>
+                                        <option value="Tribeca">Tribeca</option>
+                                        <option value="Upper East Side">Upper East Side</option>
+                                        <option value="Upper West Side">Upper West Side</option>
+                                        <option value="West Central Queens">West Central Queens</option>
+                                        <option value="West Queens">West Queens</option>
+                                    </select>
                         </div>
                         <div class="mb-4" style="margin: 5px 10px 5px 0;">
                             <label class="form-label" for="category">Filter by Category</label>
@@ -174,6 +142,14 @@ $(document).ready(function(){
                                 <option value="waffles">Waffles</option>
                                 <option value="wraps">Wraps</option>
                             </select>
+                            <label class="form-label">Filter by Rating</label>
+                                    <select class="selectpicker form-control" name="rating" id="rating" multiple data-style="btn-selectpicker" title="">
+                                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                                    </select>
                         </div>
                         <div class="mb-4" style="margin: 5px 10px 5px 0;">
                             <label class="form-label">Filter by Price</label>
@@ -230,27 +206,13 @@ $(document).ready(function(){
                             {% if request.user.is_authenticated %}
                             <div class="mb-4" style="margin: 5px 10px 5px 0;">
                                 <label class="form-label">Filter by Favorites</label>
-                                <div class="form-group">
                                     <div class="custom-control custom-checkbox">
                                         <input class="custom-control-input" type="checkbox" id="fav" name="fav" value="fav">
                                         <label class="custom-control-label" for="fav"
                                         >Favorites</label>
                                     </div>
-                                </div>
                             </div>
                             {% endif %}
-                            <div class="mb-4" style="margin: 5px 10px 5px 0;">
-                                <label class="form-label">Filter by Rating</label>
-                                <div class="form-group">
-                                    <select class="selectpicker form-control" name="rating" id="rating" multiple data-style="btn-selectpicker" title="">
-                                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
-                                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
-                                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
-                                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
-                                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
                         <script type = "text/javascript">
                             var resData = [];
@@ -499,12 +461,15 @@ $(document).ready(function(){
                         </select>
                     </div>
                 </div>
+                <hr></hr>
             </div>
 
                 <div class="row-box">
                     <div class="column-box">
                         <div class="hundred-width" style="width:100%;">
-                            <div id="map"></div>
+                            <center>
+                                <div id="map"></div>
+                            </center>
                         </div>
                     </div>
                     <div class="column-box">

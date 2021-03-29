@@ -1,0 +1,89 @@
+* {
+    box-sizing: border-box;
+}
+/* Create two equal columns that floats next to each other */
+  .column-box {
+    float: left;
+    width: 50%;
+    padding: 10px;
+}
+
+/* Clear floats after the columns */
+.row-box:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.top-container {
+    padding: 10px;
+}
+
+#map {
+    height: 550px;
+    width: 550px;
+}
+
+@media screen and (max-width: 1225px) {
+    #map {
+        height: 500px;
+        width: 500px;
+    }
+}
+
+@media screen and (max-width: 1175px) {
+    #map {
+        height: 450px;
+        width: 450px;
+    }
+}
+
+@media screen and (max-width: 1090px) {
+    #map {
+        height: 400px;
+        width: 400px;
+    }
+}
+
+@media screen and (max-width: 990px) {
+    .column-box {
+          width: 100%;
+    }
+
+    #map {
+        width: 800px;
+        height: 500px;
+    }
+}
+
+@media screen and (max-width: 840px) {
+    .column-box {
+          width: 100%;
+    }
+
+    #map {
+        width: 750px;
+        height: 450px;
+    }
+}
+
+@media screen and (max-width: 775px){
+    #map {
+        height: 500px;
+        width: 500px;
+    }
+}
+
+@media screen and (max-width: 600px){
+    #map {
+        height: 400px;
+        width: 400px;
+    }
+}
+
+@media screen and (max-width: 500px){
+    #map {
+        height: 335px;
+        width: 335px;
+    }
+}
