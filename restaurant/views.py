@@ -136,7 +136,9 @@ def get_restaurant_profile(request, restaurant_id):
                 "time",
             )[:3]
         )
-        total_question_count = RestaurantQuestion.objects.filter(restaurant=restaurant).count()
+        total_question_count = RestaurantQuestion.objects.filter(
+            restaurant=restaurant
+        ).count()
         for idx in range(len(restaurant_question_list)):
             answers = list(
                 RestaurantAnswer.objects.filter(
@@ -152,8 +154,8 @@ def get_restaurant_profile(request, restaurant_id):
                 )[:2]
             )
             total_answers_count = RestaurantAnswer.objects.filter(
-                    question_id=restaurant_question_list[idx]["id"]
-                ).count()
+                question_id=restaurant_question_list[idx]["id"]
+            ).count()
             restaurant_question_list[idx]["answers"] = answers
             restaurant_question_list[idx]["total_answers_count"] = total_answers_count
 
@@ -446,7 +448,9 @@ def get_ask_community_page(request, restaurant_id):
                 )[:2]
             )
             question_list[idx]["answers"] = answers
-            question_list[idx]["total_answers_count"] = RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"]).count()
+            question_list[idx]["total_answers_count"] = RestaurantAnswer.objects.filter(
+                question_id=question_list[idx]["id"]
+            ).count()
         context = {
             "restaurant": restaurant,
             "question_list": question_list,
