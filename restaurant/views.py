@@ -123,22 +123,33 @@ def get_restaurant_profile(request, restaurant_id):
             internal_reviews
         )
 
-        # Get restaurant Q&As, limit 3 recent questions, and limit 2 recent answers for each question
-        restaurant_question_list = list(RestaurantQuestion.objects.filter(restaurant=restaurant).order_by("-time").values(
-            "id",
-            "user",
-            "user__username",
-            "question",
-            "time",
-        )[:3])
-        for idx in range(len(restaurant_question_list)):
-            answers = list(RestaurantAnswer.objects.filter(question_id=restaurant_question_list[idx]["id"]).order_by("-time").values(
+        # Get restaurant Q&As
+        # limit 3 recent questions, and limit 2 recent answers for each question
+        restaurant_question_list = list(
+            RestaurantQuestion.objects.filter(restaurant=restaurant)
+            .order_by("-time")
+            .values(
                 "id",
                 "user",
                 "user__username",
-                "text",
+                "question",
                 "time",
-            )[:2])
+            )[:3]
+        )
+        for idx in range(len(restaurant_question_list)):
+            answers = list(
+                RestaurantAnswer.objects.filter(
+                    question_id=restaurant_question_list[idx]["id"]
+                )
+                .order_by("-time")
+                .values(
+                    "id",
+                    "user",
+                    "user__username",
+                    "text",
+                    "time",
+                )[:2]
+            )
             restaurant_question_list[idx]["answers"] = answers
 
         if request.user.is_authenticated:
@@ -403,21 +414,29 @@ def get_ask_community_page(request, restaurant_id):
             url = reverse("user:login")
             return HttpResponseRedirect(url)
     else:
-        question_list = list(RestaurantQuestion.objects.filter(restaurant=restaurant).order_by("-time").values(
-            "id",
-            "user",
-            "user__username",
-            "question",
-            "time",
-        ))
-        for idx in range(len(question_list)):
-            answers = list(RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"]).order_by("-time").values(
+        question_list = list(
+            RestaurantQuestion.objects.filter(restaurant=restaurant)
+            .order_by("-time")
+            .values(
                 "id",
                 "user",
                 "user__username",
-                "text",
+                "question",
                 "time",
-            ))
+            )
+        )
+        for idx in range(len(question_list)):
+            answers = list(
+                RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"])
+                .order_by("-time")
+                .values(
+                    "id",
+                    "user",
+                    "user__username",
+                    "text",
+                    "time",
+                )
+            )
             question_list[idx]["answers"] = answers
         context = {
             "restaurant": restaurant,
