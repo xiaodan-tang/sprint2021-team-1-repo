@@ -10,9 +10,17 @@
             <p>Answer: {{ a.text }}</p>
             <p>Time: {{ a.time }}</p>
         {% endfor %}
-        <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">Answer</a>
+        {% if q.answers|length < q.total_answers_count %}
+            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">View more answers</a>
+        {% elif q.answers|length == 0 %}
+            <p>No answers yet. You can be the first!</p>
+            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">Answer</a>
+        {% else %}
+            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">View question details</a>
+        {% endif %}
     </div>
 {% endfor %}
+
 <form method="POST">
     {% csrf_token %}
     <input class="form-control pr-4" type="text" name="question" placeholder="Your question" id="question"></div>

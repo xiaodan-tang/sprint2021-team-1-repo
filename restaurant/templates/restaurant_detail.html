@@ -563,10 +563,17 @@
               <p>Answer: {{ a.text }}</p>
               <p>Time: {{ a.time }}</p>
             {% endfor %}
-            <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">See all answers</a>
+            {% if q.answers|length < q.total_answers_count %}
+                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View more answers</a>
+            {% elif q.answers|length == 0 %}
+                <p>No answers yet. You can be the first!</p>
+                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">Answer</a>
+            {% else %}
+                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View question details</a>
+            {% endif %}
             </div>
           {% endfor %}
-          <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all questions or Ask a question</a>
+          <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all {{ total_question_count }} questions or Ask a question</a>
         </div>
         <!-- End Test Ask the Community Part -->
         <div class="text-block">
