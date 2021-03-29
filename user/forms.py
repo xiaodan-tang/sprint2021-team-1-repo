@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserQuestionaireForm(forms.Form):
-    def __init__(self, data, restaurant_id):
+    def __init__(self, data, files, restaurant_id):
         self.restaurant_id = restaurant_id
         self.user_id = data["user_id"]
         self.rating = data["rating"]
@@ -34,6 +34,9 @@ class UserQuestionaireForm(forms.Form):
         self.rating_path = data["rating_path"]
         # self.restaurant_business_id = data.restaurant_business_id # not sure if needed
         self.content = data["content"]
+        self.image1 = files["image1"] if "image1" in files else None
+        self.image2 = files["image2"] if "image2" in files else None
+        self.image3 = files["image3"] if "image3" in files else None
 
     def save(self):
         user = get_user_model().objects.get(pk=self.user_id)
@@ -47,6 +50,9 @@ class UserQuestionaireForm(forms.Form):
             rating_path=self.rating_path,
             content=self.content,
             restaurant_id=self.restaurant_id,
+            image1=self.image1,
+            image2=self.image2,
+            image3=self.image3,
         )
         ret.save()
         return ret

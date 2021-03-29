@@ -397,7 +397,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form class="form-validate" method="POST" name="rating-form">
+              <form class="form-validate" method="POST" name="rating-form" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-body">
                   <p class="mb-2">How would you rate this restaurant?</p>
@@ -511,6 +511,18 @@
                   <p class="mb-2">Tell others about your thoughts!</p>
                   <div class="form-group mb-2">
                     <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
+                  </div>
+                  <label for="img"> Select image for Review Image 1: </label>
+                  <div class="form-group mb-2">
+                    <input type="file" class="form-control" name="image1" id="image1" accept="image/*" required></input>
+                  </div>
+                  <label for="img"> Select image for Review Image 2: </label>
+                  <div class="form-group mb-2">
+                    <input type="file" class="form-control" name="image2" id="image2" accept="image/*" required></input>
+                  </div>
+                  <label for="img"> Select image for Review Image 3: </label>
+                  <div class="form-group mb-2">
+                    <input type="file" class="form-control" name="image3" id="image3" accept="image/*" required></input>
                   </div>
                 </div>
                 <div class="modal-footer">
