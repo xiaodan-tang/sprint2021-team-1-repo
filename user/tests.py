@@ -625,18 +625,28 @@ class TestRestaurantQuestionForm(BaseTest):
         form_data = {
             "question": "Test question",
         }
-        question_form = RestaurantQuestionForm(self.dummy_user, self.restaurant, form_data)
+        question_form = RestaurantQuestionForm(
+            self.dummy_user, self.restaurant, form_data
+        )
         self.assertTrue(question_form.is_valid())
+        question_form.save()
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 1)
+        self.assertEqual(question_list[0].question, "Test question")
 
     def test_question_form_invalid_question(self):
         form_data = {
             "question": "",
         }
-        question_form = RestaurantQuestionForm(self.dummy_user, self.restaurant, form_data)
+        question_form = RestaurantQuestionForm(
+            self.dummy_user, self.restaurant, form_data
+        )
         self.assertFalse(question_form.is_valid())
 
         form_data = {}
-        question_form = RestaurantQuestionForm(self.dummy_user, self.restaurant, form_data)
+        question_form = RestaurantQuestionForm(
+            self.dummy_user, self.restaurant, form_data
+        )
         self.assertFalse(question_form.is_valid())
 
 
@@ -662,6 +672,10 @@ class TestRestaurantAnswerForm(BaseTest):
         }
         answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
         self.assertTrue(answer_form.is_valid())
+        answer_form.save()
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 1)
+        self.assertEqual(answer_list[0].text, "Test answer")
 
     def test_answer_form_invalid_answer(self):
         form_data = {
