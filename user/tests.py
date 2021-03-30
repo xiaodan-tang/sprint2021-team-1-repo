@@ -3,8 +3,19 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+
 from restaurant.models import Categories, Restaurant
-from .models import Review, Comment
+
+from .models import (
+    Review, 
+    Comment, 
+    Preferences, 
+    RestaurantQuestion, 
+    RestaurantAnswer
+)
+
+from restaurant.tests import create_restaurant
+
 from .forms import (
     UserCreationForm,
     ResetPasswordForm,
@@ -199,10 +210,21 @@ class TestUpdatePasswordForm(BaseTest):
 class TestUserPreferenceForm(BaseTest):
     def test_user_pref_form_valid(self):
         form_data = {
-            "pref_list": [
-                "sushi",
-                "french",
-            ]
+            "category_list": [
+                "pizza",
+                "waffles",
+            ],
+            "rating_list": [
+                "4",
+                "5",
+            ],
+            "price_list": [
+                "price_1",
+                "price_2",
+            ],
+            "compliance_list": [
+                "COVIDCompliant",
+            ],
         }
         user_pref_form = UserPreferenceForm(data=form_data)
         self.assertTrue(user_pref_form.is_valid())
@@ -461,27 +483,39 @@ class TestForgetPasswordView(BaseTest):
 class TestAddPrefView(BaseTest):
     def test_add_pref_valid(self):
         self.c.login(username="myuser", password="pass123")
-        Categories.objects.create(category="sushi", parent_category="sushi")
-        Categories.objects.create(category="french", parent_category="french")
+        p1 = Preferences.objects.create(
+            preference_type="category", value="pizza", display_value="Pizza"
+        )
+        p2 = Preferences.objects.create(
+            preference_type="rating", value="4", display_value="4 Stars"
+        )
         url = reverse("user:add_preference")
         form_data = {
-            "pref_list": [
-                "sushi",
-                "french",
-            ]
+            "category_list": [
+                "pizza",
+            ],
+            "rating_list": [
+                "4",
+            ],
         }
         user_pref_form = UserPreferenceForm(form_data)
         self.assertTrue(user_pref_form.is_valid())
         response = self.c.post(path=url, data=form_data)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(str(p1), "category: pizza")
+        self.assertEqual(str(p2), "rating: 4")
 
 
 class TestDeletePrefView(BaseTest):
     def test_del_pref_valid(self):
         self.c.login(username="myuser", password="pass123")
-        url = reverse("user:delete_preference", args=["sushi"])
-        Categories.objects.create(category="sushi", parent_category="sushi")
-        Categories.objects.create(category="french", parent_category="french")
+        url = reverse("user:delete_preference", args=["category", "pizza"])
+        Preferences.objects.create(
+            preference_type="category", value="pizza", display_value="Pizza"
+        )
+        Preferences.objects.create(
+            preference_type="rating", value="4", display_value="4 Stars"
+        )
         response = self.c.post(path=url)
         self.assertEqual(response.status_code, 200)
 
@@ -544,6 +578,7 @@ class TestContactFormView(BaseTest):
             {},
         )
         self.assertEqual(response.status_code, 200)
+
 
 
 class CommentTest(TestCase):
@@ -651,3 +686,70 @@ class ShowReportTests(TestCase):
         response2 = self.c.get(url)
         self.assertEqual(response2.status_code, 200)
         self.c.logout()
+
+class TestRestaurantQuestionModel(BaseTest):
+    def test_restaurant_question_str_function(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        q1 = RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        self.assertEqual(str(q1), "myuser question for JUST SALAD")
+
+    def test_question_related_name(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        user_questions = self.dummy_user.questions.first()
+        restaurant_questions = restaurant.questions.first()
+        self.assertEqual(user_questions.question, "Test question??")
+        self.assertEqual(restaurant_questions.question, "Test question??")
+
+
+class TestRestaurantAnswerModel(BaseTest):
+    def test_restaurant_answer_str_function(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        q1 = RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        a1 = RestaurantAnswer.objects.create(
+            user=self.dummy_user, question=q1, text="test answer!!"
+        )
+        self.assertEqual(str(a1), "myuser answered myuser's question for JUST SALAD")
+
+    def test_answers_related_name(self):
+        restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        q1 = RestaurantQuestion.objects.create(
+            user=self.dummy_user, restaurant=restaurant, question="Test question??"
+        )
+        RestaurantAnswer.objects.create(
+            user=self.dummy_user, question=q1, text="test answer!!"
+        )
+        user_answers = self.dummy_user.answers.first()
+        question_answers = q1.answers.first()
+        self.assertEqual(user_answers.text, "test answer!!")
+        self.assertEqual(question_answers.text, "test answer!!")
