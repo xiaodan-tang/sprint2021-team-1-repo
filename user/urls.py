@@ -19,7 +19,7 @@ urlpatterns = [
     path("forget_password", views.forget_password, name="forget_password"),
     path("verification", views.forget_password, name="verification"),
     path("profile", views.profile, name="profile"),
-    path("facing_page/<user_id>", views.user_facing, name="user_facing"),
+    path("facing_page/<int:user_id>", views.user_facing, name="user_facing"),
     path("user_reviews", views.user_reviews, name="user_reviews"),
     path("update_password", views.update_password, name="update_password"),
     path(
@@ -28,7 +28,7 @@ urlpatterns = [
         name="add_preference",
     ),
     path(
-        "delete/preference/user/<category>",
+        "delete/preference/user/<preference_type>/<value>",
         views.delete_preference,
         name="delete_preference",
     ),

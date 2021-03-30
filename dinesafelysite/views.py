@@ -22,12 +22,35 @@ def index(request):
     # below is for recommendation
     recommended_restaurants_list = []
     if request.user and request.user.is_authenticated:
-        categories = [category.category for category in request.user.preferences.all()]
+        categories = [
+            category.value
+            for category in request.user.preferences.filter(preference_type="category")
+        ]
+        ratings = [
+            rating.value
+            for rating in request.user.preferences.filter(preference_type="rating")
+        ]
+        neighborhoods = [
+            neighbourhood.display_value
+            for neighbourhood in request.user.preferences.filter(
+                preference_type="neighbourhood"
+            )
+        ]
+        compliance = [
+            c.value
+            for c in request.user.preferences.filter(preference_type="compliance")
+        ]
+        prices = [
+            p.value for p in request.user.preferences.filter(preference_type="price")
+        ]
+
         recommended_restaurants = get_filtered_restaurants(
             limit=RESTAURANT_NUMBER,
             category=categories,
-            rating=[3.0, 3.5, 4.0, 4.5, 5.0],
-            compliant=["COVIDCompliant"],
+            rating=ratings,
+            compliant=compliance,
+            price=prices,
+            neighborhood=neighborhoods,
         )
         recommended_restaurants_list = restaurants_to_dict(recommended_restaurants)
 

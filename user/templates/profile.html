@@ -105,8 +105,9 @@
         </div>
         <div class="card mt-3 shadow">
           <div class="card-body">
-            {% load socialaccount %} {% get_social_accounts user as accounts %} {% if accounts.facebook or accounts.google %} {% else
-            %}
+            {% load socialaccount %} {% get_social_accounts user as accounts %} 
+            {% if accounts.facebook or accounts.google %} 
+            {% else %}
             <div class="row">
               <div class="col-sm-3">
                 <h6 class="mb-0">Password</h6>
@@ -191,7 +192,8 @@
                   }
                 });
               };
-            </script> {% endif %}
+            </script> 
+            {% endif %}
             <hr>
             <div class="row">
               <div class="col-sm-3">
@@ -202,13 +204,15 @@
                   aria-expanded="false" aria-controls="personalDetails">Update</button>
               </div>
             </div>
-            <!-- saved personal prefereces: categories -->
+            <!-- saved personal prefereces -->
             <div class="row pt-4">
-              {% for pref in user_pref %} {% csrf_token %}
+              {% for type in user_pref %}
+              {% for pref in type %} {% csrf_token %}
               <ul class="list-group">
-                <li id="{{ pref.category }}" class="list-group-item">
-                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref.category }}" method="POST">
-                    <div class="text-secondary">{{ pref.category }}&nbsp&nbsp
+                <li id="{{ pref.value }}" class="list-group-item">
+                    <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" preference_type="{{ pref.preference_type }}" value="{{ pref.value }}" method="POST">
+                    <div class="text-secondary">
+                        {{ pref.display_value }}&nbsp&nbsp
                       <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
                         <span aria-hidden="true">&times;</span>
                       </button>
@@ -217,71 +221,6 @@
                 </li>
               </ul>
               {% endfor %}
-            </div>
-            <!-- saved personal prefereces: price -->
-            <div class="row pt-4">
-              {% for pref in user_price_pref %} {% csrf_token %}
-              <ul class="list-group">
-                <li id="{{ pref }}" class="list-group-item">
-                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
-                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
-                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                  </form>
-                </li>
-              </ul>
-              {% endfor %}
-            </div>
-            <!-- saved personal prefereces: compliance -->
-            <div class="row pt-4">
-              {% for pref in user_compliance_pref %} {% csrf_token %}
-              <ul class="list-group">
-                <li id="{{ pref }}" class="list-group-item">
-                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
-                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
-                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                  </form>
-                </li>
-              </ul>
-              {% endfor %}
-            </div>
-
-            <!-- saved personal prefereces: rating -->
-            <div class="row pt-4">
-              {% for pref in user_rating_pref %} {% csrf_token %}
-              <ul class="list-group">
-                <li id="{{ pref }}" class="list-group-item">
-                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
-                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
-
-                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                  </form>
-                </li>
-              </ul>
-              {% endfor %}
-            </div>
-            <!-- saved personal prefereces: neighborhood -->
-            <div class="row pt-4">
-              {% for pref in user_neighborhood_pref %} {% csrf_token %}
-              <ul class="list-group">
-                <li id="{{ pref }}" class="list-group-item">
-                  <form name="saved_pref_delete" class="saved_res_remove" onsubmit="return false;" category="{{ pref }}" method="POST">
-                    <div class="text-secondary">{{ pref }}&nbsp&nbsp
-                      <button type="submit" class="close" aria-label="Close" data-toggle="tooltip" data-placement="top" data-original-title="Remove from Preference">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                  </form>
-                </li>
-              </ul>
               {% endfor %}
             </div>
 
@@ -293,80 +232,49 @@
                   <div class="form-group col-sm-3">
 
                     <!-- select categories-->
-                    <label class="form-label" for="pref_list">Category</label>
-                    <select class="selectpicker form-control" name="pref_list" id="pref_list" multiple data-style="btn-selectpicker" data-live-search="true"
+                    <label class="form-label" for="category_list">Category</label>
+                    <select class="selectpicker form-control" name="category_list" id="category_list" multiple data-style="btn-selectpicker" data-live-search="true"
                       data-selected-text-format="count &gt; 1" title="">
-                      <option value="newamerican">New American</option>
-                      <option value="armenian">Armenian</option>
-                      <option value="bars">Bars</option>
-                      <option value="bistros">Bistros</option>
-                      <option value="burgers">Burgers</option>
-                      <option value="chinese">Chinese</option>
-                      <option value="danish">Danish</option>
-                      <option value="diners">Diners</option>
-                      <option value="ethiopian">Ethiopian</option>
-                      <option value="filipino">Filipino</option>
-                      <option value="french">French</option>
-                      <option value="georgian">Georgian</option>
-                      <option value="german">German</option>
-                      <option value="greek">Greek</option>
-                      <option value="hotdog">Hot dog</option>
-                      <option value="italian">Italian</option>
-                      <option value="bistros">Bistros</option>
-                      <option value="japanese">Japanese</option>
-                      <option value="jewish">Jewish</option>
-                      <option value="kebab">Kebab</option>
-                      <option value="korean">Korean</option>
-                      <option value="kosher">Kosher</option>
-                      <option value="mexican">Mexican</option>
-                      <option value="noodles">Noodles</option>
-                      <option value="pizza">Pizza</option>
-                      <option value="salad">Salad</option>
-                      <option value="sandwiches">Sandwiches</option>
-                      <option value="seafood">Seafood</option>
-                      <option value="sushi">Sushi</option>
-                      <option value="vegan">Vegan</option>
-                      <option value="vegetarian">Vegetarian</option>
-                      <option value="vietnamese">Vietnamese</option>
-                      <option value="waffles">Waffles</option>
-                      <option value="wraps">Wraps</option>
+                    {% for c in categories %}
+                    <option value="{{ c.value }}">{{ c.display_value }}</option>
+                    {% endfor %}
                     </select>
                   </div>
                   <script>
-                    var pref_menu = document.getElementById("pref_list").options;
+                    var pref_menu = document.getElementById("category_list").options;
                     for (var i = 0; i < {{ user_pref_json | safe }}.length; i++) { var current_pref = {{ user_pref_json | safe } } [i].category;
-                    if ($("#pref_list option[value='+current_pref+']").length == 0) {
-                      console.log(current_pref); $('#pref_list').children('option[value=' + current_pref + ']').hide();
+                    if ($("#category_list option[value='+current_pref+']").length == 0) {
+                      console.log(current_pref); $('#category_list').children('option[value=' + current_pref + ']').hide();
                     }}
                   </script>
 
-                  <!--select price 
+                  <!--select price-->
                   <div class="form-group col-sm-3">
 
-                    <label class="form-label" for="pref_price">Price</label>
-                    <select class="selectpicker form-control" name="pref_price" id="pref_price" multiple data-style="btn-selectpicker" data-live-search="true"
+                    <label class="form-label" for="price_list">Price</label>
+                    <select class="selectpicker form-control" name="price_list" id="price_list" multiple data-style="btn-selectpicker" data-live-search="true"
                       data-selected-text-format="count &gt; 1" title="">
-                      <option value="$">$</option>
-                      <option value="$$">$$</option>
-                      <option value="$$$">$$$</option>
-                      <option value="$$$$">$$$$</option>
+                      <option value="price_1">$</option>
+                      <option value="price_2">$$</option>
+                      <option value="price_3">$$$</option>
+                      <option value="price_4">$$$$</option>
 
                     </select>
-                  </div>-->
-                  <!-- select compliant status 
+                  </div>
+                  <!-- select compliant status -->
                   <div class="form-group col-sm-3">
-                    <label class="form-label" for="pref_compliance">Compliant Status</label>
-                    <select class="selectpicker form-control" name="pref_compliance" id="pref_compliance" multiple data-style="btn-selectpicker"
+                    <label class="form-label" for="compliance_list">Compliant Status</label>
+                    <select class="selectpicker form-control" name="compliance_list" id="compliance_list" multiple data-style="btn-selectpicker"
                       data-live-search="true" data-selected-text-format="count &gt; 1" title="">
-                      <option value="COVID">COVID-19 compliant</option>
-                      <option value="MOPD">MOPD compliant</option>
+                      <option value="COVIDCompliant">COVID-19 compliant</option>
+                      <option value="MOPDCompliant">MOPD compliant</option>
 
                     </select>
-                  </div>-->
-                  <!-- select rating 
+                  </div>
+                  <!-- select rating -->
                   <div class="form-group col-sm-3">
-                    <label class="form-label" for="pref_rating">Rating</label>
-                    <select class="selectpicker form-control" name="pref_rating" id="pref_rating" multiple data-style="btn-selectpicker" data-live-search="true"
+                    <label class="form-label" for="rating_list">Rating</label>
+                    <select class="selectpicker form-control" name="rating_list" id="rating_list" multiple data-style="btn-selectpicker" data-live-search="true"
                       data-selected-text-format="count &gt; 1" title="">
                       <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
                       <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
@@ -375,59 +283,18 @@
                       <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
 
                     </select>
-                  </div>-->
-                  <!-- select neighborhood 
+                  </div>
+                  <!-- select neighborhood -->
                   <div class="form-group col-sm-3">
-                    <label class="form-label" for="pref_neighborhood">Neighborhood</label>
-                    <select class="selectpicker form-control" name="pref_neighborhood" id="pref_neighborhood" multiple data-style="btn-selectpicker"
+                    <label class="form-label" for="neighbourhood_list">Neighborhood</label>
+                    <select class="selectpicker form-control" name="neighbourhood_list" id="neighbourhood_list" multiple data-style="btn-selectpicker"
                       data-live-search="true" data-selected-text-format="count &gt; 1" title="">
-                      <option value="Borough Park">Borough Park</option>
-                      <option value="Bronx Park and Fordham">Bronx Park and Fordham</option>
-                      <option value="Bushwick and Williamsburg">Bushwick and Williamsburg</option>
-                      <option value="Canarsie and Flatlands">Canarsie and Flatlands</option>
-                      <option value="Central Bronx">Central Bronx</option>
-                      <option value="Central Brooklyn">Central Brooklyn</option>
-                      <option value="Central Harlem">Central Harlem</option>
-                      <option value="Central Queens">Central Queens</option>
-                      <option value="Chelsea and Clinton">Chelsea and Clinton</option>
-                      <option value="East Harlem">East Harlem</option>
-                      <option value="East New York and New Lots">East New York and New Lots</option>
-                      <option value="Flatbush">Flatbush</option>
-                      <option value="Gramercy Park and Murray Hill">Gramercy Park and Murray Hill</option>
-                      <option value="Greenpoint">Greenpoint</option>
-                      <option value="Greenwich Village and Soho">Greenwich Village and Soho</option>
-                      <option value="High Bridge and Morrisania">High Bridge and Morrisania</option>
-                      <option value="Hunts Point and Mott Haven">Hunts Point and Mott Haven</option>
-                      <option value="Inwood and Washington Heights">Inwood and Washington Heights</option>
-                      <option value="Jamaica">Jamaica</option>
-                      <option value="Kingsbridge and Riverdale">Kingsbridge and Riverdale</option>
-                      <option value="Long Island City">Long Island City</option>
-                      <option value="Lower East Side">Lower East Side</option>
-                      <option value="Lower Manhattan">Lower Manhattan</option>
-                      <option value="Mid-Island">Mid-Island</option>
-                      <option value="North Queens">North Queens</option>
-                      <option value="Northeast Queens">Northeast Queens</option>
-                      <option value="Northeast Bronx">Northeast Bronx</option>
-                      <option value="Northwest Brooklyn">Northwest Brooklyn</option>
-                      <option value="Northwest Queens">Northwest Queens</option>
-                      <option value="Port Richmond">Port Richmond</option>
-                      <option value="Rockaways">Rockaways</option>
-                      <option value="South Shore">South Shore</option>
-                      <option value="Southern Brooklyn">Southern Brooklyn</option>
-                      <option value="Southeast Bronx">Southeast Bronx</option>
-                      <option value="Southeast Queens">Southeast Queens</option>
-                      <option value="Southwest Brooklyn">Southwest Brooklyn</option>
-                      <option value="Southwest Queens">Southwest Queens</option>
-                      <option value="Stapleton and St. George">Stapleton and St. George</option>
-                      <option value="Sunset Park">Sunset Park</option>
-                      <option value="Tribeca">Tribeca</option>
-                      <option value="Upper East Side">Upper East Side</option>
-                      <option value="Upper West Side">Upper West Side</option>
-                      <option value="West Central Queens">West Central Queens</option>
-                      <option value="West Queens">West Queens</option>
+                    {% for n in neighbourhoods %}
+                    <option value="{{ n.value }}">{{ n.display_value }}</option>
+                    {% endfor %}
 
                     </select>
-                  </div>-->
+                  </div>
                 </div>
 
                 <button class="btn btn-outline-primary mb-4" type="submit" data-original-title="add_preference">Save your Preferences</button>
@@ -694,13 +561,13 @@
     });
     $.ajax({
       type: 'POST',
-      url: "../user/delete/preference/user/" + currentForm.attr("category"),
+      url: "../user/delete/preference/user/" + currentForm.attr("preference_type") + "/" + currentForm.attr("value"),
       data: formData,
       processData: false,
       contentType: false,
       // handle a successful response
       success: function (response) {
-        $('#' + currentForm.attr('category')).hide();
+        $('#' + currentForm.attr("value")).hide();
       },
       error: function (xhr, errmsg, err) {
         console.log('Error')
@@ -714,7 +581,7 @@
     var form_data = new FormData(document.getElementById("add_pref_form"))
     var add_form = document.getElementById("add_pref_form");
 
-    console.log("add form value is : ", form_data.get("pref_list"));
+    console.log("add form value is : ", form_data.get("category_list"));
     $.ajaxSetup({
       beforeSend: function (xhr, settings) {
         function getCookie(name) {
