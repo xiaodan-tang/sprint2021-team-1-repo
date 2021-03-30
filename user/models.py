@@ -2,13 +2,21 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from restaurant.models import Restaurant, Categories
 from phonenumber_field.modelfields import PhoneNumberField
-
 from datetime import datetime
+
+
+class Preferences(models.Model):
+    preference_type = models.CharField(max_length=200, default="")
+    value = models.CharField(max_length=200, default="")
+    display_value = models.CharField(max_length=200, default="")
+
+    def __str__(self):
+        return "{}: {}".format(self.preference_type, self.value)
 
 
 class DineSafelyUser(AbstractUser):
     favorite_restaurants = models.ManyToManyField(Restaurant, blank=True)
-    preferences = models.ManyToManyField(Categories, blank=True)
+    preferences = models.ManyToManyField(Preferences, blank=True)
     current_location = models.CharField(
         max_length=200, default=None, blank=True, null=True
     )
@@ -186,3 +194,37 @@ class Report_Ticket_Comment(models.Model):
         reporter = self.user.username
         reported_user = self.comment.user.username
         return f"{reporter}'s report ticket on {reported_user}'s comment"
+
+
+class RestaurantQuestion(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="questions"
+    )
+    restaurant = models.ForeignKey(
+        Restaurant, on_delete=models.CASCADE, related_name="questions"
+    )
+    time = models.DateTimeField(default=datetime.now, editable=False, db_index=True)
+    question = models.TextField()
+
+    def __str__(self):
+        return f"{self.user.username} question for {self.restaurant.restaurant_name}"
+
+
+class RestaurantAnswer(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="answers"
+    )
+    question = models.ForeignKey(
+        RestaurantQuestion, on_delete=models.CASCADE, related_name="answers"
+    )
+    text = models.CharField(max_length=512)
+    time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-time"]
+
+    def __str__(self):
+        answer_user = self.user.username
+        question_user = self.question.user.username
+        restaurant = self.question.restaurant.restaurant_name
+        return f"{answer_user} answered {question_user}'s question for {restaurant}"
