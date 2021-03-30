@@ -12,6 +12,8 @@ from .forms import (
     UpdatePasswordForm,
     UserPreferenceForm,
     ContactForm,
+    RestaurantQuestionForm,
+    RestaurantAnswerForm,
 )
 from .utils import send_reset_password_email, send_feedback_email
 from django.test import Client
@@ -606,3 +608,68 @@ class TestRestaurantAnswerModel(BaseTest):
         question_answers = q1.answers.first()
         self.assertEqual(user_answers.text, "test answer!!")
         self.assertEqual(question_answers.text, "test answer!!")
+
+
+class TestRestaurantQuestionForm(BaseTest):
+    def setUp(self):
+        self.restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        super(TestRestaurantQuestionForm, self).setUp()
+
+    def test_question_form_valid(self):
+        form_data = {
+            "question": "Test question",
+        }
+        question_form = RestaurantQuestionForm(self.dummy_user, self.restaurant, form_data)
+        self.assertTrue(question_form.is_valid())
+
+    def test_question_form_invalid_question(self):
+        form_data = {
+            "question": "",
+        }
+        question_form = RestaurantQuestionForm(self.dummy_user, self.restaurant, form_data)
+        self.assertFalse(question_form.is_valid())
+
+        form_data = {}
+        question_form = RestaurantQuestionForm(self.dummy_user, self.restaurant, form_data)
+        self.assertFalse(question_form.is_valid())
+
+
+class TestRestaurantAnswerForm(BaseTest):
+    def setUp(self):
+        super(TestRestaurantAnswerForm, self).setUp()
+        self.restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        self.question = RestaurantQuestion.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant,
+            question="Test question",
+        )
+
+    def test_answer_form_valid(self):
+        form_data = {
+            "answer": "Test answer",
+        }
+        answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
+        self.assertTrue(answer_form.is_valid())
+
+    def test_answer_form_invalid_answer(self):
+        form_data = {
+            "answer": "",
+        }
+        answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
+        self.assertFalse(answer_form.is_valid())
+
+        form_data = {}
+        answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
+        self.assertFalse(answer_form.is_valid())
