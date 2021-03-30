@@ -64,9 +64,6 @@ def get_restaurant_profile(request, restaurant_id):
         form.save()
         messages.success(request, "Thank you for your review!")
         return HttpResponseRedirect(url)
-        # else:
-        #     messages.error(request, "invalid review content!")
-        #     return HttpResponseRedirect(url)
 
     try:
         csv_file = get_csv_from_github()
