@@ -3,7 +3,15 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-from .models import User_Profile, Review, DineSafelyUser
+
+from .models import (
+    User_Profile,
+    Review,
+    Comment,
+    DineSafelyUser,
+    Report_Ticket_Comment,
+    Report_Ticket_Review,
+)
 from restaurant.models import Categories
 import json
 
@@ -14,7 +22,8 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+
 
 from .utils import (
     send_reset_password_email,
@@ -84,6 +93,54 @@ def register(request):
         form = UserCreationForm()
     return render(
         request=request, template_name="register.html", context={"form": form}
+    )
+
+
+def show_report(request):
+    if not request.user.is_staff:
+        messages.warning(request, "You are not authorized to do so.")
+        return redirect("user:profile")
+
+    internal_reviews = list(
+        Report_Ticket_Review.objects.all()
+        .select_related("user")
+        .select_related("review")
+        .values(
+            "id",
+            "review_id",
+            "reason",
+            "time",
+            "user__id",
+            "user__username",
+            "review__content",
+            "review__image1",
+            "review__image2",
+            "review__image3",
+        )
+    )
+
+    internal_comments = list(
+        Report_Ticket_Comment.objects.all()
+        .select_related("user")
+        .select_related("comment")
+        .values(
+            "id",
+            "comment_id",
+            "reason",
+            "time",
+            "user__id",
+            "user__username",
+            "comment__text",
+        )
+    )
+
+    return render(
+        request=request,
+        template_name="admin_comment.html",
+        context={
+            "internal_reviews": internal_reviews,
+            "internal_comments": internal_comments,
+        },
     )
 
 

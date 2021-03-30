@@ -8,6 +8,13 @@ from .models import (
     UserQuestionnaire,
 )
 
+from user.models import (
+    Review,
+    Comment,
+    Report_Ticket_Review,
+    Report_Ticket_Comment,
+)
+
 import requests
 import json
 import logging
@@ -611,3 +618,27 @@ def get_reviews_stats(reviews):
             distribution[i] = round(distribution[i] / count, 2) * 100
 
     return count, ratings_avg, distribution
+
+
+def remove_reports_review(review_id):
+    try:
+        review = Review.objects.get(pk=review_id)
+        report_tickets = list(Report_Ticket_Review.objects.filter(review=review))
+        for report_ticket in report_tickets:
+            report_ticket.delete()
+        return True
+    except Review.DoesNotExist:
+        logger.warning("Review ID could not be found: {}".format(review_id))
+        return False
+
+
+def remove_reports_comment(comment_id):
+    try:
+        comment = Comment.objects.get(pk=comment_id)
+        report_tickets = list(Report_Ticket_Comment.objects.filter(comment=comment))
+        for report_ticket in report_tickets:
+            report_ticket.delete()
+        return True
+    except Comment.DoesNotExist:
+        logger.warning("Comment ID could not be found: {}".format(comment_id))
+        return False
