@@ -113,6 +113,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "image1",
                 "image2",
                 "image3",
+                "hidden",
             )
         )
 
@@ -125,6 +126,7 @@ def get_restaurant_profile(request, restaurant_id):
                     "text": el.text,
                     "author": el.user.id,
                     "commentId": el.id,
+                    "hidden": el.hidden,
                 }
                 for el in comments
             ]
@@ -370,10 +372,12 @@ def report_comment(request, restaurant_id, comment_id):
         return HttpResponseRedirect(url)
 
 
+# Ignore、hide and delete inappropriate Comments & Reviews
+@csrf_exempt
 def hide_review(request, review_id):
     user = request.user
-    # TODO: currently using index page, should be manage page
-    url = reverse("index")
+    url = reverse("user:admin_comment")
+
     if user.is_staff:
         # Close related report tickets
         if remove_reports_review(review_id):
@@ -394,10 +398,11 @@ def hide_review(request, review_id):
     return HttpResponseRedirect(url)
 
 
+@csrf_exempt
 def hide_comment(request, comment_id):
     user = request.user
-    # TODO: this url needs to be replaced with manage page url
-    url = reverse("index")
+    url = reverse("user:admin_comment")
+
     if user.is_staff:
         # Close related report tickets
         if remove_reports_comment(comment_id):
@@ -418,10 +423,11 @@ def hide_comment(request, comment_id):
     return HttpResponseRedirect(url)
 
 
+@csrf_exempt
 def ignore_review_report(request, review_id):
     user = request.user
-    # TODO: this url needs to be replaced with manage page url
-    url = reverse("index")
+    url = reverse("user:admin_comment")
+
     if user.is_staff:
         if remove_reports_review(review_id):
             messages.success(
@@ -437,14 +443,56 @@ def ignore_review_report(request, review_id):
     return HttpResponseRedirect(url)
 
 
+@csrf_exempt
 def ignore_comment_report(request, comment_id):
     user = request.user
-    # TODO: this url needs to be replaced with manage page url
-    url = reverse("index")
+    url = reverse("user:admin_comment")
+
     if user.is_staff:
         if remove_reports_comment(comment_id):
             messages.success(
                 request, "All the related reports for this comment have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def delete_review_report(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+    print(request)
+    if user.is_staff:
+        if remove_reports_review(review_id):
+            Review.objects.get(pk=review_id).delete()
+            messages.success(
+                request, "All the related reports for this review have been deleted!"
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def delete_comment_report(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+    if user.is_staff:
+        if remove_reports_comment(comment_id):
+            Comment.objects.get(pk=comment_id).delete()
+            messages.success(
+                request, "All the related reports for this comment have been deleted!"
             )
         else:
             messages.error(

@@ -62,6 +62,11 @@ urlpatterns = [
         name="ignore_review_report",
     ),
     path(
+        "report/review/delete/<int:review_id>",
+        views.delete_review_report,
+        name="delete_review_report",
+    ),
+    path(
         "report/comment/hide/<int:comment_id>",
         views.hide_comment,
         name="hide_comment",
@@ -70,6 +75,11 @@ urlpatterns = [
         "report/comment/ignore/<int:comment_id>",
         views.ignore_comment_report,
         name="ignore_comment_report",
+    ),
+    path(
+        "report/comment/delete/<int:comment_id>",
+        views.delete_comment_report,
+        name="delete_comment_report",
     ),
     # Others
     path("chatbot/keywordtest", views.chatbot_keyword, name="chatbottest"),

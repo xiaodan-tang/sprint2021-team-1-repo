@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from restaurant.models import Categories
+from restaurant.models import Categories, Restaurant
+from .models import Review, Comment
 from .forms import (
     UserCreationForm,
     ResetPasswordForm,
@@ -20,6 +21,35 @@ from django.utils.encoding import force_bytes
 
 
 # Create your tests here.
+
+
+def create_restaurant(
+    restaurant_name, business_address, yelp_detail, postcode, business_id
+):
+    return Restaurant.objects.create(
+        restaurant_name=restaurant_name,
+        business_address=business_address,
+        yelp_detail=yelp_detail,
+        postcode=postcode,
+        business_id=business_id,
+    )
+
+
+def create_review(user, restaurant, content, rating):
+    return Review.objects.create(
+        user=user,
+        restaurant=restaurant,
+        content=content,
+        rating=rating,
+    )
+
+
+def create_comment(user, review, text):
+    return Comment.objects.create(
+        user=user,
+        review=review,
+        text=text,
+    )
 
 
 class BaseTest(TestCase):
@@ -514,3 +544,110 @@ class TestContactFormView(BaseTest):
             {},
         )
         self.assertEqual(response.status_code, 200)
+
+
+class CommentTest(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize dummy user
+        self.dummy_user = get_user_model().objects.create(
+            username="testuser",
+            email="test@gmail.com",
+        )
+        self.dummy_user.set_password("test1234Comment")
+        self.dummy_user.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_review(
+            self.dummy_user,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+    def test_delete_comment(self):
+        self.dummy_comment = create_comment(
+            self.dummy_user, self.temp_review, "comment for test deleting comment"
+        )
+        rest_id = self.temp_restaurant.id
+        comm_id = self.dummy_comment.id
+        print("test comment:", self.dummy_comment)
+        delete_url = (
+            "/restaurant/profile/" + str(rest_id) + "/comment_delete/" + str(comm_id)
+        )
+        response = self.c.get(delete_url)
+        self.assertEqual(response.status_code, 302)
+
+
+class ShowReportTests(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize 2 test users & 1 admin
+        self.user1 = get_user_model().objects.create(
+            username="user1",
+            email="test1@gmail.com",
+        )
+        self.user1.set_password("test1234Report")
+        self.user1.save()
+
+        self.admin = get_user_model().objects.create(
+            username="admin",
+            email="admin@gmail.com",
+        )
+        self.admin.set_password("test1234Admin")
+        self.admin.is_superuser = True
+        self.admin.is_staff = True
+        self.admin.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+        # Initialize temp comment
+        self.temp_comment = create_comment(
+            self.user1, self.temp_review, "comment for test report functions"
+        )
+        self.temp_comment.save()
+
+    def test_show_repoet_view(self):
+        url = "/user/admin_comment"
+
+        # test as normal user
+        self.c.login(username="user1", password="test4321Report")
+        response1 = self.c.get(url)
+        self.assertEqual(response1.status_code, 302)
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        self.assertEqual(response2.status_code, 200)
+        self.c.logout()

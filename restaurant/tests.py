@@ -1659,6 +1659,81 @@ class ReportTests(TestCase):
 
         self.c.logout()
 
+    def test_delete_review_report(self):
+        test_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for delete review tests, I'm hate speech",
+            5,
+        )
+        test_review.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_review(self.user2, test_review, "hate speech")
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        review_id = test_review.id
+        url = "/restaurant/report/review/delete/" + str(review_id)
+
+        # test as normal user
+        self.c.login(username="user2", password="test4321Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Review.objects.filter(review_id=review_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Review.objects.filter(review_id=review_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_delete_comment_report(self):
+        test_comment = create_comment(
+            self.user2,
+            self.temp_review,
+            "comment for test delete comments, I'm hate speech",
+        )
+        test_comment.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_comment(
+                self.user1, test_comment, "hate speech"
+            )
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        comment_id = test_comment.id
+        url = "/restaurant/report/comment/delete/" + str(comment_id)
+
+        # test as normal user
+        self.c.login(username="user1", password="test1234Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Comment.objects.filter(comment_id=comment_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Comment.objects.filter(comment_id=comment_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
 
 class FAQTest(TestCase):
     """ Test FAQ Model"""
