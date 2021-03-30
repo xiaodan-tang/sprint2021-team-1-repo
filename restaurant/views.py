@@ -21,7 +21,10 @@ from user.forms import (
     Report_Review_Form,
     Report_Comment_Form,
 )
-from user.models import Review, Comment
+from user.models import (
+    Review,
+    Comment,
+)
 
 
 from .utils import (
@@ -39,6 +42,8 @@ from .utils import (
     get_filtered_restaurants,
     restaurants_to_dict,
     check_user_location,
+    remove_reports_review,
+    remove_reports_comment,
 )
 
 from django.http import HttpResponse
@@ -363,3 +368,89 @@ def report_comment(request, restaurant_id, comment_id):
         messages.success(request, "success")
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
+
+
+def hide_review(request, review_id):
+    user = request.user
+    # TODO: currently using index page, should be manage page
+    url = reverse("index")
+    if user.is_staff:
+        # Close related report tickets
+        if remove_reports_review(review_id):
+            review = Review.objects.get(pk=review_id)
+            review.hidden = True
+            review.save()
+            messages.success(
+                request,
+                "Reported review is hidden and all the related report tickets are closed!",
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+def hide_comment(request, comment_id):
+    user = request.user
+    # TODO: this url needs to be replaced with manage page url
+    url = reverse("index")
+    if user.is_staff:
+        # Close related report tickets
+        if remove_reports_comment(comment_id):
+            comment = Comment.objects.get(pk=comment_id)
+            comment.hidden = True
+            comment.save()
+            messages.success(
+                request,
+                "Reported comment is hidden and all the related report tickets are closed!",
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+def ignore_review_report(request, review_id):
+    user = request.user
+    # TODO: this url needs to be replaced with manage page url
+    url = reverse("index")
+    if user.is_staff:
+        if remove_reports_review(review_id):
+            messages.success(
+                request, "All the related reports for this review have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+def ignore_comment_report(request, comment_id):
+    user = request.user
+    # TODO: this url needs to be replaced with manage page url
+    url = reverse("index")
+    if user.is_staff:
+        if remove_reports_comment(comment_id):
+            messages.success(
+                request, "All the related reports for this comment have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)

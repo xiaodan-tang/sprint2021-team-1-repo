@@ -127,7 +127,7 @@ def create_faq(question, answer):
     return FAQ.objects.create(question=question, answer=answer)
 
 
-def create_internal_review(user, restaurant, content, rating):
+def create_review(user, restaurant, content, rating):
     return Review.objects.create(
         user=user,
         restaurant=restaurant,
@@ -1384,7 +1384,7 @@ class CommentTest(TestCase):
         self.temp_restaurant.save()
 
         # Initialize temp review
-        self.temp_review = create_internal_review(
+        self.temp_review = create_review(
             self.dummy_user,
             self.temp_restaurant,
             "review for tests",
@@ -1409,7 +1409,7 @@ class CommentTest(TestCase):
 class ReportTests(TestCase):
     def setUp(self):
         self.c = Client()
-        # Initialize 2 test users
+        # Initialize 2 test users & 1 admin
         self.user1 = get_user_model().objects.create(
             username="user1",
             email="test1@gmail.com",
@@ -1424,6 +1424,15 @@ class ReportTests(TestCase):
         self.user2.set_password("test4321Report")
         self.user2.save()
 
+        self.admin = get_user_model().objects.create(
+            username="admin",
+            email="admin@gmail.com",
+        )
+        self.admin.set_password("test1234Admin")
+        self.admin.is_superuser = True
+        self.admin.is_staff = True
+        self.admin.save()
+
         # Initialize temp restaurant
         self.temp_restaurant = create_restaurant(
             restaurant_name="Tacos El Paisa",
@@ -1436,7 +1445,7 @@ class ReportTests(TestCase):
         self.temp_restaurant.save()
 
         # Initialize temp review
-        self.temp_review = create_internal_review(
+        self.temp_review = create_review(
             self.user1,
             self.temp_restaurant,
             "review for tests",
@@ -1448,6 +1457,7 @@ class ReportTests(TestCase):
         self.temp_comment = create_comment(
             self.user2, self.temp_review, "comment for test report functions"
         )
+        self.temp_comment.save()
 
     def test_report_review_model(self):
         report_ticket_review = create_report_review(
@@ -1489,6 +1499,164 @@ class ReportTests(TestCase):
         }
         response = self.c.post(url, form)
         self.assertEqual(response.status_code, 302)
+        self.c.logout()
+
+    def test_hide_review(self):
+        test_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for hide review tests, I'm hate speech",
+            5,
+        )
+        test_review.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_review(self.user2, test_review, "hate speech")
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        review_id = test_review.id
+        url = "/restaurant/report/review/hide/" + str(review_id)
+
+        # test as normal user
+        self.c.login(username="user2", password="test4321Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Review.objects.filter(review=test_review)
+        test_review = Review.objects.get(pk=review_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(test_review.hidden, False)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Review.objects.filter(review=test_review)
+        test_review = Review.objects.get(pk=review_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(test_review.hidden, True)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_hide_comment(self):
+        test_comment = create_comment(
+            self.user2,
+            self.temp_review,
+            "comment for test hiding comments, I'm hate speech",
+        )
+        test_comment.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_comment(
+                self.user1, test_comment, "hate speech"
+            )
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        comment_id = test_comment.id
+        url = "/restaurant/report/comment/hide/" + str(comment_id)
+
+        # test as normal user
+        self.c.login(username="user1", password="test1234Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+        test_comment = Comment.objects.get(pk=comment_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(test_comment.hidden, False)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+        test_comment = Comment.objects.get(pk=comment_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(test_comment.hidden, True)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_ignore_review_report(self):
+        test_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for hide review tests, I'm hate speech",
+            5,
+        )
+        test_review.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_review(self.user2, test_review, "hate speech")
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        review_id = test_review.id
+        url = "/restaurant/report/review/ignore/" + str(review_id)
+
+        # test as normal user
+        self.c.login(username="user2", password="test4321Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Review.objects.filter(review=test_review)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Review.objects.filter(review=test_review)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_ignore_comment_report(self):
+        test_comment = create_comment(
+            self.user2,
+            self.temp_review,
+            "comment for test hiding comments, I'm hate speech",
+        )
+        test_comment.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_comment(
+                self.user1, test_comment, "hate speech"
+            )
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        comment_id = test_comment.id
+        url = "/restaurant/report/comment/ignore/" + str(comment_id)
+
+        # test as normal user
+        self.c.login(username="user1", password="test1234Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
         self.c.logout()
 
 

@@ -44,7 +44,7 @@ urlpatterns = [
         views.delete_comment,
         name="delete_comment",
     ),
-    # Report Reviews & Comments
+    # Reports related urls
     path(
         "report/<restaurant_id>/review/<review_id>",
         views.report_review,
@@ -54,6 +54,22 @@ urlpatterns = [
         "report/<restaurant_id>/comment/<comment_id>",
         views.report_comment,
         name="report_comment",
+    ),
+    path("report/review/hide/<int:review_id>", views.hide_review, name="hide_review"),
+    path(
+        "report/review/ignore/<int:review_id>",
+        views.ignore_review_report,
+        name="ignore_review_report",
+    ),
+    path(
+        "report/comment/hide/<int:comment_id>",
+        views.hide_comment,
+        name="hide_comment",
+    ),
+    path(
+        "report/comment/ignore/<int:comment_id>",
+        views.ignore_comment_report,
+        name="ignore_comment_report",
     ),
     # Others
     path("chatbot/keywordtest", views.chatbot_keyword, name="chatbottest"),
