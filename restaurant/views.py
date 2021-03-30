@@ -478,7 +478,7 @@ def delete_review_report(request, review_id):
     else:
         messages.warning(request, "You are not authorized to do so.")
 
-
+    return HttpResponseRedirect(url)
 
 
 @csrf_exempt
