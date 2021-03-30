@@ -34,4 +34,5 @@ urlpatterns = [
     ),
     path("contact_form", views.contact_form, name="contact_form"),
     path("request_received", views.request_received, name="request_received"),
+    path("admin_comment", views.show_report, name="admin_comment"),
 ]
