@@ -6,13 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from restaurant.models import Categories, Restaurant
 
-from .models import (
-    Review, 
-    Comment, 
-    Preferences, 
-    RestaurantQuestion, 
-    RestaurantAnswer
-)
+from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
 
 from restaurant.tests import create_restaurant
 
@@ -32,18 +26,6 @@ from django.utils.encoding import force_bytes
 
 
 # Create your tests here.
-
-
-def create_restaurant(
-    restaurant_name, business_address, yelp_detail, postcode, business_id
-):
-    return Restaurant.objects.create(
-        restaurant_name=restaurant_name,
-        business_address=business_address,
-        yelp_detail=yelp_detail,
-        postcode=postcode,
-        business_id=business_id,
-    )
 
 
 def create_review(user, restaurant, content, rating):
@@ -580,7 +562,6 @@ class TestContactFormView(BaseTest):
         self.assertEqual(response.status_code, 200)
 
 
-
 class CommentTest(TestCase):
     def setUp(self):
         self.c = Client()
@@ -686,6 +667,7 @@ class ShowReportTests(TestCase):
         response2 = self.c.get(url)
         self.assertEqual(response2.status_code, 200)
         self.c.logout()
+
 
 class TestRestaurantQuestionModel(BaseTest):
     def test_restaurant_question_str_function(self):
