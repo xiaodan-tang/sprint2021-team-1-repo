@@ -6,13 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from restaurant.models import Categories, Restaurant
 
-from .models import (
-    Review, 
-    Comment, 
-    Preferences, 
-    RestaurantQuestion, 
-    RestaurantAnswer
-)
+from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
 
 from restaurant.tests import create_restaurant
 
@@ -32,6 +26,7 @@ from django.utils.encoding import force_bytes
 
 
 # Create your tests here.
+
 
 def create_review(user, restaurant, content, rating):
     return Review.objects.create(

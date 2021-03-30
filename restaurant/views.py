@@ -24,12 +24,7 @@ from user.forms import (
     RestaurantAnswerForm,
 )
 
-from user.models import (
-    Review,
-    Comment,
-    RestaurantQuestion,
-    RestaurantAnswer
-)
+from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
 from .utils import (
     query_yelp,
