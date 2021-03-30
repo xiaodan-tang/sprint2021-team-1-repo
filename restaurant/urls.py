@@ -80,6 +80,7 @@ urlpatterns = [
         "report/comment/delete/<int:comment_id>",
         views.delete_comment_report,
         name="delete_comment_report",
+
     ),
     # Ask the community
     path(
