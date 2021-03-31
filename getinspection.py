@@ -221,7 +221,7 @@ def get_inspection_data():
     populate_mopd_compliance_status()
 
 
-sched.start()
+# sched.start()
 
 
 def populate_restaurant_with_yelp_id():
