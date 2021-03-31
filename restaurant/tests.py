@@ -2130,3 +2130,4 @@ class SimilarRestaurantsTest(TestCase):
         response = get_restaurant_profile(request, self.restaurant1.id)
 
         self.assertEqual(response.status_code, 200)
+
