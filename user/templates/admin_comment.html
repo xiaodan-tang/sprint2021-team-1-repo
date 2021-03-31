@@ -1,0 +1,114 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <!-- Breadcrumbs -->
+    <ol class="breadcrumb pl-0  justify-content-start">
+      <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+      <li class="breadcrumb-item active">Reported Comments</li>
+    </ol>
+    <div class="card shadow">
+      <div class="card-body">
+        <h6>
+          <span class="text-primary">Reviews</span> Management
+        </h6>
+        <div id="internal_review">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th class="py-2" scope="col">#</th>
+                  <th class="py-2" scope="col">Author</th>
+                  <th class="py-2" scope="col">Content</th>
+                  <th class="py-2" scope="col">Reason</th>
+                  <th class="py-2" scope="col">Time</th>
+                  <th class="py-2" scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for review in internal_reviews %}
+                  <tr>
+                    <th class="py-2" scope="row">{{ forloop.counter }}</th>
+                    <td class="py-2" >{{ review.user__username }}</td>
+                    <td class="py-2" >
+                      {{ review.review__content }}
+                      {% if review.review__image1 %}
+                      <img src = 'https://dineline.s3.amazonaws.com/media/{{review.review__image1}}' height="50px">
+                      {% endif %}
+                      {% if review.review__image2 %}
+                      <img src = 'https://dineline.s3.amazonaws.com/media/{{review.review__image2}}' height="50px">
+                      {% endif %}
+                      {% if review.review__image3 %}
+                      <img src = 'https://dineline.s3.amazonaws.com/media/{{review.review__image3}}' height="50px">
+                      {% endif %}
+                    </td>
+                    <td class="py-2" >{{ review.reason }}</td>
+                    <td class="py-2" >{{ review.time }}</td>
+                    <td class="py-2" style="min-width: 350px;">
+                      <form method="post" action="/restaurant/report/review/ignore/{{ review.review_id }}" class="d-inline-block">
+                        <button class="btn btn-sm btn-primary" type="submit">Ignore</button>
+                      </form>
+                      <form method="post" action="/restaurant/report/review/delete/{{ review.review_id }}" class="d-inline-block">
+                        <button class="btn btn-sm btn-secondary" type="submit">Delete</button>
+                      </form>
+                      <form method="post" action="/restaurant/report/review/hide/{{ review.review_id }}" class="d-inline-block">
+                        <button class="btn btn-sm btn-info" type="submit">Hide</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card shadow mt-3">
+      <div class="card-body">
+        <h6>
+          <span class="text-primary">Comments</span> Management
+        </h6>
+        <div id="internal_comment">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th class="py-2" scope="col">#</th>
+                  <th class="py-2" scope="col">Author</th>
+                  <th class="py-2" scope="col">Content</th>
+                  <th class="py-2" scope="col">Reason</th>
+                  <th class="py-2" scope="col">Time</th>
+                  <th class="py-2" scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for comment in internal_comments %}
+                  <tr>
+                    <th class="py-2" scope="row">{{ forloop.index }}</th>
+                    <td class="py-2" >{{ comment.user__username }}</td>
+                    <td class="py-2" >{{ comment.comment__text }}</td>
+                    <td class="py-2" >{{ comment.reason }}</td>
+                    <td class="py-2" >{{ comment.time }}</td>
+                    <td class="py-2" style="min-width: 350px;">
+                      <form method="post" action="/restaurant/report/comment/ignore/{{ comment.comment_id }}" class="d-inline-block">
+                        <button class="btn btn-sm btn-primary" type="submit">Ignore</button>
+                      </form>
+                      <form method="post" action="/restaurant/report/comment/delete/{{ comment.comment_id }}" class="d-inline-block">
+                        <button class="btn btn-sm btn-secondary" type="submit">Delete</button>
+                      </form>
+                      <form method="post" action="/restaurant/report/comment/hide/{{ comment.comment_id }}" class="d-inline-block">
+                        <button class="btn btn-sm btn-info" type="submit">Hide</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+{% endblock %}
+

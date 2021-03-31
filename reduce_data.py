@@ -28,7 +28,7 @@ def reduce():
         data = json.load(f)
         for r in data:
             if r["model"] == "restaurant.restaurant":
-                if 1000 <= rest_count < 2000:
+                if 1000 <= rest_count < 1800:
                     yelp_detail_set.add(r["fields"]["yelp_detail"])
                     business_id_set.add(r["fields"]["business_id"])
                 rest_count += 1
@@ -56,10 +56,10 @@ def reduce():
             if r["fields"]["yelp_detail"] not in yelp_detail_set:
                 result.remove(r)
 
-    file = open("data_0330.json", "w")
+    file = open("data_0331.json", "w")
     json.dump(result, file)
     file.close()
-    # check("data_0330.json")
+    check("data_0331.json")
 
 
 if __name__ == "__main__":

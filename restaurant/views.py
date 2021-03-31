@@ -23,8 +23,8 @@ from user.forms import (
     RestaurantQuestionForm,
     RestaurantAnswerForm,
 )
-from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
+from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
 from .utils import (
     query_yelp,
@@ -41,6 +41,8 @@ from .utils import (
     get_filtered_restaurants,
     restaurants_to_dict,
     check_user_location,
+    remove_reports_review,
+    remove_reports_comment,
 )
 
 from django.http import HttpResponse
@@ -55,11 +57,11 @@ logger = logging.getLogger(__name__)
 def get_restaurant_profile(request, restaurant_id):
 
     if request.method == "POST" and "content" in request.POST:
-        form = UserQuestionaireForm(request.POST, restaurant_id)
+        form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
+        url = reverse("restaurant:profile", args=[restaurant_id])
         # if form.is_valid():
         form.save()
-        messages.success(request, "success")
-        url = reverse("restaurant:profile", args=[restaurant_id])
+        messages.success(request, "Thank you for your review!")
         return HttpResponseRedirect(url)
 
     try:
@@ -104,8 +106,13 @@ def get_restaurant_profile(request, restaurant_id):
                 "rating_path",
                 "time",
                 "content",
+                "image1",
+                "image2",
+                "image3",
+                "hidden",
             )
         )
+
         for idx in range(len(internal_reviews)):
             comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
             # get photo afterwards
@@ -115,6 +122,7 @@ def get_restaurant_profile(request, restaurant_id):
                     "text": el.text,
                     "author": el.user.id,
                     "commentId": el.id,
+                    "hidden": el.hidden,
                 }
                 for el in comments
             ]
@@ -207,6 +215,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "user_id": request.user.id,
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
+                "media_url_prefix": settings.MEDIA_URL,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -229,6 +238,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "distribution": ratings_distribution,
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
+                "media_url_prefix": settings.MEDIA_URL,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -427,6 +437,138 @@ def report_comment(request, restaurant_id, comment_id):
         messages.success(request, "success")
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
+
+
+# Ignore、hide and delete inappropriate Comments & Reviews
+@csrf_exempt
+def hide_review(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        # Close related report tickets
+        if remove_reports_review(review_id):
+            review = Review.objects.get(pk=review_id)
+            review.hidden = True
+            review.save()
+            messages.success(
+                request,
+                "Reported review is hidden and all the related report tickets are closed!",
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def hide_comment(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        # Close related report tickets
+        if remove_reports_comment(comment_id):
+            comment = Comment.objects.get(pk=comment_id)
+            comment.hidden = True
+            comment.save()
+            messages.success(
+                request,
+                "Reported comment is hidden and all the related report tickets are closed!",
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def ignore_review_report(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        if remove_reports_review(review_id):
+            messages.success(
+                request, "All the related reports for this review have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def ignore_comment_report(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        if remove_reports_comment(comment_id):
+            messages.success(
+                request, "All the related reports for this comment have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def delete_review_report(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+    print(request)
+    if user.is_staff:
+        if remove_reports_review(review_id):
+            Review.objects.get(pk=review_id).delete()
+            messages.success(
+                request, "All the related reports for this review have been deleted!"
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def delete_comment_report(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+    if user.is_staff:
+        if remove_reports_comment(comment_id):
+            Comment.objects.get(pk=comment_id).delete()
+            messages.success(
+                request, "All the related reports for this comment have been deleted!"
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
 
 
 # Ask the community
