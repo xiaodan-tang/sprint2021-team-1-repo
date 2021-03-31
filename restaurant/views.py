@@ -165,7 +165,7 @@ def get_restaurant_profile(request, restaurant_id):
         categories = [
             category["alias"] for category in response_yelp["info"]["categories"]
         ]
-        print(categories)
+        
         ratings = [restaurant.yelp_detail.rating]
 
         neighborhood = [restaurant.yelp_detail.neighborhood]
@@ -180,7 +180,6 @@ def get_restaurant_profile(request, restaurant_id):
             compliant=compliant_status,
         )
 
-        print(similar_restaurants)
         recommended_restaurants = restaurants_to_dict(similar_restaurants)
 
         if request.user.is_authenticated:
