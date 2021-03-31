@@ -1,5 +1,6 @@
 import json
 
+
 def check(file):
     with open(file, "r") as f:
         data = json.load(f)
@@ -16,6 +17,7 @@ def check(file):
 
         print(count)
         print(model_type)
+
 
 def reduce():
     # Get 1150 restaurants
@@ -58,6 +60,7 @@ def reduce():
     json.dump(result, file)
     file.close()
     # check("data_0330.json")
+
 
 if __name__ == "__main__":
     reduce()
