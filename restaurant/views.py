@@ -20,9 +20,11 @@ from user.forms import (
     UserQuestionaireForm,
     Report_Review_Form,
     Report_Comment_Form,
+    RestaurantQuestionForm,
+    RestaurantAnswerForm,
 )
-from user.models import Review, Comment
 
+from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
 from .utils import (
     query_yelp,
@@ -39,6 +41,8 @@ from .utils import (
     get_filtered_restaurants,
     restaurants_to_dict,
     check_user_location,
+    remove_reports_review,
+    remove_reports_comment,
 )
 
 from django.http import HttpResponse
@@ -53,11 +57,11 @@ logger = logging.getLogger(__name__)
 def get_restaurant_profile(request, restaurant_id):
 
     if request.method == "POST" and "content" in request.POST:
-        form = UserQuestionaireForm(request.POST, restaurant_id)
+        form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
+        url = reverse("restaurant:profile", args=[restaurant_id])
         # if form.is_valid():
         form.save()
-        messages.success(request, "success")
-        url = reverse("restaurant:profile", args=[restaurant_id])
+        messages.success(request, "Thank you for your review!")
         return HttpResponseRedirect(url)
 
     try:
@@ -102,8 +106,13 @@ def get_restaurant_profile(request, restaurant_id):
                 "rating_path",
                 "time",
                 "content",
+                "image1",
+                "image2",
+                "image3",
+                "hidden",
             )
         )
+
         for idx in range(len(internal_reviews)):
             comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
             # get photo afterwards
@@ -113,6 +122,7 @@ def get_restaurant_profile(request, restaurant_id):
                     "text": el.text,
                     "author": el.user.id,
                     "commentId": el.id,
+                    "hidden": el.hidden,
                 }
                 for el in comments
             ]
@@ -120,6 +130,43 @@ def get_restaurant_profile(request, restaurant_id):
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
+
+        # Get restaurant Q&As
+        # limit 3 recent questions, and limit 2 recent answers for each question
+        restaurant_question_list = list(
+            RestaurantQuestion.objects.filter(restaurant=restaurant)
+            .order_by("-time")
+            .values(
+                "id",
+                "user",
+                "user__username",
+                "question",
+                "time",
+            )[:3]
+        )
+        total_question_count = RestaurantQuestion.objects.filter(
+            restaurant=restaurant
+        ).count()
+        for idx in range(len(restaurant_question_list)):
+            answers = list(
+                RestaurantAnswer.objects.filter(
+                    question_id=restaurant_question_list[idx]["id"]
+                )
+                .order_by("-time")
+                .values(
+                    "id",
+                    "user",
+                    "user__username",
+                    "text",
+                    "time",
+                )[:2]
+            )
+            total_answers_count = RestaurantAnswer.objects.filter(
+                question_id=restaurant_question_list[idx]["id"]
+            ).count()
+            restaurant_question_list[idx]["answers"] = answers
+            restaurant_question_list[idx]["total_answers_count"] = total_answers_count
+
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
@@ -142,6 +189,10 @@ def get_restaurant_profile(request, restaurant_id):
                 "distribution": ratings_distribution,
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
+                "media_url_prefix": settings.MEDIA_URL,
+                # Restaurant Q&As
+                "restaurant_question_list": restaurant_question_list,
+                "total_question_count": total_question_count,
             }
         else:
             parameter_dict = {
@@ -159,6 +210,10 @@ def get_restaurant_profile(request, restaurant_id):
                 "reviews_count": reviews_count,
                 "ratings_avg": ratings_avg,
                 "distribution": ratings_distribution,
+                "media_url_prefix": settings.MEDIA_URL,
+                # Restaurant Q&As
+                "restaurant_question_list": restaurant_question_list,
+                "total_question_count": total_question_count,
             }
 
         return render(request, "restaurant_detail.html", parameter_dict)
@@ -354,3 +409,232 @@ def report_comment(request, restaurant_id, comment_id):
         messages.success(request, "success")
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
+
+
+# Ignore、hide and delete inappropriate Comments & Reviews
+@csrf_exempt
+def hide_review(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        # Close related report tickets
+        if remove_reports_review(review_id):
+            review = Review.objects.get(pk=review_id)
+            review.hidden = True
+            review.save()
+            messages.success(
+                request,
+                "Reported review is hidden and all the related report tickets are closed!",
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def hide_comment(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        # Close related report tickets
+        if remove_reports_comment(comment_id):
+            comment = Comment.objects.get(pk=comment_id)
+            comment.hidden = True
+            comment.save()
+            messages.success(
+                request,
+                "Reported comment is hidden and all the related report tickets are closed!",
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def ignore_review_report(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        if remove_reports_review(review_id):
+            messages.success(
+                request, "All the related reports for this review have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def ignore_comment_report(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+
+    if user.is_staff:
+        if remove_reports_comment(comment_id):
+            messages.success(
+                request, "All the related reports for this comment have been ignored!"
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def delete_review_report(request, review_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+    print(request)
+    if user.is_staff:
+        if remove_reports_review(review_id):
+            Review.objects.get(pk=review_id).delete()
+            messages.success(
+                request, "All the related reports for this review have been deleted!"
+            )
+        else:
+            messages.error(
+                request, "Review ID could not be found: {}".format(review_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+@csrf_exempt
+def delete_comment_report(request, comment_id):
+    user = request.user
+    url = reverse("user:admin_comment")
+    if user.is_staff:
+        if remove_reports_comment(comment_id):
+            Comment.objects.get(pk=comment_id).delete()
+            messages.success(
+                request, "All the related reports for this comment have been deleted!"
+            )
+        else:
+            messages.error(
+                request, "Comment ID could not be found: {}".format(comment_id)
+            )
+    else:
+        messages.warning(request, "You are not authorized to do so.")
+
+    return HttpResponseRedirect(url)
+
+
+# Ask the community
+def get_ask_community_page(request, restaurant_id):
+    user = request.user
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+
+    if request.method == "POST":
+        if user.is_authenticated:
+            form = RestaurantQuestionForm(user, restaurant, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Successfully posted your question!")
+                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                return HttpResponseRedirect(url)
+            else:
+                messages.error(request, "Failed to post your question!")
+                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                return HttpResponseRedirect(url)
+        else:
+            messages.info(request, "Please login first!")
+            url = reverse("user:login")
+            return HttpResponseRedirect(url)
+    else:
+        # Get full question list and limit 2 answers per question
+        question_list = list(
+            RestaurantQuestion.objects.filter(restaurant=restaurant)
+            .order_by("-time")
+            .values(
+                "id",
+                "user",
+                "user__username",
+                "question",
+                "time",
+            )
+        )
+        for idx in range(len(question_list)):
+            answers = list(
+                RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"])
+                .order_by("-time")
+                .values(
+                    "id",
+                    "user",
+                    "user__username",
+                    "text",
+                    "time",
+                )[:2]
+            )
+            question_list[idx]["answers"] = answers
+            question_list[idx]["total_answers_count"] = RestaurantAnswer.objects.filter(
+                question_id=question_list[idx]["id"]
+            ).count()
+        context = {
+            "restaurant": restaurant,
+            "question_list": question_list,
+        }
+        return render(
+            request=request, template_name="test_ask_community.html", context=context
+        )
+
+
+def answer_community_question(request, restaurant_id, question_id):
+    user = request.user
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+    question = RestaurantQuestion.objects.get(pk=question_id)
+
+    if request.method == "POST":
+        if user.is_authenticated:
+            form = RestaurantAnswerForm(user, question, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Successfully posted your answer!")
+                url = reverse(
+                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                )
+                return HttpResponseRedirect(url)
+            else:
+                messages.error(request, "Failed to post your answer!")
+                url = reverse(
+                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                )
+                return HttpResponseRedirect(url)
+        else:
+            messages.info(request, "Please login first!")
+            url = reverse("user:login")
+            return HttpResponseRedirect(url)
+    else:
+        # Get full answer list
+        answer_list = RestaurantAnswer.objects.filter(question=question)
+        context = {
+            "restaurant": restaurant,
+            "question": question,
+            "answer_list": answer_list,
+        }
+        return render(
+            request=request, template_name="test_answer_community.html", context=context
+        )

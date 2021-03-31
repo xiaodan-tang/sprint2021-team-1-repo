@@ -18,11 +18,14 @@ from .models import (
     AccessibilityRecord,
     FAQ,
 )
+from user.models import Preferences
 from .views import (
     get_inspection_info,
     get_landing_page,
     get_restaurant_profile,
     get_faqs_list,
+    get_ask_community_page,
+    answer_community_question,
 )
 from .utils import (
     merge_yelp_info,
@@ -47,6 +50,8 @@ from user.models import (
     Comment,
     Report_Ticket_Review,
     Report_Ticket_Comment,
+    RestaurantQuestion,
+    RestaurantAnswer,
 )
 
 
@@ -127,7 +132,7 @@ def create_faq(question, answer):
     return FAQ.objects.create(question=question, answer=answer)
 
 
-def create_internal_review(user, restaurant, content, rating):
+def create_review(user, restaurant, content, rating):
     return Review.objects.create(
         user=user,
         restaurant=restaurant,
@@ -1279,13 +1284,32 @@ class RestaurantRecommendationsTest(TestCase):
     def setUp(self):
         Categories.objects.create(category="chinese", parent_category="chinese")
         Categories.objects.create(category="wine-bar", parent_category="bars")
+        p1 = Preferences.objects.create(
+            preference_type="category", value="pizza", display_value="Pizza"
+        )
+        p2 = Preferences.objects.create(
+            preference_type="rating", value="4", display_value="4 Stars"
+        )
+        p3 = Preferences.objects.create(
+            preference_type="neighbourhood", value="Jamaica", display_value="Jamaica"
+        )
+        p4 = Preferences.objects.create(
+            preference_type="price", value="price_3", display_value="$$$"
+        )
+        p5 = Preferences.objects.create(
+            preference_type="compliance",
+            value="COVIDCompliant",
+            display_value="COVID-19 Compliant",
+        )
         self.dummy_user = get_user_model().objects.create(
             username="myuser",
             email="abcd@gmail.com",
         )
-        category_list = ["chinese", "wine-bar"]
-        for category in category_list:
-            self.dummy_user.preferences.add(Categories.objects.get(category=category))
+        self.dummy_user.preferences.add(p1)
+        self.dummy_user.preferences.add(p2)
+        self.dummy_user.preferences.add(p3)
+        self.dummy_user.preferences.add(p4)
+        self.dummy_user.preferences.add(p5)
 
         self.dummy_user2 = get_user_model().objects.create(
             username="myuser2",
@@ -1296,13 +1320,17 @@ class RestaurantRecommendationsTest(TestCase):
 
     def test_recommendation(self):
 
-        categories = [
-            category.category for category in self.dummy_user.preferences.all()
+        preferences = [
+            preference.value for preference in self.dummy_user.preferences.all()
         ]
-        categories.sort()
-        self.assertEqual(len(self.dummy_user.preferences.all()), 2)
-        self.assertEqual(categories[0], "chinese")
-        self.assertEqual(categories[1], "wine-bar")
+
+        preferences.sort()
+        self.assertEqual(len(self.dummy_user.preferences.all()), 5)
+        self.assertEqual(preferences[0], "4")
+        self.assertEqual(preferences[1], "COVIDCompliant")
+        self.assertEqual(preferences[2], "Jamaica")
+        self.assertEqual(preferences[3], "pizza")
+        self.assertEqual(preferences[4], "price_3")
         self.assertIsNotNone(self.dummy_user2.preferences.all())
         self.assertEqual(len(self.dummy_user2.preferences.all()), 0)
 
@@ -1322,7 +1350,7 @@ class RestaurantRecommendationsTest(TestCase):
 
 @mock.patch("user.models.Review.objects")
 class EditCommentTests(BaseTest):
-    def test_edit_review(self, queryset):
+    def test_edit_comment(self, queryset):
         queryset.delete.return_value = None
         queryset.filter.return_value = queryset
         response = self.c.get(
@@ -1330,7 +1358,7 @@ class EditCommentTests(BaseTest):
         )
         self.assertEqual(response.status_code, 302)
 
-    def test_delete_rating(self, queryset):
+    def test_delete_comment(self, queryset):
         queryset.get.return_value = mock.Mock(spec=Review)
         response = self.c.get(
             "/restaurant/profile/restaurant_id/comment/comment_id/put"
@@ -1384,7 +1412,7 @@ class CommentTest(TestCase):
         self.temp_restaurant.save()
 
         # Initialize temp review
-        self.temp_review = create_internal_review(
+        self.temp_review = create_review(
             self.dummy_user,
             self.temp_restaurant,
             "review for tests",
@@ -1409,7 +1437,7 @@ class CommentTest(TestCase):
 class ReportTests(TestCase):
     def setUp(self):
         self.c = Client()
-        # Initialize 2 test users
+        # Initialize 2 test users & 1 admin
         self.user1 = get_user_model().objects.create(
             username="user1",
             email="test1@gmail.com",
@@ -1424,6 +1452,15 @@ class ReportTests(TestCase):
         self.user2.set_password("test4321Report")
         self.user2.save()
 
+        self.admin = get_user_model().objects.create(
+            username="admin",
+            email="admin@gmail.com",
+        )
+        self.admin.set_password("test1234Admin")
+        self.admin.is_superuser = True
+        self.admin.is_staff = True
+        self.admin.save()
+
         # Initialize temp restaurant
         self.temp_restaurant = create_restaurant(
             restaurant_name="Tacos El Paisa",
@@ -1436,7 +1473,7 @@ class ReportTests(TestCase):
         self.temp_restaurant.save()
 
         # Initialize temp review
-        self.temp_review = create_internal_review(
+        self.temp_review = create_review(
             self.user1,
             self.temp_restaurant,
             "review for tests",
@@ -1448,6 +1485,7 @@ class ReportTests(TestCase):
         self.temp_comment = create_comment(
             self.user2, self.temp_review, "comment for test report functions"
         )
+        self.temp_comment.save()
 
     def test_report_review_model(self):
         report_ticket_review = create_report_review(
@@ -1489,6 +1527,239 @@ class ReportTests(TestCase):
         }
         response = self.c.post(url, form)
         self.assertEqual(response.status_code, 302)
+        self.c.logout()
+
+    def test_hide_review(self):
+        test_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for hide review tests, I'm hate speech",
+            5,
+        )
+        test_review.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_review(self.user2, test_review, "hate speech")
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        review_id = test_review.id
+        url = "/restaurant/report/review/hide/" + str(review_id)
+
+        # test as normal user
+        self.c.login(username="user2", password="test4321Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Review.objects.filter(review=test_review)
+        test_review = Review.objects.get(pk=review_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(test_review.hidden, False)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Review.objects.filter(review=test_review)
+        test_review = Review.objects.get(pk=review_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(test_review.hidden, True)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_hide_comment(self):
+        test_comment = create_comment(
+            self.user2,
+            self.temp_review,
+            "comment for test hiding comments, I'm hate speech",
+        )
+        test_comment.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_comment(
+                self.user1, test_comment, "hate speech"
+            )
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        comment_id = test_comment.id
+        url = "/restaurant/report/comment/hide/" + str(comment_id)
+
+        # test as normal user
+        self.c.login(username="user1", password="test1234Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+        test_comment = Comment.objects.get(pk=comment_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(test_comment.hidden, False)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+        test_comment = Comment.objects.get(pk=comment_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(test_comment.hidden, True)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_ignore_review_report(self):
+        test_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for hide review tests, I'm hate speech",
+            5,
+        )
+        test_review.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_review(self.user2, test_review, "hate speech")
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        review_id = test_review.id
+        url = "/restaurant/report/review/ignore/" + str(review_id)
+
+        # test as normal user
+        self.c.login(username="user2", password="test4321Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Review.objects.filter(review=test_review)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Review.objects.filter(review=test_review)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_ignore_comment_report(self):
+        test_comment = create_comment(
+            self.user2,
+            self.temp_review,
+            "comment for test hiding comments, I'm hate speech",
+        )
+        test_comment.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_comment(
+                self.user1, test_comment, "hate speech"
+            )
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        comment_id = test_comment.id
+        url = "/restaurant/report/comment/ignore/" + str(comment_id)
+
+        # test as normal user
+        self.c.login(username="user1", password="test1234Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Comment.objects.filter(comment=test_comment)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_delete_review_report(self):
+        test_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for delete review tests, I'm hate speech",
+            5,
+        )
+        test_review.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_review(self.user2, test_review, "hate speech")
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        review_id = test_review.id
+        url = "/restaurant/report/review/delete/" + str(review_id)
+
+        # test as normal user
+        self.c.login(username="user2", password="test4321Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Review.objects.filter(review_id=review_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Review.objects.filter(review_id=review_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
+        self.c.logout()
+
+    def test_delete_comment_report(self):
+        test_comment = create_comment(
+            self.user2,
+            self.temp_review,
+            "comment for test delete comments, I'm hate speech",
+        )
+        test_comment.save()
+        report_tickets_before = []
+        for i in range(3):
+            report_ticket = create_report_comment(
+                self.user1, test_comment, "hate speech"
+            )
+            report_ticket.save()
+            report_tickets_before.append(report_ticket)
+
+        comment_id = test_comment.id
+        url = "/restaurant/report/comment/delete/" + str(comment_id)
+
+        # test as normal user
+        self.c.login(username="user1", password="test1234Report")
+        response1 = self.c.get(url)
+        report_tickets1 = Report_Ticket_Comment.objects.filter(comment_id=comment_id)
+
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(report_tickets1.exists(), True)
+
+        self.c.logout()
+
+        # test as admin
+        self.c.login(username="admin", password="test1234Admin")
+        response2 = self.c.get(url)
+        report_tickets2 = Report_Ticket_Comment.objects.filter(comment_id=comment_id)
+
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(report_tickets2.exists(), False)
+
         self.c.logout()
 
 
@@ -1818,3 +2089,162 @@ class SortTest(TestCase):
         self.assertEqual(
             self.restaurant3.business_id, filtered_restaurants[2].business_id
         )
+
+
+class AskCommunityTest(TestCase):
+    """ Test Restaurant Q&As Feature """
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.c = Client()
+        self.dummy_user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        self.dummy_user.set_password("pass123")
+        self.dummy_user.save()
+
+        self.restaurant = create_restaurant(
+            restaurant_name="Paint N Pour Nyc",
+            business_address="2080 FREDERICK DOUGLASS BLVD",
+            yelp_detail=None,
+            postcode="10026",
+            business_id="5qWjq_Qv6O6-iGdbBZb0tg",
+        )
+
+        self.question = RestaurantQuestion.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant,
+            question="Test question",
+        )
+
+        self.answer = RestaurantAnswer.objects.create(
+            user=self.dummy_user,
+            question=self.question,
+            text="Test answer",
+        )
+
+    def test_get_ask_community_page(self):
+        response = self.c.get(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/"
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertEqual(response.status_code, 200)
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 1)
+        self.assertEqual(question_list[0], self.question)
+
+    def test_post_question(self):
+        # Anonymous user cannot post question
+        # Should redirect to login page
+        form = {
+            "question": "How is this business operating during COVID-19?",
+        }
+        response = self.c.post(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertRedirects(
+            response,
+            "/user/login",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 1)
+        self.assertEqual(question_list[0], self.question)
+
+        # Registered user can post question
+        # Should redirect to ask community page
+        self.c.login(username="myuser", password="pass123")
+        form = {
+            "question": "How is this business operating during COVID-19?",
+        }
+        response = self.c.post(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertRedirects(
+            response,
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 2)
+        self.assertEqual(question_list[0].question, "Test question")
+        self.assertEqual(
+            question_list[1].question, "How is this business operating during COVID-19?"
+        )
+        self.c.logout()
+
+    def test_get_answer_community_page(self):
+        response = self.c.get(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id)
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertEqual(response.status_code, 200)
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 1)
+        self.assertEqual(answer_list[0], self.answer)
+
+    def test_post_answer(self):
+        # Anonymous user cannot post answer
+        # Should redirect to login page
+        form = {
+            "answer": "They are open for takeout and delivery.",
+        }
+        response = self.c.post(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id),
+            form,
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertRedirects(
+            response,
+            "/user/login",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 1)
+        self.assertEqual(answer_list[0], self.answer)
+
+        # Registered user can post answer
+        # Should redirect to answer community page
+        self.c.login(username="myuser", password="pass123")
+        form = {
+            "answer": "They are open for takeout and delivery.",
+        }
+        response = self.c.post(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id),
+            form,
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertRedirects(
+            response,
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id),
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 2)
+        self.assertEqual(answer_list[0].text, "They are open for takeout and delivery.")
+        self.assertEqual(answer_list[1].text, "Test answer")
+        self.c.logout()

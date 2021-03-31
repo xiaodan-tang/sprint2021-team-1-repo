@@ -397,7 +397,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form class="form-validate" method="POST" name="rating-form">
+              <form class="form-validate" method="POST" name="rating-form" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-body">
                   <p class="mb-2">How would you rate this restaurant?</p>
@@ -512,6 +512,18 @@
                   <div class="form-group mb-2">
                     <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
                   </div>
+                  <label for="img"> Select image for Review Image 1: </label>
+                  <div class="form-group mb-2">
+                    <input type="file" class="form-control" name="image1" id="image1" accept="image/*" required></input>
+                  </div>
+                  <label for="img"> Select image for Review Image 2: </label>
+                  <div class="form-group mb-2">
+                    <input type="file" class="form-control" name="image2" id="image2" accept="image/*" required></input>
+                  </div>
+                  <label for="img"> Select image for Review Image 3: </label>
+                  <div class="form-group mb-2">
+                    <input type="file" class="form-control" name="image3" id="image3" accept="image/*" required></input>
+                  </div>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -550,6 +562,32 @@
 
           </div>
         </div>
+        <!-- Test Ask the Community Part, Show top 3 questions and the corresponding answers -->
+        <div class="text-block">
+          <h3 class="mb-4">Ask the community</h3>
+          {% for q in restaurant_question_list %}
+            <div>
+            <p>User: {{ q.user__username }}</p>
+            <p>Question: {{ q.question }}</p>
+            <p>Time: {{ q.time }}</p>
+            {% for a in q.answers %}
+              <p>User: {{ a.user__username }}</p>
+              <p>Answer: {{ a.text }}</p>
+              <p>Time: {{ a.time }}</p>
+            {% endfor %}
+            {% if q.answers|length < q.total_answers_count %}
+                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View more answers</a>
+            {% elif q.answers|length == 0 %}
+                <p>No answers yet. You can be the first!</p>
+                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">Answer</a>
+            {% else %}
+                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View question details</a>
+            {% endif %}
+            </div>
+          {% endfor %}
+          <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all {{ total_question_count }} questions or Ask a question</a>
+        </div>
+        <!-- End Test Ask the Community Part -->
         <div class="text-block">
           <h3 class="mb-4">Reviews Summary</h3>
           <div class="d-flex">
@@ -924,7 +962,32 @@ class RatingReview extends HTMLElement {
     this.comments.className = 'text-muted text-sm';
     this.comments.innerText = this.getAttribute('review-text');
     
+    // 3 images
+    this.image1 = document.createElement('img');
+    this.image1.className= 'review-image';
+    this.image1.src = this.getAttribute('image1');
+    this.image1.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+    this.image2 = document.createElement('img');
+    this.image2.className= 'review-image';
+    this.image2.src = this.getAttribute('image2');
+    this.image2.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+    this.image3 = document.createElement('img');
+    this.image3.className= 'review-image';
+    this.image3.src = this.getAttribute('image3');
+    this.image3.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+    this.serviceHint = document.createElement('em');
+    this.serviceHint.setAttribute('style', 'display: none; font-size: 0.6rem; line-height: 0.8rem;');
+    this.serviceHint.setAttribute('class', 'text-secondary');
+    this.serviceHint.innerText = 'This post is only visible to you because it violates our terms of service';
+    
     ratingBody.appendChild(this.comments);
+    ratingBody.appendChild(this.image1);
+    ratingBody.appendChild(this.image2);
+    ratingBody.appendChild(this.image3);
+    ratingBody.appendChild(this.serviceHint);
 
     this.container.appendChild(userProfile);
     this.container.appendChild(ratingBody);
@@ -935,7 +998,7 @@ class RatingReview extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -961,15 +1024,33 @@ class RatingReview extends HTMLElement {
     } else if (name === 'review-text') {
       this.comments.innerText = newValue || '';
     } else if (name === 'author-id') {
-      this.attachOptionButton({ authorId: Number(this.getAttribute('author-id') || '') });
+      if (newValue === userId && this.hasAttribute('hidden-flag')) {
+        this.rootDiv.style.opacity = 0.5;
+      }
+      this.attachOptionButton({ authorId: Number(newValue || '') });
+    } else if (name === 'hidden-flag') {
+      if (!newValue) return;
+      this.container.removeChild(this.optionButtonWrapper);
+      this.rootDiv.style.opacity = 0.5;
+      this.serviceHint.style.display = 'inline-block';
+      this.comments.style.webkitLineClamp = 2;
+    } else if (name === 'image1' && !newValue.endsWith('/media/')) {
+      this.image1.src = newValue;
+      this.image1.style.display = "inline-block";
+    } else if (name === 'image2' && !newValue.endsWith('/media/')) {
+      this.image2.src = newValue;
+      this.image2.style.display = "inline-block";
+    } else if (name === 'image3' && !newValue.endsWith('/media/')) {
+      this.image3.src = newValue;
+      this.image3.style.display = "inline-block";
     }
   }
 
   attachOptionButton ({ authorId }) {
     if (!this.optionButton) {
       // option button
-      const optionButtonWrapper = document.createElement('div');
-      optionButtonWrapper.setAttribute('class', 'dropdown');
+      this.optionButtonWrapper = document.createElement('div');
+      this.optionButtonWrapper.setAttribute('class', 'dropdown');
 
       this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       this.optionButton.setAttribute('viewBox', '0 0 24 24');
@@ -991,17 +1072,17 @@ class RatingReview extends HTMLElement {
       this.deleteForm = document.createElement('form');
       this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
 
-      optionButtonWrapper.appendChild(this.optionButton);
-      optionButtonWrapper.appendChild(this.dropdownWrapper);
-      optionButtonWrapper.appendChild(this.deleteForm);
-      optionButtonWrapper.addEventListener('mouseover', () => {
+      this.optionButtonWrapper.appendChild(this.optionButton);
+      this.optionButtonWrapper.appendChild(this.dropdownWrapper);
+      this.optionButtonWrapper.appendChild(this.deleteForm);
+      this.optionButtonWrapper.addEventListener('mouseover', () => {
         this.dropdownWrapper.classList.add('show');
       });
       this.dropdownWrapper.addEventListener('mouseout', () => {
         this.dropdownWrapper.classList.remove('show');
       });
 
-      this.container.appendChild(optionButtonWrapper);
+      this.container.appendChild(this.optionButtonWrapper);
     }
 
     new Array().forEach.call(this.dropdownWrapper.children, el => this.dropdownWrapper.removeChild(el));
@@ -1087,11 +1168,12 @@ class RatingReview extends HTMLElement {
    * @params {text} string - comment
    * @params {author} string - comment author
    * @params {commentId} string - comment id
+   * @params {hidden} boolean - should display hidden hint if this is true
    */
-  renderReplies ({ profile = DEFAULT_AVATAR, text = '', author = '', commentId = '' }) {
+  renderReplies ({ profile = DEFAULT_AVATAR, text = '', author = '', commentId = '', hidden = false }) {
     const commentContainer = document.createElement('div');
     commentContainer.className = 'd-flex';
-    commentContainer.setAttribute('style', 'padding-left: 12%; align-items: baseline;');
+    commentContainer.setAttribute('style', `padding-left: 12%; align-items: baseline; ${hidden ? 'opacity: 0.5;' : ''}`);
 
     const line = document.createElement('div');
     line.setAttribute('style', 'border-bottom: 2px solid #e7e7e7; border-left: 2px solid #e7e7e7; border-radius: 5px; height: 40px; width: 50px;');
@@ -1104,37 +1186,46 @@ class RatingReview extends HTMLElement {
     replyAvatar.setAttribute('src', profile);
 
     const replyBox = document.createElement('div');
-    replyBox.setAttribute('style', 'display: inline-block; margin-left: 1rem; width: 70%; vertical-align: middle;');
+    replyBox.setAttribute('style', `display: inline-block; margin-left: 1rem; width: ${hidden ? '50%' : '70%'}; vertical-align: middle;`);
     replyBox.setAttribute('class', 'text-muted text-sm text-truncate');
     replyBox.innerText = text;
 
     replyContainer.appendChild(replyAvatar);
     replyContainer.appendChild(replyBox);
     
-    const deleteForm = document.createElement('form');
-    deleteForm.setAttribute('method', 'get');
-    deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
-    deleteForm.setAttribute('class', 'd-inline-block');
-    if (userId === Number(author)) {
-      const deleteButton = document.createElement('span');
-      deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-1');
-      deleteButton.addEventListener('click', () => {
-        deleteForm.submit();
-      });
-      deleteForm.appendChild(deleteButton);
-    }
-    if (!isNull(userId) && userId != Number(author)) {
-      const reportButton = document.createElement('span');
-      reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
-      reportButton.addEventListener('click', () => {
-        $('#report-abuse-modal').modal('show');
-        __data__.reportAbuse.type = REPORT_TYPE.COMMENT;
-        __data__.reportAbuse.id = commentId;
-      });
-      deleteForm.appendChild(reportButton);
-    }
+    // hide report / delete button if this post is hidden
+    if (!hidden) {
+      const deleteForm = document.createElement('form');
+      deleteForm.setAttribute('method', 'get');
+      deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
+      deleteForm.setAttribute('class', 'd-inline-block');
+      if (userId === Number(author)) {
+        const deleteButton = document.createElement('span');
+        deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-1');
+        deleteButton.addEventListener('click', () => {
+          deleteForm.submit();
+        });
+        deleteForm.appendChild(deleteButton);
+      }
+      if (!isNull(userId) && userId != Number(author)) {
+        const reportButton = document.createElement('span');
+        reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
+        reportButton.addEventListener('click', () => {
+          $('#report-abuse-modal').modal('show');
+          __data__.reportAbuse.type = REPORT_TYPE.COMMENT;
+          __data__.reportAbuse.id = commentId;
+        });
+        deleteForm.appendChild(reportButton);
+      }
 
-    replyContainer.appendChild(deleteForm);
+      replyContainer.appendChild(deleteForm);
+    } else {
+      const hint = document.createElement('em');
+      hint.classList.add('text-secondary');
+      hint.style.fontSize = '0.6rem';
+      hint.innerText = 'This comment is only visible to you';
+      replyContainer.appendChild(hint);
+    }
 
     commentContainer.appendChild(line);
     commentContainer.appendChild(replyContainer);
@@ -1176,6 +1267,7 @@ yelpReviews['reviews'].forEach(review => {
 
 const internalReviews = {{ internal_reviews | safe }};
 internalReviews.forEach(review => {
+  if (review.hidden && review.user !== userId) return;
   const reviewWrapper = document.getElementById('internal_review');
   const ratingReview = document.createElement('rating-review');
   ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
@@ -1188,15 +1280,25 @@ internalReviews.forEach(review => {
   ratingReview.setAttribute('review-id', review.id);
   ratingReview.setAttribute('restaurant-id', restaurantId);
   ratingReview.setAttribute('author-id', review.user);
-  // add replies here
-  review.comments.forEach(el => {
-    ratingReview.renderReplies({
-      profile: el.profile || DEFAULT_AVATAR,
-      text: el.text,
-      author: el.author,
-      commentId: el.commentId,
-    })
-  });
+  ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
+  ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
+  ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
+
+  if (review.hidden) {
+    ratingReview.setAttribute('hidden-flag', review.hidden);
+  } else {
+    // add replies here
+    review.comments.forEach(el => {
+      if (el.hidden && el.author !== userId) return;
+      ratingReview.renderReplies({
+        profile: el.profile || DEFAULT_AVATAR,
+        text: el.text,
+        author: el.author,
+        commentId: el.commentId,
+        hidden: el.hidden
+      })
+    });
+  }
   reviewWrapper.appendChild(ratingReview);
 });
 

@@ -1,14 +1,49 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-<section class="d-flex align-items-center bg-cover" data-parallax="true" style="min-height:600px; background-image: url(https://images.pexels.com/photos/2074130/pexels-photo-2074130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940);background-position: -10px -50px;">
-  <div class="container">
+<style>
+.root-container {
+  height: 350px !important;
+  margin: 0;
+  background-color: white;
+  border-radius: 5px;
+  margin: auto;
+  min-width: 577px !important;
+}
+.white-card {
+  border: 1px solid blue;
+}
+.root-page {
+  min-width: 900px;
+}
+
+.three__tabs {
+  display: flex;
+  width: 435px;
+  margin: auto;
+}
+@media (max-width: 576px) and (min-width: 500px) {
+  .root-container {
+    height: 350px !important;
+    margin-left: 162px;
+    margin-right: 162px;
+  }
+}
+
+#avatar {
+  display: flex;
+  object-fit: contain;
+  height: 150px !important;
+}
+</style>
+<section class="root-page d-flex align-items-center bg-cover" data-parallax="true" style="min-height:600px; background-image: url(https://images.pexels.com/photos/2074130/pexels-photo-2074130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940);">
+  <div class="container root-container">
     <!-- Breadcrumbs -->
     <ol class="breadcrumb pl-0  justify-content-start">
     </ol>
    
-    <div class="card shadow" style = "transform:translate(0px,100px);">
-        <div class="card-body" >
+    <div class="" style = "transform:translate(0px,100px);">
+        <div class="" >
 		<div class="profile-content">
             <div class="container" style = "transform:translate(0px,-100px);">
                 <div class="row" >
@@ -30,7 +65,7 @@
                 
 				<div class="row">
 					<div class="col-md-6 ml-auto mr-auto">
-                        <div class="profile-tabs">
+                        <div class="profile-tabs three__tabs">
                           <ul class="nav nav-pills nav-pills-icons justify-content-center" role="tablist">
                             <li class="nav-item">
                                 <a class="nav-link active" href="#studio" role="tab" data-toggle="tab">

@@ -3,7 +3,16 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-from .models import User_Profile, Review, DineSafelyUser
+from .models import (
+    User_Profile,
+    Review,
+    Comment,
+    DineSafelyUser,
+    Report_Ticket_Comment,
+    Report_Ticket_Review,
+    Preferences,
+)
+
 from restaurant.models import Categories
 import json
 
@@ -14,7 +23,8 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+
 
 from .utils import (
     send_reset_password_email,
@@ -84,6 +94,54 @@ def register(request):
         form = UserCreationForm()
     return render(
         request=request, template_name="register.html", context={"form": form}
+    )
+
+
+def show_report(request):
+    if not request.user.is_staff:
+        messages.warning(request, "You are not authorized to do so.")
+        return redirect("user:profile")
+
+    internal_reviews = list(
+        Report_Ticket_Review.objects.all()
+        .select_related("user")
+        .select_related("review")
+        .values(
+            "id",
+            "review_id",
+            "reason",
+            "time",
+            "user__id",
+            "user__username",
+            "review__content",
+            "review__image1",
+            "review__image2",
+            "review__image3",
+        )
+    )
+
+    internal_comments = list(
+        Report_Ticket_Comment.objects.all()
+        .select_related("user")
+        .select_related("comment")
+        .values(
+            "id",
+            "comment_id",
+            "reason",
+            "time",
+            "user__id",
+            "user__username",
+            "comment__text",
+        )
+    )
+
+    return render(
+        request=request,
+        template_name="admin_comment.html",
+        context={
+            "internal_reviews": internal_reviews,
+            "internal_comments": internal_comments,
+        },
     )
 
 
@@ -202,19 +260,32 @@ def profile(request):
     for pref in user_pref_list:
         pref_dic = model_to_dict(pref)
         user_pref_list_json.append(pref_dic)
+    category_pref = user.preferences.filter(preference_type="category")
+    neighbourhood_pref = user.preferences.filter(preference_type="neighbourhood")
+    rating_pref = user.preferences.filter(preference_type="rating")
+    compliance_pref = user.preferences.filter(preference_type="compliance")
+    price_pref = user.preferences.filter(preference_type="price")
+    categories = Preferences.objects.filter(preference_type="category")
+    neighbourhoods = Preferences.objects.filter(preference_type="neighbourhood")
+    user_pref = [
+        category_pref,
+        neighbourhood_pref,
+        rating_pref,
+        compliance_pref,
+        price_pref,
+    ]
+
     return render(
         request=request,
         template_name="profile.html",
         context={
             "favorite_restaurant_list": favorite_restaurant_list,
-            "user_pref": user_pref_list,
             "user_pref_json": json.dumps(user_pref_list_json, cls=DjangoJSONEncoder),
             "user_profile": user_profile,
             "profile_pic": "" if user_profile is None else user_profile.photo,
-            "user_price_pref": [],
-            "user_neighborhood_pref": [],
-            "user_compliance_pref": [],
-            "user_rating_pref": [],
+            "categories": categories,
+            "neighbourhoods": neighbourhoods,
+            "user_pref": user_pref,
         },
     )
 
@@ -271,17 +342,22 @@ def add_preference(request):
     if request.method == "POST":
         form = UserPreferenceForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data.get("pref_list"))
             form.save(user=request.user)
             return HttpResponse("Preference Saved")
-        return HttpResponseBadRequest
+        return HttpResponseBadRequest("Bad Request")
 
 
-def delete_preference(request, category):
+def delete_preference(request, preference_type, value):
     if request.method == "POST":
         user = request.user
-        user.preferences.remove(Categories.objects.get(category=category))
-        logger.info(category)
+        user.preferences.remove(
+            Preferences.objects.filter(
+                preference_type=preference_type, value=value
+            ).first()
+        )
+        logger.info(
+            "Removed preference {}: {} for {}".format(preference_type, value, user)
+        )
         return HttpResponse("Preference Removed")
 
 
