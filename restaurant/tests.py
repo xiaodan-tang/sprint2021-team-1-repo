@@ -24,6 +24,8 @@ from .views import (
     get_landing_page,
     get_restaurant_profile,
     get_faqs_list,
+    get_ask_community_page,
+    answer_community_question,
 )
 from .utils import (
     merge_yelp_info,
@@ -48,6 +50,8 @@ from user.models import (
     Comment,
     Report_Ticket_Review,
     Report_Ticket_Comment,
+    RestaurantQuestion,
+    RestaurantAnswer,
 )
 
 
@@ -1842,3 +1846,162 @@ class SortTest(TestCase):
         self.assertEqual(
             self.restaurant3.business_id, filtered_restaurants[2].business_id
         )
+
+
+class AskCommunityTest(TestCase):
+    """ Test Restaurant Q&As Feature """
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.c = Client()
+        self.dummy_user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        self.dummy_user.set_password("pass123")
+        self.dummy_user.save()
+
+        self.restaurant = create_restaurant(
+            restaurant_name="Paint N Pour Nyc",
+            business_address="2080 FREDERICK DOUGLASS BLVD",
+            yelp_detail=None,
+            postcode="10026",
+            business_id="5qWjq_Qv6O6-iGdbBZb0tg",
+        )
+
+        self.question = RestaurantQuestion.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant,
+            question="Test question",
+        )
+
+        self.answer = RestaurantAnswer.objects.create(
+            user=self.dummy_user,
+            question=self.question,
+            text="Test answer",
+        )
+
+    def test_get_ask_community_page(self):
+        response = self.c.get(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/"
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertEqual(response.status_code, 200)
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 1)
+        self.assertEqual(question_list[0], self.question)
+
+    def test_post_question(self):
+        # Anonymous user cannot post question
+        # Should redirect to login page
+        form = {
+            "question": "How is this business operating during COVID-19?",
+        }
+        response = self.c.post(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertRedirects(
+            response,
+            "/user/login",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 1)
+        self.assertEqual(question_list[0], self.question)
+
+        # Registered user can post question
+        # Should redirect to ask community page
+        self.c.login(username="myuser", password="pass123")
+        form = {
+            "question": "How is this business operating during COVID-19?",
+        }
+        response = self.c.post(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertRedirects(
+            response,
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 2)
+        self.assertEqual(question_list[0].question, "Test question")
+        self.assertEqual(
+            question_list[1].question, "How is this business operating during COVID-19?"
+        )
+        self.c.logout()
+
+    def test_get_answer_community_page(self):
+        response = self.c.get(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id)
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertEqual(response.status_code, 200)
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 1)
+        self.assertEqual(answer_list[0], self.answer)
+
+    def test_post_answer(self):
+        # Anonymous user cannot post answer
+        # Should redirect to login page
+        form = {
+            "answer": "They are open for takeout and delivery.",
+        }
+        response = self.c.post(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id),
+            form,
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertRedirects(
+            response,
+            "/user/login",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 1)
+        self.assertEqual(answer_list[0], self.answer)
+
+        # Registered user can post answer
+        # Should redirect to answer community page
+        self.c.login(username="myuser", password="pass123")
+        form = {
+            "answer": "They are open for takeout and delivery.",
+        }
+        response = self.c.post(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id),
+            form,
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertRedirects(
+            response,
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/ask_community/"
+            + str(self.question.id),
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 2)
+        self.assertEqual(answer_list[0].text, "They are open for takeout and delivery.")
+        self.assertEqual(answer_list[1].text, "Test answer")
+        self.c.logout()
