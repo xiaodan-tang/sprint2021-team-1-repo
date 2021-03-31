@@ -162,8 +162,10 @@ def get_restaurant_profile(request, restaurant_id):
         # Retrieval of similar restaurants to get recommendations
         recommended_restaurants = []
 
-        categories = [category['alias'] for category in response_yelp['info']['categories']]
-    
+        categories = [
+            category["alias"] for category in response_yelp["info"]["categories"]
+        ]
+        print(categories)
         ratings = [restaurant.yelp_detail.rating]
 
         neighborhood = [restaurant.yelp_detail.neighborhood]
@@ -173,12 +175,12 @@ def get_restaurant_profile(request, restaurant_id):
         # Make a query to retrieve the restaurants with these specific attributes
         similar_restaurants = get_filtered_restaurants(
             limit=5,
-            category = categories,
-            rating=ratings,
+            category=categories,
             neighborhood=neighborhood,
             compliant=compliant_status,
         )
-        
+
+        print(similar_restaurants)
         recommended_restaurants = restaurants_to_dict(similar_restaurants)
 
         if request.user.is_authenticated:
@@ -192,7 +194,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "latest_feedback": feedback,
                 "average_safety_rating": average_safety_rating,
                 "saved_restaurants": len(
-                    user.favorite_restaurants.all().filter(id=restaurant_id)
+                    request.user.favorite_restaurants.all().filter(id=restaurant_id)
                 )
                 > 0,
                 # Internal reviews
