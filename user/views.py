@@ -10,7 +10,7 @@ from .models import (
     DineSafelyUser,
     Report_Ticket_Comment,
     Report_Ticket_Review,
-    Preferences
+    Preferences,
 )
 
 from restaurant.models import Categories

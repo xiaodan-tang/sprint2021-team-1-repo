@@ -24,13 +24,7 @@ from user.forms import (
     RestaurantAnswerForm,
 )
 
-from user.models import (
-    Review,
-    Comment,
-    RestaurantQuestion,
-    RestaurantAnswer
-)
-
+from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
 from .utils import (
     query_yelp,
@@ -417,7 +411,6 @@ def report_comment(request, restaurant_id, comment_id):
         return HttpResponseRedirect(url)
 
 
-
 # Ignore、hide and delete inappropriate Comments & Reviews
 @csrf_exempt
 def hide_review(request, review_id):
@@ -548,7 +541,8 @@ def delete_comment_report(request, comment_id):
         messages.warning(request, "You are not authorized to do so.")
 
     return HttpResponseRedirect(url)
-  
+
+
 # Ask the community
 def get_ask_community_page(request, restaurant_id):
     user = request.user
