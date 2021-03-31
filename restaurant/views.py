@@ -165,7 +165,7 @@ def get_restaurant_profile(request, restaurant_id):
         categories = [
             category["alias"] for category in response_yelp["info"]["categories"]
         ]
-        
+
         ratings = [restaurant.yelp_detail.rating]
 
         neighborhood = [restaurant.yelp_detail.neighborhood]

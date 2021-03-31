@@ -170,7 +170,6 @@ class MockResponse:
         return self.content
 
 
-
 class ModelTests(TestCase):
     def test_create_restaurant(self):
         restaurant = create_restaurant(
@@ -1843,7 +1842,6 @@ class SortTest(TestCase):
         self.assertEqual(
             self.restaurant3.business_id, filtered_restaurants[2].business_id
         )
-
 
 
 class SimilarRestaurantsTest(TestCase):
