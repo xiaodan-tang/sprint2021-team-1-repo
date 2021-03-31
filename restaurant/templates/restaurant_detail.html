@@ -550,29 +550,95 @@
 
           </div>
         </div>
+        <!-- Ask the Community Q&A CSS -->
+        <style>
+          .ask-community-container {
+            overflow: scroll;
+            max-height: 500px;
+          }
+          .ask-community-container::-webkit-scrollbar {
+            display: none;
+          }
+          .text-block-question {
+            font-size: 14px;
+            padding-top: 10px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            margin: 20px;
+            line-height: 80%;
+            width: 80%;
+          }
+
+          .text-block-answer {
+            font-size: 12px;
+            text-align: left;
+            margin: 20px;
+            padding-top: 10px;
+            padding: 20px;
+            width: 65%;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            line-height: 80%;
+          }
+          .user-name {
+            font-weight: bold;
+            color: rgb(68, 68, 255);
+            font-size: 14px;
+            vertical-align: baseline;
+            padding-right: 5px;
+          }
+
+          .question {
+            color: rgb(34, 34, 34);
+            font-size: 16px;
+            vertical-align: baseline;
+          }
+
+          .answer {
+            color: rgb(34, 34, 34);
+            font-size: 14px;
+            vertical-align: baseline;
+          }
+
+          .timestamp {
+            color: rgb(99, 99, 99);
+            font-size: 10px;
+          }
+        </style>
         <!-- Test Ask the Community Part, Show top 3 questions and the corresponding answers -->
         <div class="text-block">
           <h3 class="mb-4">Ask the community</h3>
-          {% for q in restaurant_question_list %}
+          <div class="ask-community-container">
+            {% for q in restaurant_question_list %}
             <div>
-            <p>User: {{ q.user__username }}</p>
-            <p>Question: {{ q.question }}</p>
-            <p>Time: {{ q.time }}</p>
+              <div class="text-block-question">
+                <p class="user-name" style="float: left;">{{ q.user__username }}</p>
+                <p class="timestamp" style="float: left;">{{ q.time }}</p>
+                <hr></hr>
+                <p class="question">{{ q.question }}</p>
+                {% if q.answers|length < q.total_answers_count %}
+                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View more answers</a>
+                {% elif q.answers|length == 0 %}
+                  <p>No answers yet. You can be the first!</p>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">Answer</a>
+                {% else %}
+                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View question details</a>
+                {% endif %}
+              </div>
             {% for a in q.answers %}
-              <p>User: {{ a.user__username }}</p>
-              <p>Answer: {{ a.text }}</p>
-              <p>Time: {{ a.time }}</p>
+              <center>
+                <div class="text-block-answer">
+                  <p class="user-name" style="float: left;">{{ a.user__username }}</p>
+                  <p class="timestamp" style="float: left;">{{ a.time }}</p>
+                  <hr></hr>
+                  <p class="answer">{{ a.text }}</p>
+                </div>
+              </center>
             {% endfor %}
-            {% if q.answers|length < q.total_answers_count %}
-                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View more answers</a>
-            {% elif q.answers|length == 0 %}
-                <p>No answers yet. You can be the first!</p>
-                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">Answer</a>
-            {% else %}
-                <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View question details</a>
-            {% endif %}
             </div>
           {% endfor %}
+          </div>
           <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all {{ total_question_count }} questions or Ask a question</a>
         </div>
         <!-- End Test Ask the Community Part -->
