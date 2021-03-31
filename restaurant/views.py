@@ -183,6 +183,7 @@ def get_restaurant_profile(request, restaurant_id):
         recommended_restaurants = restaurants_to_dict(similar_restaurants)
 
         if request.user.is_authenticated:
+            user = request.user
             parameter_dict = {
                 "google_key": settings.GOOGLE_MAP_KEY,
                 "google_map_id": settings.GOOGLE_MAP_ID,
@@ -193,7 +194,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "latest_feedback": feedback,
                 "average_safety_rating": average_safety_rating,
                 "saved_restaurants": len(
-                    request.user.favorite_restaurants.all().filter(id=restaurant_id)
+                    user.favorite_restaurants.all().filter(id=restaurant_id)
                 )
                 > 0,
                 # Internal reviews
