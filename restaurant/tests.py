@@ -1845,6 +1845,8 @@ class SortTest(TestCase):
 
 
 class SimilarRestaurantsTest(TestCase):
+    """ Test Similar Restaurant Recommendation"""
+
     def setUp(self):
         # Create 1st Restaurant
         business_id = "blaTQKod-nz94F3Fm_ZoYQ"
