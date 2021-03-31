@@ -159,6 +159,30 @@ def get_restaurant_profile(request, restaurant_id):
             restaurant_question_list[idx]["answers"] = answers
             restaurant_question_list[idx]["total_answers_count"] = total_answers_count
 
+        # Retrieval of similar restaurants to get recommendations
+        recommended_restaurants = []
+
+        try:
+            categories = [
+                category["alias"] for category in response_yelp["info"]["categories"]
+            ]
+
+            neighborhood = [restaurant.yelp_detail.neighborhood]
+
+            compliant_status = [restaurant.compliant_status]
+
+            # Make a query to retrieve the restaurants with these specific attributes
+            similar_restaurants = get_filtered_restaurants(
+                limit=5,
+                category=categories,
+                neighborhood=neighborhood,
+                compliant=compliant_status,
+            )
+
+            recommended_restaurants = restaurants_to_dict(similar_restaurants)
+        except Exception:
+            pass
+
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
@@ -181,6 +205,8 @@ def get_restaurant_profile(request, restaurant_id):
                 "distribution": ratings_distribution,
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -201,6 +227,8 @@ def get_restaurant_profile(request, restaurant_id):
                 "reviews_count": reviews_count,
                 "ratings_avg": ratings_avg,
                 "distribution": ratings_distribution,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
