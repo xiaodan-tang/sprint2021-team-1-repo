@@ -2248,3 +2248,128 @@ class AskCommunityTest(TestCase):
         self.assertEqual(answer_list[0].text, "They are open for takeout and delivery.")
         self.assertEqual(answer_list[1].text, "Test answer")
         self.c.logout()
+
+
+class SimilarRestaurantsTest(TestCase):
+    """ Test Similar Restaurant Recommendation"""
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        # Create 1st Restaurant
+        business_id = "blaTQKod-nz94F3Fm_ZoYQ"
+        neighborhood = "Central Harlem"
+        price = "$$$"
+        rating = 4.5
+        img_url = "https://s3-media3.fl.yelpcdn.com/bphoto/xafcmRm6DDvcg7PYDrwICA/o.jpg"
+        latitude = 40.80251
+        longitude = -73.95355
+        restaurant_name = "Osteria Laura NYC"
+        business_address = "1890 Adam Clayton Powell Jr. Blvd."
+        postcode = "10026"
+
+        details = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+
+        self.restaurant1 = Restaurant.objects.create(
+            restaurant_name=restaurant_name,
+            business_address=business_address,
+            yelp_detail=details,
+            postcode=postcode,
+            business_id=business_id,
+            compliant_status="Compliant",
+        )
+
+        # Create 2nd restaurant
+        restaurant_name = "Paint N Pour Nyc"
+        business_address = "2080 FREDERICK DOUGLASS BLVD"
+        business_id = "5qWjq_Qv6O6-iGdbBZb0tg"
+        neighborhood = "Central Harlem"
+        postcode = "10026"
+        price = "$"
+        rating = 5.0
+        img_url = "https://s3-media3.fl.yelpcdn.com/bphoto/pol6YeUS-47wemNAP6V2Mg/o.jpg"
+        latitude = 40.80211
+        longitude = -73.95665
+
+        details_2 = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+
+        self.restaurant2 = Restaurant.objects.create(
+            restaurant_name=restaurant_name,
+            business_address=business_address,
+            yelp_detail=details_2,
+            postcode=postcode,
+            business_id=business_id,
+            compliant_status="Compliant",
+        )
+
+        # Create 3rd restaurant
+        restaurant_name = "67 Orange Street"
+        business_address = "2082 Frederick Douglass Blvd"
+        business_id = "DzlCEhXW6OadK6ETcmJpwQ"
+        neighborhood = "Chelsea"
+        price = "$$"
+        postcode = ("10027",)
+        rating = 4.0
+        img_url = "https://s3-media4.fl.yelpcdn.com/bphoto/zyKuc6OmXL8W-gWnu9sMHw/o.jpg"
+        latitude = 40.8022697271481
+        longitude = -73.9567852020264
+
+        details_3 = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+        self.restaurant3 = Restaurant.objects.create(
+            restaurant_name=restaurant_name,
+            business_address=business_address,
+            yelp_detail=details_3,
+            postcode=postcode,
+            business_id=business_id,
+            compliant_status="Compliant",
+        )
+
+        self.dummy_user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+
+    def test_recommendation(self):
+        # Assert Equal the right restaurants are returned
+        similar_restaurants = get_filtered_restaurants(
+            neighborhood=["Central Harlem"], compliant="Compliant"
+        )
+
+        restaurant1 = similar_restaurants[0]
+        restaurant2 = similar_restaurants[1]
+
+        self.assertEqual("5qWjq_Qv6O6-iGdbBZb0tg", restaurant1.business_id)
+        self.assertEqual("blaTQKod-nz94F3Fm_ZoYQ", restaurant2.business_id)
+
+    def test_restaurant_profile_view(self):
+        request = self.factory.get("restaurant:profile")
+
+        request.restaurant = self.restaurant1
+        request.user = self.dummy_user
+        response = get_restaurant_profile(request, self.restaurant1.id)
+
+        self.assertEqual(response.status_code, 200)
