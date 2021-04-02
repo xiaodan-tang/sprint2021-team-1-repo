@@ -20,12 +20,16 @@ from user.forms import (
     UserQuestionaireForm,
     Report_Review_Form,
     Report_Comment_Form,
+    RestaurantQuestionForm,
+    RestaurantAnswerForm,
 )
+
 from user.models import (
     Review,
     Comment,
 )
 
+from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
 from .utils import (
     query_yelp,
@@ -131,6 +135,67 @@ def get_restaurant_profile(request, restaurant_id):
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
+
+        # Get restaurant Q&As
+        # limit 3 recent questions, and limit 2 recent answers for each question
+        restaurant_question_list = list(
+            RestaurantQuestion.objects.filter(restaurant=restaurant)
+            .order_by("-time")
+            .values(
+                "id",
+                "user",
+                "user__username",
+                "question",
+                "time",
+            )[:3]
+        )
+        total_question_count = RestaurantQuestion.objects.filter(
+            restaurant=restaurant
+        ).count()
+        for idx in range(len(restaurant_question_list)):
+            answers = list(
+                RestaurantAnswer.objects.filter(
+                    question_id=restaurant_question_list[idx]["id"]
+                )
+                .order_by("-time")
+                .values(
+                    "id",
+                    "user",
+                    "user__username",
+                    "text",
+                    "time",
+                )[:2]
+            )
+            total_answers_count = RestaurantAnswer.objects.filter(
+                question_id=restaurant_question_list[idx]["id"]
+            ).count()
+            restaurant_question_list[idx]["answers"] = answers
+            restaurant_question_list[idx]["total_answers_count"] = total_answers_count
+
+        # Retrieval of similar restaurants to get recommendations
+        recommended_restaurants = []
+
+        try:
+            categories = [
+                category["alias"] for category in response_yelp["info"]["categories"]
+            ]
+
+            neighborhood = [restaurant.yelp_detail.neighborhood]
+
+            compliant_status = [restaurant.compliant_status]
+
+            # Make a query to retrieve the restaurants with these specific attributes
+            similar_restaurants = get_filtered_restaurants(
+                limit=5,
+                category=categories,
+                neighborhood=neighborhood,
+                compliant=compliant_status,
+            )
+
+            recommended_restaurants = restaurants_to_dict(similar_restaurants)
+        except Exception:
+            pass
+
         if request.user.is_authenticated:
             user = request.user
             parameter_dict = {
@@ -154,6 +219,13 @@ def get_restaurant_profile(request, restaurant_id):
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
                 "media_url_prefix": settings.MEDIA_URL,
+
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
+                # Restaurant Q&As
+                "restaurant_question_list": restaurant_question_list,
+                "total_question_count": total_question_count,
+
             }
         else:
             parameter_dict = {
@@ -172,6 +244,12 @@ def get_restaurant_profile(request, restaurant_id):
                 "ratings_avg": ratings_avg,
                 "distribution": ratings_distribution,
                 "media_url_prefix": settings.MEDIA_URL,
+
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
+                # Restaurant Q&As
+                "restaurant_question_list": restaurant_question_list,
+                "total_question_count": total_question_count,
             }
 
         return render(request, "restaurant_detail.html", parameter_dict)
@@ -499,3 +577,100 @@ def delete_comment_report(request, comment_id):
         messages.warning(request, "You are not authorized to do so.")
 
     return HttpResponseRedirect(url)
+
+
+# Ask the community
+def get_ask_community_page(request, restaurant_id):
+    user = request.user
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+
+    if request.method == "POST":
+        if user.is_authenticated:
+            form = RestaurantQuestionForm(user, restaurant, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Successfully posted your question!")
+                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                return HttpResponseRedirect(url)
+            else:
+                messages.error(request, "Failed to post your question!")
+                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                return HttpResponseRedirect(url)
+        else:
+            messages.info(request, "Please login first!")
+            url = reverse("user:login")
+            return HttpResponseRedirect(url)
+    else:
+        # Get full question list and limit 2 answers per question
+        question_list = list(
+            RestaurantQuestion.objects.filter(restaurant=restaurant)
+            .order_by("-time")
+            .values(
+                "id",
+                "user",
+                "user__username",
+                "question",
+                "time",
+            )
+        )
+        for idx in range(len(question_list)):
+            answers = list(
+                RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"])
+                .order_by("-time")
+                .values(
+                    "id",
+                    "user",
+                    "user__username",
+                    "text",
+                    "time",
+                )[:2]
+            )
+            question_list[idx]["answers"] = answers
+            question_list[idx]["total_answers_count"] = RestaurantAnswer.objects.filter(
+                question_id=question_list[idx]["id"]
+            ).count()
+        context = {
+            "restaurant": restaurant,
+            "question_list": question_list,
+        }
+        return render(
+            request=request, template_name="test_ask_community.html", context=context
+        )
+
+
+def answer_community_question(request, restaurant_id, question_id):
+    user = request.user
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+    question = RestaurantQuestion.objects.get(pk=question_id)
+
+    if request.method == "POST":
+        if user.is_authenticated:
+            form = RestaurantAnswerForm(user, question, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Successfully posted your answer!")
+                url = reverse(
+                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                )
+                return HttpResponseRedirect(url)
+            else:
+                messages.error(request, "Failed to post your answer!")
+                url = reverse(
+                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                )
+                return HttpResponseRedirect(url)
+        else:
+            messages.info(request, "Please login first!")
+            url = reverse("user:login")
+            return HttpResponseRedirect(url)
+    else:
+        # Get full answer list
+        answer_list = RestaurantAnswer.objects.filter(question=question)
+        context = {
+            "restaurant": restaurant,
+            "question": question,
+            "answer_list": answer_list,
+        }
+        return render(
+            request=request, template_name="test_answer_community.html", context=context
+        )

@@ -1,0 +1,163 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<style>
+    .main-container {
+        padding: 10px;
+        margin: 10px;
+    }
+    .row-box:after{
+        content: "";
+        display: table;
+        clear: both;
+    }
+    .column-box {
+        float: left;
+        width: 50%;
+        height: 500px;
+        overflow: scroll;
+    }
+
+    .button-box {
+        float: left;
+        width: 50%;
+        height: 500px;
+        overflow: scroll;
+    }
+
+    .column-box::-webkit-scrollbar {
+        display: none;
+    }
+
+    .text-block-question {
+        font-size: 14px;
+        padding-top: 10px;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        margin: 20px;
+        line-height: 80%;
+    }
+
+    .text-block-answer {
+        font-size: 12px;
+        text-align: left;
+        margin: 20px;
+        padding-top: 10px;
+        padding: 20px;
+        width: 70%;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        line-height: 80%;
+    }
+
+    .input-question {
+        width: 100%;
+        padding: 5px;
+        margin: 5px;
+    }
+
+    #submit-button {
+        width: 50%;
+        padding: 5px;
+        margin: 5px;
+        background-color: white;
+        border: 1px solid gray;
+        border-radius: 5px;
+    }
+
+    .user-name {
+        font-weight: bold;
+        color: rgb(68, 68, 255);
+        font-size: 14px;
+        vertical-align: baseline;
+        padding-right: 5px;
+    }
+
+    .question {
+        color: rgb(34, 34, 34);
+        font-size: 16px;
+        vertical-align: baseline;
+    }
+
+    .answer {
+        color: rgb(34, 34, 34);
+        font-size: 14px;
+        vertical-align: baseline;
+    }
+
+    .timestamp {
+        color: rgb(99, 99, 99);
+        font-size: 10px;
+    }
+
+    @media screen and (max-width: 750px) {
+        .column-box {
+            width: 100%;
+        }
+        .button-box {
+            width: 100%;
+            height: 200px;
+        }
+        #submit-button {
+            width: 100%;
+        }
+    }
+
+    @media screen and (max-width: 500px) {
+        .column-box {
+            width: 100%;
+        }
+        .button-box {
+            width: 90%;
+            height: 100px;
+            padding: 5px;
+        }
+        #submit-button {
+            width: 100%;
+        }
+    }
+</style>
+<div class="main-container">
+    <!--Back to Restaurant Button -->
+    <a href="/restaurant/profile/{{ restaurant.id }}">Back to Restaurant</a>
+    <hr></hr>
+    <!-- This is a test page for answer community -->
+    <div class="row-box">
+        <div class="column-box">
+            <div class="text-block-question">
+                <p class="user-name" style="float: left;">{{ question.user.username }}</p>
+                <p class="timestamp" style="float: left;">{{ question.time }}</p>
+                <hr></hr>
+                <p class="question">{{ question.question }}</p>
+                {% if answer_list.count == 1 %}
+                    <p class="answer">1 Answer</p>
+                {% else %}
+                    <p class="answer">{{ answer_list.count }} Answers</p>
+                {% endif %}
+            </div>
+
+            {% for a in answer_list %}
+            <center>
+                <div class="text-block-answer">
+                    <p class="user-name" style="float: left;">{{ a.user.username }}</p>
+                    <p class="timestamp" style="float: left;">{{ a.time }}</p>
+                    <hr></hr>
+                    <p class="question">{{ a.text }}</p>
+                </div>
+            </center>
+            {% endfor %}
+            {% if answer_list.count == 0 %}
+                <p>No answers yet. You can be the first!</p>
+            {% endif %} 
+        </div>
+        <div class="button-box">
+            <form method="POST">
+                {% csrf_token %}
+                <div>
+                    <input class="input-question" type="text" name="answer" placeholder="Your answer" id="answer"></div>
+                    <input id="submit-button" type="submit" value="Post Answer">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
