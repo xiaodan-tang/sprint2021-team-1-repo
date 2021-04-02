@@ -709,14 +709,18 @@ class TestUserActivityLogModel(BaseTest):
 
     def test_user_activity_str_function(self):
         user_activity = UserActivityLog.objects.create(
-            user = self.dummy_user,
+            user=self.dummy_user,
             restaurant=self.restaurant1,
         )
-        self.assertEqual(str(user_activity), "myuser viewed JUST SALAD 1 times, last visited at " + str(user_activity.last_visit))
+        self.assertEqual(
+            str(user_activity),
+            "myuser viewed JUST SALAD 1 times, last visited at "
+            + str(user_activity.last_visit),
+        )
 
     def test_user_activity_field_update(self):
         user_activity_1 = UserActivityLog.objects.create(
-            user = self.dummy_user,
+            user=self.dummy_user,
             restaurant=self.restaurant1,
             visits=1,
         )
@@ -749,7 +753,7 @@ class TestUserActivityLogModel(BaseTest):
 
     def test_user_activity_related_name(self):
         activity_log = UserActivityLog.objects.create(
-            user = self.dummy_user,
+            user=self.dummy_user,
             restaurant=self.restaurant1,
         )
         user_activity_log = self.dummy_user.activity_log.first()

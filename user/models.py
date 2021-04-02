@@ -246,4 +246,7 @@ class UserActivityLog(models.Model):
     def __str__(self):
         user = self.user.username
         restaurant = self.restaurant.restaurant_name
-        return f"{user} viewed {restaurant} {self.visits} times, last visited at {self.last_visit}"
+        return (
+            f"{user} viewed {restaurant} {self.visits} times, "
+            + f"last visited at {self.last_visit}"
+        )
