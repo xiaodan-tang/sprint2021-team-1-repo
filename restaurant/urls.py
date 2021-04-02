@@ -81,6 +81,17 @@ urlpatterns = [
         views.delete_comment_report,
         name="delete_comment_report",
     ),
+    # Ask the community
+    path(
+        "profile/<restaurant_id>/ask_community/",
+        views.get_ask_community_page,
+        name="ask_community",
+    ),
+    path(
+        "profile/<restaurant_id>/ask_community/<question_id>",
+        views.answer_community_question,
+        name="answer_community",
+    ),
     # Others
     path("chatbot/keywordtest", views.chatbot_keyword, name="chatbottest"),
 ]
