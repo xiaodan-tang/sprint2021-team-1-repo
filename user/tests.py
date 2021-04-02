@@ -27,6 +27,7 @@ from django.utils.encoding import force_bytes
 
 # Create your tests here.
 
+
 def create_review(user, restaurant, content, rating):
     return Review.objects.create(
         user=user,

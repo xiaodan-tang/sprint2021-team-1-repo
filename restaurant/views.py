@@ -27,9 +27,9 @@ from user.forms import (
 from user.models import (
     Review,
     Comment,
+    RestaurantQuestion,
+    RestaurantAnswer,
 )
-
-from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
 
 from .utils import (
     query_yelp,
@@ -219,13 +219,11 @@ def get_restaurant_profile(request, restaurant_id):
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
                 "media_url_prefix": settings.MEDIA_URL,
-
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
-
             }
         else:
             parameter_dict = {
@@ -244,7 +242,6 @@ def get_restaurant_profile(request, restaurant_id):
                 "ratings_avg": ratings_avg,
                 "distribution": ratings_distribution,
                 "media_url_prefix": settings.MEDIA_URL,
-
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
