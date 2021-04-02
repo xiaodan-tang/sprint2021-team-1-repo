@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from restaurant.utils import get_compliant_restaurant_list
 from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
-
-# from .models import Restaurant
+from user.models import Review
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 RESTAURANT_NUMBER = 18
+REVIEW_LIMIT = 10
 
 
 def index(request):
@@ -18,6 +18,9 @@ def index(request):
         rating_filter=[3, 3.5, 4, 4.5, 5],
         compliant_filter=["COVIDCompliant"],
     )
+
+    recent_reviews = Review.objects.order_by("-time")[:REVIEW_LIMIT]
+    restaurant_review_list = [r for r in recent_reviews]
 
     # below is for recommendation
     recommended_restaurants_list = []
@@ -53,10 +56,10 @@ def index(request):
             neighborhood=neighborhoods,
         )
         recommended_restaurants_list = restaurants_to_dict(recommended_restaurants)
-
     parameter_dict = {
         "restaurant_list": restaurant_list,
         "recommended_restaurant_list": recommended_restaurants_list,
+        "restaurant_review_list": restaurant_review_list,
     }
     return render(request, "index.html", parameter_dict)
 
