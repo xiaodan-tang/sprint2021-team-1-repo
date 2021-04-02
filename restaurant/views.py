@@ -173,12 +173,11 @@ def get_restaurant_profile(request, restaurant_id):
 
             # Make a query to retrieve the restaurants with these specific attributes
             similar_restaurants = get_filtered_restaurants(
-                limit=5,
+                limit=20,
                 category=categories,
                 neighborhood=neighborhood,
                 compliant=compliant_status,
             )
-
             recommended_restaurants = restaurants_to_dict(similar_restaurants)
         except Exception:
             pass
