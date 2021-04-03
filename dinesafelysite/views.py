@@ -44,7 +44,8 @@ def index(request):
             for c in request.user.preferences.filter(preference_type="compliance")
         ]
         prices = [
-            p.value for p in request.user.preferences.filter(preference_type="price")
+            p.display_value
+            for p in request.user.preferences.filter(preference_type="price")
         ]
 
         recommended_restaurants = get_filtered_restaurants(
