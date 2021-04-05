@@ -163,8 +163,8 @@ def add_price():
 
 if __name__ == "__main__":
     # print("hello world")
-    add_neighbourhood()
-    add_category()
-    add_rating()
-    add_compliance()
-    add_price()
+    # add_neighbourhood()
+    # add_category()
+    # add_rating()
+    # add_compliance()
+    # add_price()
