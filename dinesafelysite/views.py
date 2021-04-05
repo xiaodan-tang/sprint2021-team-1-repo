@@ -5,6 +5,8 @@ from user.models import Review, UserActivityLog
 
 import logging
 import heapq
+from datetime import datetime
+from itertools import chain
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +64,8 @@ def index(request):
     # Recommended restaurant list based on user's recent views
     suggested_restaurant_list = []
     if request.user and request.user.is_authenticated:
-        suggested_restaurant_list = get_recent_views_recommendation(request.user)
+        suggested_restaurants = get_recent_views_recommendation(request.user)
+        suggested_restaurant_list = restaurants_to_dict(suggested_restaurants)
 
     parameter_dict = {
         "restaurant_list": restaurant_list,
@@ -86,53 +89,71 @@ def get_recent_views_recommendation(user):
     for idx in range(user_activity.count()):
         restaurant = user_activity[idx].restaurant
         visits = user_activity[idx].visits
+        last_visit = user_activity[idx].last_visit
+        time_diff = (datetime.now()-last_visit).days
+        freq = visits / (time_diff + 1)
 
         # Get restaurant details of recent views
-        c = restaurant.yelp_detail.category
+        # parent_category = list(restaurant.yelp_detail.category.values("parent_category"))
+        category = restaurant.yelp_detail.category.all()
         r = restaurant.yelp_detail.rating
         n = restaurant.yelp_detail.neighborhood
         p = restaurant.yelp_detail.price
-        categories[c] = visits if c not in categories else categories[c]+visits
-        ratings[r] = visits if r not in ratings else ratings[r]+visits
-        neighborhoods[n] = visits if n not in neighborhoods else neighborhoods[n]+visits
-        prices[p] = visits if p not in prices else prices[p]+visits
+        for c in category:
+            categories[c.parent_category] = freq if c.parent_category not in categories else categories[c.parent_category]+freq
+        ratings[r] = freq if r not in ratings else ratings[r]+freq
+        neighborhoods[n] = freq if n not in neighborhoods else neighborhoods[n]+freq
+        prices[p] = freq if p not in prices else prices[p]+freq
 
         if restaurant.compliant_status == "Compliant":
             if "COVIDCompliant" not in compliance:
-                compliance["COVIDCompliant"] = visits
+                compliance["COVIDCompliant"] = freq
             else:
-                compliance["COVIDCompliant"] += visits
+                compliance["COVIDCompliant"] += freq
         if restaurant.mopd_compliance_status == "Compliant":
-            if "COVIDCompliant" not in compliance:
-                compliance["MOPDCompliant"] = visits
+            if "MOPDCompliant" not in compliance:
+                compliance["MOPDCompliant"] = freq
             else:
-                compliance["MOPDCompliant"] += visits
+                compliance["MOPDCompliant"] += freq
 
     # Get filtered restaurant candidates
-    restaurant_list = get_filtered_restaurants(
-        category=list(categories.keys()),
-        rating=list(ratings.keys()),
-        compliant=list(compliance.keys()),
-        price=list(prices.keys()),
-        neighborhood=list(neighborhoods.keys()),
-    )
-
-    # Get top RESTAURANT_NUMBER (18 for now) frequent restaurants
-    if len(restaurant_list) <= RESTAURANT_NUMBER:
-        return restaurant_list
+    if len(compliance) == 2:
+        restaurant_list = list(chain(get_filtered_restaurants(
+            category=list(categories.keys()),
+            rating=list(ratings.keys()),
+            compliant=["COVIDCompliant"],
+            price=list(prices.keys()),
+            neighborhood=list(neighborhoods.keys()),
+        ), get_filtered_restaurants(
+            category=list(categories.keys()),
+            rating=list(ratings.keys()),
+            compliant=["MOPDCompliant"],
+            price=list(prices.keys()),
+            neighborhood=list(neighborhoods.keys()),
+        )))
     else:
-        # Calculate frequency for each restaurant candidate based on user visits
-        restaurant_dict = {}
-        for restaurant in restaurant_list:
-            c = restaurant.yelp_detail.category
-            r = restaurant.yelp_detail.rating
-            n = restaurant.yelp_detail.neighborhood
-            p = restaurant.yelp_detail.price
-            frequency = categories.get(c, 0) + ratings.get(r, 0) + neighborhoods.get(n, 0) + prices.get(p, 0)
-            if restaurant.compliant_status == "Compliant":
-                frequency += categories.get("COVIDCompliant", 0)
-            if restaurant.mopd_compliance_status == "Compliant":
-                frequency += categories.get("MOPDCompliant", 0)
-            restaurant_dict[restaurant] = frequency
+        restaurant_list = get_filtered_restaurants(
+            category=list(categories.keys()),
+            rating=list(ratings.keys()),
+            compliant=list(compliance.keys()),
+            price=list(prices.keys()),
+            neighborhood=list(neighborhoods.keys()),
+        )
 
-        return heapq.nlargest(RESTAURANT_NUMBER, restaurant_dict.keys(), key=restaurant_dict.get)
+    # Calculate frequency for each restaurant candidate based on user visits
+    restaurant_dict = {}
+    for restaurant in restaurant_list:
+        category = restaurant.yelp_detail.category.all()
+        r = restaurant.yelp_detail.rating
+        n = restaurant.yelp_detail.neighborhood
+        p = restaurant.yelp_detail.price
+        frequency = ratings.get(r, 0) + neighborhoods.get(n, 0) + prices.get(p, 0)
+        for c in category:
+            frequency += categories.get(c.parent_category, 0)
+        if restaurant.compliant_status == "Compliant":
+            frequency += categories.get("COVIDCompliant", 0)
+        if restaurant.mopd_compliance_status == "Compliant":
+            frequency += categories.get("MOPDCompliant", 0)
+        restaurant_dict[restaurant] = frequency
+    # Get top RESTAURANT_NUMBER (18 for now) frequent restaurants
+    return heapq.nlargest(RESTAURANT_NUMBER, restaurant_dict.keys(), key=restaurant_dict.get)
