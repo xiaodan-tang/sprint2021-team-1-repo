@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from restaurant.utils import get_compliant_restaurant_list
-from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
+from restaurant.utils import (
+    get_filtered_restaurants,
+    restaurants_to_dict,
+    get_latest_inspection_record,
+)
 from user.models import Review, UserActivityLog, Preferences
-from restaurant.models import InspectionRecords
 
 import logging
 import heapq
@@ -114,19 +117,15 @@ def get_recent_views_recommendation(user):
         neighborhoods[n] = freq if n not in neighborhoods else neighborhoods[n] + freq
         prices[p] = freq if p not in prices else prices[p] + freq
 
-        # Better to use InspectionRecords instead of restaurant.compliant_status
+        # Better to use get_latest_inspection_record instead of restaurant.compliant_status
         # Since compliant_status might be inaccurate (not up-to-date)
-        inspection_records = InspectionRecords.objects.filter(
-            restaurant_name=restaurant.restaurant_name,
+        latest_records = get_latest_inspection_record(
+            business_name=restaurant.restaurant_name,
             business_address=restaurant.business_address,
             postcode=restaurant.postcode,
         )
-        if inspection_records.count() > 0:
-            covid_compliant_status = (
-                inspection_records.order_by("-inspected_on")
-                .first()
-                .is_roadway_compliant
-            )
+        if latest_records:
+            covid_compliant_status = latest_records["is_roadway_compliant"]
         else:
             covid_compliant_status = restaurant.compliant_status
 
@@ -193,19 +192,15 @@ def get_recent_views_recommendation(user):
         for c in category:
             frequency += categories.get(c.parent_category, 0)
 
-        # Better to use InspectionRecords instead of restaurant.compliant_status
+        # Better to use get_latest_inspection_record instead of restaurant.compliant_status
         # Since compliant_status might be inaccurate (not up-to-date)
-        inspection_records = InspectionRecords.objects.filter(
-            restaurant_name=restaurant.restaurant_name,
+        latest_records = get_latest_inspection_record(
+            business_name=restaurant.restaurant_name,
             business_address=restaurant.business_address,
             postcode=restaurant.postcode,
         )
-        if inspection_records.count() > 0:
-            covid_compliant_status = (
-                inspection_records.order_by("-inspected_on")
-                .first()
-                .is_roadway_compliant
-            )
+        if latest_records:
+            covid_compliant_status = latest_records["is_roadway_compliant"]
         else:
             covid_compliant_status = restaurant.compliant_status
 
