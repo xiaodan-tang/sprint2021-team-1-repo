@@ -100,11 +100,12 @@
             <div class="swiper-pagination"></div>
         </div>
 
-        {% if user.is_authenticated %}
         <section class="py-6 bg-gray-100">
+        {% if user.is_authenticated %}
+        
             <div class="container">
                 <div class="text-center pb-lg-4">
-                    <h2 class="mb-5">Recommended for you</h2>
+                    <h2 class="mb-5">Recommended based on your preferences</h2>
                 </div>
             </div>
             <div class="container-fluid">
@@ -159,10 +160,76 @@
                     <!-- If we need pagination-->
                     <div class="swiper-pagination"></div>
                 </div>
-
+            </div>
+            <!-- recommend based on recently viewed restaurants -->
+            {% if recommended_recently_viewed %}
+            <section class="py-6 bg-gray-100">
+                <div class="container">
+                    <div class="text-center pb-lg-4">
+                        <h2 class="mb-5">Recommended based on your viewing history
+                        </h2>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <!-- Slider main container-->
+                    <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+                        <!-- Additional required wrapper-->
+                        <div class="swiper-wrapper pb-5">
+                            {% for restaurant in recommended_recently_viewed %}
+                            {% if not restaurant.yelp_info.fake_info %}
+                            <div class="swiper-slide h-auto px-2">
+                                <!-- venue item-->
+                                <div class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
+                                    <div class="card h-100 border-0 shadow">
+    
+                                        <div class="card-img-top overflow-hidden dark-overlay bg-cover" style="background-image: url({{ restaurant.yelp_info.image_url }}); min-height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' restaurant.id %}"></a>
+                                            <div class="card-img-overlay-bottom z-index-20">
+                                                <h4 class="text-white text-shadow">{{ restaurant.yelp_info.name }}</h4>
+                                                <p class="mb-2 text-xs">
+                                                    {% for i in "x"|ljust:restaurant.yelp_info.rating %}
+                                                        <i class="fa fa-star text-warning"></i>
+                                                    {% endfor %}
+                                                    {% with restaurant.yelp_info.rating|add:-5|abs as aa %}
+                                                    {% if aa == 0 %}
+                                                    {% else %}
+                                                    {% for i in "x"|ljust:aa %}
+                                                    <i class="fa fa-star text-gray-300"></i>
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                    {% endwith %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-sm text-muted text-uppercase mb-1">
+                                                <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                                {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
+                                                    <i class="fas fa-check-circle" style="color:#596ff8"></i>
+                                                {% endif %}
+                                            </p>
+                                            <p class="text-sm mb-0">
+                                                {% for cat in restaurant.yelp_info.categories %}
+                                                <a class="mr-1 disabled text-decoration-none">{{ cat.title}}</a>
+                                                {% endfor %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <!-- If we need pagination-->
+                        <div class="swiper-pagination"></div>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        
         {% endif %}
         <div class="text-center mt-5"><a class="btn btn-outline-primary" href="{% url 'restaurant:browse' %}">See all restaurants</a></div>
-    </div>
+        </section>
+    </div >
 </section>
 <section class="pt-4 pb-6">
     <section class="container">
