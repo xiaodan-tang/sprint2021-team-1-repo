@@ -162,7 +162,7 @@
                 </div>
             </div>
             <!-- recommend based on recently viewed restaurants -->
-            {% if recommended_recently_viewed %}
+            {% if suggested_restaurant_list %}
             <section class="py-6 bg-gray-100">
                 <div class="container">
                     <div class="text-center pb-lg-4">
@@ -175,7 +175,7 @@
                     <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
                         <!-- Additional required wrapper-->
                         <div class="swiper-wrapper pb-5">
-                            {% for restaurant in recommended_recently_viewed %}
+                            {% for restaurant in suggested_restaurant_list %}
                             {% if not restaurant.yelp_info.fake_info %}
                             <div class="swiper-slide h-auto px-2">
                                 <!-- venue item-->
