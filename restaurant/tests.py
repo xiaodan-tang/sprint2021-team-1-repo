@@ -26,6 +26,7 @@ from .views import (
     get_faqs_list,
     get_ask_community_page,
     answer_community_question,
+    remove_duplicate,
 )
 from .utils import (
     merge_yelp_info,
@@ -41,6 +42,7 @@ from .utils import (
     questionnaire_report,
     questionnaire_statistics,
     check_user_location,
+    restaurants_to_dict,
 )
 
 from dinesafelysite.views import index, get_recent_views_recommendation
@@ -2420,6 +2422,19 @@ class SimilarRestaurantsTest(TestCase):
         response = get_restaurant_profile(request, self.restaurant1.id)
 
         self.assertEqual(response.status_code, 200)
+
+    def test_restaurant_duplicate(self):
+        restaurants = restaurants_to_dict(
+            [self.restaurant1, self.restaurant2, self.restaurant3]
+        )
+        business_id = self.restaurant2.business_id
+
+        restaurant_list = remove_duplicate(restaurants, business_id)
+
+        self.assertEqual(len(restaurant_list), 2)
+        self.assertListEqual(
+            restaurant_list, restaurants_to_dict([self.restaurant1, self.restaurant3])
+        )
 
 
 class RecentViewsRecommendationTest(TestCase):
