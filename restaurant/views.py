@@ -418,7 +418,6 @@ def chatbot_keyword(request):
 # Remove duplicated restaurant from list
 def remove_duplicate(restaurant_list, business_id):
     for i, restaurant in enumerate(restaurant_list):
-        print(restaurant["restaurant_name"], restaurant["business_id"])
         if restaurant["business_id"] == business_id:
             restaurant_list[i], restaurant_list[-1] = (
                 restaurant_list[-1],
