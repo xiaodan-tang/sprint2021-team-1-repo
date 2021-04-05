@@ -61,6 +61,8 @@ def index(request):
         "restaurant_list": restaurant_list,
         "recommended_restaurant_list": recommended_restaurants_list,
         "restaurant_review_list": restaurant_review_list,
+        # recommended restaurants based on recently viewed history:
+        "recommended_recently_viewed": [],
     }
     return render(request, "index.html", parameter_dict)
 

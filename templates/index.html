@@ -160,15 +160,13 @@
                     <!-- If we need pagination-->
                     <div class="swiper-pagination"></div>
                 </div>
-
-
-
             </div>
-            <!-- recommend absed on recently views -->
+            <!-- recommend based on recently viewed restaurants -->
+            {% if recommended_recently_viewed %}
             <section class="py-6 bg-gray-100">
                 <div class="container">
                     <div class="text-center pb-lg-4">
-                        <h2 class="mb-5">Recommended based on recently views
+                        <h2 class="mb-5">Recommended based on your viewing history
                         </h2>
                     </div>
                 </div>
@@ -177,7 +175,7 @@
                     <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
                         <!-- Additional required wrapper-->
                         <div class="swiper-wrapper pb-5">
-                            {% for restaurant in recommended_restaurant_list %}
+                            {% for restaurant in recommended_recently_viewed %}
                             {% if not restaurant.yelp_info.fake_info %}
                             <div class="swiper-slide h-auto px-2">
                                 <!-- venue item-->
@@ -226,7 +224,7 @@
                     </div>
                 </div>
             </section>
-            
+            {% endif %}
         
         {% endif %}
         <div class="text-center mt-5"><a class="btn btn-outline-primary" href="{% url 'restaurant:browse' %}">See all restaurants</a></div>
