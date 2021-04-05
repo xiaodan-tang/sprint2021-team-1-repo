@@ -2424,6 +2424,7 @@ class SimilarRestaurantsTest(TestCase):
 
 class RecentViewsRecommendationTest(TestCase):
     """ Test provide recommended restaurant based on user recent views """
+
     def setUp(self):
         self.factory = RequestFactory()
 
@@ -2456,6 +2457,17 @@ class RecentViewsRecommendationTest(TestCase):
         self.restaurant1.mopd_compliance_status = "Non-Compliant"
         self.restaurant1.save()
 
+        create_inspection_records(
+            restaurant_inspection_id=1,
+            restaurant_name="Paint N Pour Nyc",
+            postcode="10026",
+            business_address="2080 FREDERICK DOUGLASS BLVD",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="5qWjq_Qv6O6-iGdbBZb0tg",
+        )
+
         # Create 2nd restaurant
         business_id = "blaTQKod-nz94F3Fm_ZoYQ"
         neighborhood = "Upper East Side"
@@ -2484,6 +2496,17 @@ class RecentViewsRecommendationTest(TestCase):
         self.restaurant2.compliant_status = "Compliant"
         self.restaurant2.mopd_compliance_status = "Non-Compliant"
         self.restaurant2.save()
+
+        create_inspection_records(
+            restaurant_inspection_id=2,
+            restaurant_name="Osteria Laura NYC",
+            postcode="10026",
+            business_address="1890 Adam Clayton Powell Jr. Blvd.",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="blaTQKod-nz94F3Fm_ZoYQ",
+        )
 
         # Create 3rd restaurant
         business_id = "DzlCEhXW6OadK6ETcmJpwQ"
@@ -2514,6 +2537,17 @@ class RecentViewsRecommendationTest(TestCase):
         self.restaurant3.mopd_compliance_status = "Compliant"
         self.restaurant3.save()
 
+        create_inspection_records(
+            restaurant_inspection_id=3,
+            restaurant_name="67 Orange Street",
+            postcode="10027",
+            business_address="2082 Frederick Douglass Blvd",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="DzlCEhXW6OadK6ETcmJpwQ",
+        )
+
         # Create 4th restaurant
         business_id = "WavvLdfdP6g8aZTtbBQHTw"
         neighborhood = "Lower East Side"
@@ -2534,8 +2568,7 @@ class RecentViewsRecommendationTest(TestCase):
         )
         self.restaurant4 = create_restaurant(
             restaurant_name="Tacos El Paisa",
-            business_address="1548 St. Nicholas btw West 187th street and west 188th "
-                             "street, Manhattan, NY",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th street, Manhattan, NY",
             yelp_detail=details_4,
             postcode="10040",
             business_id="WavvLdfdP6g8aZTtbBQHTw",
@@ -2543,6 +2576,17 @@ class RecentViewsRecommendationTest(TestCase):
         self.restaurant4.compliant_status = "Compliant"
         self.restaurant4.mopd_compliance_status = "Non-Compliant"
         self.restaurant4.save()
+
+        create_inspection_records(
+            restaurant_inspection_id=4,
+            restaurant_name="Tacos El Paisa",
+            postcode="10040",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th street, Manhattan, NY",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
 
         self.c = Client()
         self.dummy_user = get_user_model().objects.create(
