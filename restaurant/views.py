@@ -14,8 +14,6 @@ from .forms import (
     # QuestionnaireForm,
     SearchFilterForm,
 )
-
-
 from user.forms import (
     UserQuestionaireForm,
     Report_Review_Form,
@@ -23,9 +21,13 @@ from user.forms import (
     RestaurantQuestionForm,
     RestaurantAnswerForm,
 )
-
-from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
-
+from user.models import (
+    Review,
+    Comment,
+    RestaurantQuestion,
+    RestaurantAnswer,
+    UserActivityLog,
+)
 from .utils import (
     query_yelp,
     query_inspection_record,
@@ -219,6 +221,15 @@ def get_restaurant_profile(request, restaurant_id):
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
             }
+            # Save restaurant profile page view in UserActivityLog
+            activity_log = UserActivityLog.objects.filter(
+                restaurant=restaurant, user=user
+            ).first()
+            if activity_log:
+                activity_log.visits += 1
+                activity_log.save()
+            else:
+                UserActivityLog.objects.create(user=user, restaurant=restaurant)
         else:
             parameter_dict = {
                 "google_key": settings.GOOGLE_MAP_KEY,

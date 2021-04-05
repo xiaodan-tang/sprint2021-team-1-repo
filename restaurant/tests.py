@@ -18,7 +18,7 @@ from .models import (
     AccessibilityRecord,
     FAQ,
 )
-from user.models import Preferences
+from user.models import Preferences, UserActivityLog
 from .views import (
     get_inspection_info,
     get_landing_page,
@@ -843,6 +843,53 @@ class RestaurantViewTests(TestCase):
         )
         response = get_faqs_list(request)
         self.assertEqual(response.status_code, 200)
+
+    def test_create_activity_log(self):
+        request = self.factory.get("restaurant:profile")
+        request.restaurant = self.restaurant
+        request.user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        empty_activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        response = get_restaurant_profile(request, self.restaurant.id)
+        activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(empty_activity_log, None)
+        self.assertEqual(activity_log.visits, 1)
+        self.assertEqual(activity_log.restaurant, request.restaurant)
+        self.assertEqual(activity_log.user, request.user)
+
+    def test_update_activity_log(self):
+        request = self.factory.get("restaurant:profile")
+        request.restaurant = self.restaurant
+        request.user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        # First profile page visit
+        get_restaurant_profile(request, self.restaurant.id)
+        activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        self.assertEqual(activity_log.visits, 1)
+        self.assertEqual(activity_log.restaurant, request.restaurant)
+        self.assertEqual(activity_log.user, request.user)
+        old_time = activity_log.last_visit
+        # Second profile page visit
+        get_restaurant_profile(request, self.restaurant.id)
+        activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        new_time = activity_log.last_visit
+        self.assertTrue(new_time > old_time)
+        self.assertEqual(activity_log.visits, 2)
+        self.assertEqual(activity_log.restaurant, request.restaurant)
+        self.assertEqual(activity_log.user, request.user)
 
 
 class RestaurantUtilsTests(TestCase):
