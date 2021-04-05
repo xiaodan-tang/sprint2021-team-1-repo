@@ -270,6 +270,18 @@ def edit_review(request, restaurant_id, comment_id, action):
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
+def edit_user_review(request, restaurant_id, comment_id, action):
+    if action == "delete":
+        Review.objects.filter(id=comment_id).delete()
+    if action == "put":
+        review = Review.objects.get(id=comment_id)
+        review.rating = request.POST.get("rating")
+        review.content = request.POST.get("content")
+        review.save()
+        messages.success(request, "success")
+    return HttpResponseRedirect(reverse("user:user_reviews"))
+
+
 def edit_comment(request, restaurant_id, review_id):
     review = Review.objects.get(pk=review_id)
     comment = Comment(user=request.user, review=review)
