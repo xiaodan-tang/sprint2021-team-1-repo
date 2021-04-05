@@ -189,6 +189,12 @@ def get_restaurant_profile(request, restaurant_id):
                 compliant=compliant_status,
             )
             recommended_restaurants = restaurants_to_dict(similar_restaurants)
+
+            # Remove the duplicated current restaurant
+            recommended_restaurants = remove_duplicate(
+                recommended_restaurants, restaurant.business_id
+            )
+
         except Exception:
             pass
 
@@ -418,6 +424,21 @@ def chatbot_keyword(request):
             return JsonResponse(response)
         except AttributeError as e:
             return HttpResponseBadRequest(e)
+
+
+# Remove duplicated restaurant from list
+def remove_duplicate(restaurant_list, business_id):
+    for i, restaurant in enumerate(restaurant_list):
+        if restaurant["business_id"] == business_id:
+            restaurant_list[i], restaurant_list[-1] = (
+                restaurant_list[-1],
+                restaurant_list[i],
+            )
+            break
+
+    restaurant_list.pop()
+
+    return restaurant_list
 
 
 def get_faqs_list(request):
