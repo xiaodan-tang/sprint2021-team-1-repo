@@ -215,3 +215,18 @@ def get_recent_views_recommendation(user):
     return heapq.nlargest(
         RESTAURANT_NUMBER, restaurant_dict.keys(), key=restaurant_dict.get
     )
+
+
+def custom_error_404(request, exception):
+    data = {}
+    return render(request, "404.html", data)
+
+
+def custom_error_500(request):
+    data = {}
+    return render(request, "500.html", data)
+
+
+def custom_error_403(request, exception):
+    data = {}
+    return render(request, "403.html", data)
