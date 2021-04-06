@@ -2176,7 +2176,7 @@ class AskCommunityTest(TestCase):
 
     def test_get_ask_community_page(self):
         response = self.c.get(
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/"
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1"
         )
         self.assertEqual(response.resolver_match.func, get_ask_community_page)
         self.assertEqual(response.status_code, 200)
@@ -2191,7 +2191,7 @@ class AskCommunityTest(TestCase):
             "question": "How is this business operating during COVID-19?",
         }
         response = self.c.post(
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1", form
         )
         self.assertEqual(response.resolver_match.func, get_ask_community_page)
         self.assertRedirects(
@@ -2212,12 +2212,12 @@ class AskCommunityTest(TestCase):
             "question": "How is this business operating during COVID-19?",
         }
         response = self.c.post(
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1", form
         )
         self.assertEqual(response.resolver_match.func, get_ask_community_page)
         self.assertRedirects(
             response,
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/",
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1",
             status_code=302,
             target_status_code=200,
             fetch_redirect_response=True,
@@ -2234,8 +2234,9 @@ class AskCommunityTest(TestCase):
         response = self.c.get(
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
+            + "/question/"
             + str(self.question.id)
+            + "/1"
         )
         self.assertEqual(response.resolver_match.func, answer_community_question)
         self.assertEqual(response.status_code, 200)
@@ -2252,8 +2253,9 @@ class AskCommunityTest(TestCase):
         response = self.c.post(
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
-            + str(self.question.id),
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
             form,
         )
         self.assertEqual(response.resolver_match.func, answer_community_question)
@@ -2277,8 +2279,9 @@ class AskCommunityTest(TestCase):
         response = self.c.post(
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
-            + str(self.question.id),
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
             form,
         )
         self.assertEqual(response.resolver_match.func, answer_community_question)
@@ -2286,8 +2289,9 @@ class AskCommunityTest(TestCase):
             response,
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
-            + str(self.question.id),
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
             status_code=302,
             target_status_code=200,
             fetch_redirect_response=True,

@@ -120,7 +120,7 @@
     <!--Back to Restaurant Button -->
     <a href="/restaurant/profile/{{ restaurant.id }}">Back to Restaurant</a>
     <hr></hr>
-    <!-- This is a test page for answer community -->
+    <!-- for answer community -->
     <div class="row-box">
         <div class="column-box">
             <div class="text-block-question">
@@ -128,10 +128,10 @@
                 <p class="timestamp" style="float: left;">{{ question.time }}</p>
                 <hr></hr>
                 <p class="question">{{ question.question }}</p>
-                {% if answer_list.count == 1 %}
+                {% if total_answers_count == 1 %}
                     <p class="answer">1 Answer</p>
                 {% else %}
-                    <p class="answer">{{ answer_list.count }} Answers</p>
+                    <p class="answer">{{ total_answers_count }} Answers</p>
                 {% endif %}
             </div>
 
@@ -145,15 +145,32 @@
                 </div>
             </center>
             {% endfor %}
-            {% if answer_list.count == 0 %}
-                <p>No answers yet. You can be the first!</p>
-            {% endif %} 
+            {% if total_answers_count == 0 %}
+                <p class="text-center">No answers yet. You can be the first!</p>
+            {% endif %}
+            <div class="pagination d-flex justify-content-center">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ question.id }}/1">&laquo; first</a>
+                        <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ question.id }}/{{ page_obj.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ question.id }}/{{ page_obj.next_page_number }}">next</a>
+                        <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ question.id }}/{{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
         </div>
         <div class="button-box">
             <form method="POST">
                 {% csrf_token %}
                 <div>
-                    <input class="input-question" type="text" name="answer" placeholder="Your answer" id="answer"></div>
+                    <input class="input-question" type="text" name="answer" placeholder="Your answer" id="answer">
                     <input id="submit-button" type="submit" value="Post Answer">
                 </div>
             </form>
