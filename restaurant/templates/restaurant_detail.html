@@ -341,6 +341,90 @@
             </div>
           </div>
         </div>
+        <!--Zoom Picture Style-->
+        <style>
+      
+          /* The Modal (background) */
+          .modal1 {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 9999; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 10px;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+          }
+          
+          /* Modal Content (image) */
+          .modal1-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+          }
+    
+          
+          /* Add Animation */
+          .modal1-content {  
+            -webkit-animation-name: zoom;
+            -webkit-animation-duration: 0.6s;
+            animation-name: zoom;
+            animation-duration: 0.6s;
+          }
+          
+          @-webkit-keyframes zoom {
+            from {-webkit-transform:scale(0)} 
+            to {-webkit-transform:scale(1)}
+          }
+          
+          @keyframes zoom {
+            from {transform:scale(0)} 
+            to {transform:scale(1)}
+          }
+          
+          /* The Close Button */
+          .close1 {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+          }
+          
+          .close1:hover,
+          .close1:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+          }
+          
+          /* 100% Image Width on Smaller Screens */
+          @media only screen and (max-width: 700px){
+            .modal1-content {
+              width: 100%;
+            }
+          }
+          </style>
+        <!-- Zoom Picture -->
+        <div id="myModal" class="modal1">
+          <span class="close1">&times;</span>
+          <img class="modal1-content" id="img01">
+        </div>
+        <script>
+          // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close1")[0];
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() { 
+          var zoomModal = document.getElementById("myModal");
+          zoomModal.style.display = "none";
+        }
+        </script>
           <!-- Delete Favorite Restaurant -->
         <div class="modal fade" id="delete_favorite" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -387,7 +471,7 @@
         </div>
 
 
-        <!-- Modal -->
+        
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -780,6 +864,7 @@
     </div>
   </div>
 </section>
+
 <!--Insert values into HTML-->
 <script>
 var inspection_data = {{ lasted_inspection | safe}};
@@ -1044,6 +1129,30 @@ class RatingReview extends HTMLElement {
     this.image3.src = this.getAttribute('image3');
     this.image3.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
 
+    this.image1.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image1.src;
+      
+    });
+
+    this.image2.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image2.src;
+      
+    });
+
+    this.image3.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image3.src;
+      
+    });
+
     this.serviceHint = document.createElement('em');
     this.serviceHint.setAttribute('style', 'display: none; font-size: 0.6rem; line-height: 0.8rem;');
     this.serviceHint.setAttribute('class', 'text-secondary');
@@ -1057,6 +1166,7 @@ class RatingReview extends HTMLElement {
 
     this.container.appendChild(userProfile);
     this.container.appendChild(ratingBody);
+
 
     this.rootDiv.appendChild(this.container);
     
@@ -1103,12 +1213,18 @@ class RatingReview extends HTMLElement {
     } else if (name === 'image1' && !newValue.endsWith('/media/')) {
       this.image1.src = newValue;
       this.image1.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image1.src;
     } else if (name === 'image2' && !newValue.endsWith('/media/')) {
       this.image2.src = newValue;
       this.image2.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image2.src;
     } else if (name === 'image3' && !newValue.endsWith('/media/')) {
       this.image3.src = newValue;
       this.image3.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image3.src;
     }
   }
 
@@ -1473,8 +1589,7 @@ function initMap() {
         }
       });
 }
-
-
+      
 
 </script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&map_ids={{google_map_id}}&callback=initMap"
@@ -1539,6 +1654,7 @@ function initMap() {
                 });
             });
 </script>
+  
 
 
 {% endblock %}
