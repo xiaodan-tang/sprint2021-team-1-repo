@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
+
 from .models import (
     User_Profile,
     Review,
@@ -171,6 +172,9 @@ def user_facing(request, user_id):
             "rating_path",
             "time",
             "content",
+            "image1",
+            "image2",
+            "image3",
             "restaurant__restaurant_name",
             "restaurant__yelp_detail__img_url",
             "restaurant__id",
@@ -216,6 +220,9 @@ def user_reviews(request):
             "rating_path",
             "time",
             "content",
+            "image1",
+            "image2",
+            "image3",
             "restaurant__restaurant_name",
             "restaurant__yelp_detail__img_url",
             "restaurant__id",

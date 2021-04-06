@@ -2,12 +2,11 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest import mock
 
 
 from restaurant.models import Categories, Restaurant
-
 from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
-
 from restaurant.tests import create_restaurant
 
 from .forms import (
@@ -17,6 +16,8 @@ from .forms import (
     UpdatePasswordForm,
     UserPreferenceForm,
     ContactForm,
+    RestaurantQuestionForm,
+    RestaurantAnswerForm,
 )
 from .utils import send_reset_password_email, send_feedback_email
 from django.test import Client
@@ -607,6 +608,24 @@ class CommentTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+@mock.patch("user.models.Review.objects")
+class EditCommentTests(BaseTest):
+    def test_edit_comment(self, queryset):
+        queryset.delete.return_value = None
+        queryset.filter.return_value = queryset
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/user_comment/comment_id/delete"
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_delete_comment(self, queryset):
+        queryset.get.return_value = mock.Mock(spec=Review)
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/user_comment/comment_id/put"
+        )
+        self.assertEqual(response.status_code, 302)
+
+
 class ShowReportTests(TestCase):
     def setUp(self):
         self.c = Client()
@@ -735,3 +754,82 @@ class TestRestaurantAnswerModel(BaseTest):
         question_answers = q1.answers.first()
         self.assertEqual(user_answers.text, "test answer!!")
         self.assertEqual(question_answers.text, "test answer!!")
+
+
+class TestRestaurantQuestionForm(BaseTest):
+    def setUp(self):
+        self.restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        super(TestRestaurantQuestionForm, self).setUp()
+
+    def test_question_form_valid(self):
+        form_data = {
+            "question": "Test question",
+        }
+        question_form = RestaurantQuestionForm(
+            self.dummy_user, self.restaurant, form_data
+        )
+        self.assertTrue(question_form.is_valid())
+        question_form.save()
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 1)
+        self.assertEqual(question_list[0].question, "Test question")
+
+    def test_question_form_invalid_question(self):
+        form_data = {
+            "question": "",
+        }
+        question_form = RestaurantQuestionForm(
+            self.dummy_user, self.restaurant, form_data
+        )
+        self.assertFalse(question_form.is_valid())
+
+        form_data = {}
+        question_form = RestaurantQuestionForm(
+            self.dummy_user, self.restaurant, form_data
+        )
+        self.assertFalse(question_form.is_valid())
+
+
+class TestRestaurantAnswerForm(BaseTest):
+    def setUp(self):
+        super(TestRestaurantAnswerForm, self).setUp()
+        self.restaurant = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        self.question = RestaurantQuestion.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant,
+            question="Test question",
+        )
+
+    def test_answer_form_valid(self):
+        form_data = {
+            "answer": "Test answer",
+        }
+        answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
+        self.assertTrue(answer_form.is_valid())
+        answer_form.save()
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 1)
+        self.assertEqual(answer_list[0].text, "Test answer")
+
+    def test_answer_form_invalid_answer(self):
+        form_data = {
+            "answer": "",
+        }
+        answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
+        self.assertFalse(answer_form.is_valid())
+
+        form_data = {}
+        answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
+        self.assertFalse(answer_form.is_valid())
