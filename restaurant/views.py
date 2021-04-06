@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadReque
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.paginator import Paginator
 from datetime import datetime
 import random
 
@@ -603,7 +604,7 @@ def delete_comment_report(request, comment_id):
 
 
 # Ask the community
-def get_ask_community_page(request, restaurant_id):
+def get_ask_community_page(request, restaurant_id, page):
     user = request.user
     restaurant = Restaurant.objects.get(pk=restaurant_id)
 
@@ -613,19 +614,20 @@ def get_ask_community_page(request, restaurant_id):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Successfully posted your question!")
-                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                url = reverse("restaurant:ask_community", args=[restaurant_id, page])
                 return HttpResponseRedirect(url)
             else:
                 messages.error(request, "Failed to post your question!")
-                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                url = reverse("restaurant:ask_community", args=[restaurant_id, page])
                 return HttpResponseRedirect(url)
         else:
             messages.info(request, "Please login first!")
             url = reverse("user:login")
             return HttpResponseRedirect(url)
     else:
-        # Get full question list and limit 2 answers per question
-        question_list = list(
+        # Get question list for current page, 10 questions per page
+        # Limit 2 answers per question
+        full_question_list = list(
             RestaurantQuestion.objects.filter(restaurant=restaurant)
             .order_by("-time")
             .values(
@@ -636,6 +638,8 @@ def get_ask_community_page(request, restaurant_id):
                 "time",
             )
         )
+        curr_page = Paginator(full_question_list, 10).page(page)
+        question_list = curr_page.object_list
         for idx in range(len(question_list)):
             answers = list(
                 RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"])
@@ -655,13 +659,15 @@ def get_ask_community_page(request, restaurant_id):
         context = {
             "restaurant": restaurant,
             "question_list": question_list,
+            "total_questions_count": len(full_question_list),
+            "page_obj": curr_page,
         }
         return render(
-            request=request, template_name="test_ask_community.html", context=context
+            request=request, template_name="ask_community.html", context=context
         )
 
 
-def answer_community_question(request, restaurant_id, question_id):
+def answer_community_question(request, restaurant_id, question_id, page):
     user = request.user
     restaurant = Restaurant.objects.get(pk=restaurant_id)
     question = RestaurantQuestion.objects.get(pk=question_id)
@@ -673,13 +679,15 @@ def answer_community_question(request, restaurant_id, question_id):
                 form.save()
                 messages.success(request, "Successfully posted your answer!")
                 url = reverse(
-                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                    "restaurant:answer_community",
+                    args=[restaurant_id, question_id, page],
                 )
                 return HttpResponseRedirect(url)
             else:
                 messages.error(request, "Failed to post your answer!")
                 url = reverse(
-                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                    "restaurant:answer_community",
+                    args=[restaurant_id, question_id, page],
                 )
                 return HttpResponseRedirect(url)
         else:
@@ -687,13 +695,17 @@ def answer_community_question(request, restaurant_id, question_id):
             url = reverse("user:login")
             return HttpResponseRedirect(url)
     else:
-        # Get full answer list
-        answer_list = RestaurantAnswer.objects.filter(question=question)
+        # Get answer list for current page, 10 answers per page
+        full_answer_list = RestaurantAnswer.objects.filter(question=question)
+        curr_page = Paginator(full_answer_list, 10).page(page)
+        answer_list = curr_page.object_list
         context = {
             "restaurant": restaurant,
             "question": question,
             "answer_list": answer_list,
+            "total_answers_count": full_answer_list.count(),
+            "page_obj": curr_page,
         }
         return render(
-            request=request, template_name="test_answer_community.html", context=context
+            request=request, template_name="answer_community.html", context=context
         )
