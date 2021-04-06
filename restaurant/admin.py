@@ -18,6 +18,6 @@ admin.site.register(YelpRestaurantDetails)
 admin.site.register(Zipcodes)
 
 
-@admin.register(AccessibilityRecord)
-class ViewAdmin(ImportExportModelAdmin, FAQ):
+@admin.register(AccessibilityRecord, FAQ)
+class ViewAdmin(ImportExportModelAdmin):
     pass
