@@ -219,6 +219,8 @@ def get_restaurant_profile(request, restaurant_id):
                 "distribution": ratings_distribution,
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
@@ -242,6 +244,8 @@ def get_restaurant_profile(request, restaurant_id):
                 "reviews_count": reviews_count,
                 "ratings_avg": ratings_avg,
                 "distribution": ratings_distribution,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
