@@ -116,10 +116,11 @@ def get_restaurant_profile(request, restaurant_id):
                 "image2",
                 "image3",
                 "hidden",
-                "likes",
             )
         )
-
+        print("Internal review lists: \n")
+        for r in internal_reviews:
+            print(r)
         for idx in range(len(internal_reviews)):
             comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
             # get photo afterwards
