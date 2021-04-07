@@ -22,6 +22,7 @@ from user.forms import (
     RestaurantQuestionForm,
     RestaurantAnswerForm,
 )
+
 from user.models import (
     Review,
     Comment,
@@ -29,6 +30,7 @@ from user.models import (
     RestaurantAnswer,
     UserActivityLog,
 )
+
 from .utils import (
     query_yelp,
     query_inspection_record,

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+
 from restaurant.models import Categories, Restaurant
 
 from .models import (
@@ -13,6 +14,7 @@ from .models import (
     RestaurantAnswer,
     UserActivityLog,
 )
+
 
 from restaurant.tests import create_restaurant
 
