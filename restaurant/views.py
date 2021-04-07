@@ -399,20 +399,20 @@ def like_review(request):
     if request.method == "POST":
         user = request.user
         review = get_object_or_404(Review, id=request.POST.get("review_id"))
-        likes_count = review.total_likes()
+        likes_num = review.total_likes()
         liked = False
 
         if review.likes.filter(id=user.id).exists():
             review.likes.remove(user)
-            likes_count -= 1
+            likes_num -= 1
         else:
             review.likes.add(user)
-            likes_count += 1
+            likes_num += 1
             liked = True
 
         context = {
             "liked": liked,
-            "likes_count": likes_count,
+            "likes_num": likes_num,
         }
         return JsonResponse(context)
 
