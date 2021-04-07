@@ -1395,14 +1395,14 @@ class ReviewTests(BaseTest):
         response1 = self.c.post(url, form)
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response1.json()["liked"], True)
-        self.assertEqual(response1.json()["likes_count"], 1)
+        self.assertEqual(response1.json()["likes_num"], 1)
         self.assertEqual(self.temp_review.total_likes(), 1)
 
         # Second post, undo the like
         response2 = self.c.post(url, form)
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(response2.json()["liked"], False)
-        self.assertEqual(response2.json()["likes_count"], 0)
+        self.assertEqual(response2.json()["likes_num"], 0)
         self.assertEqual(self.temp_review.total_likes(), 0)
 
         # Third post with invalid form
