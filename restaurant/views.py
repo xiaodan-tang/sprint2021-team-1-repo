@@ -24,7 +24,12 @@ from user.forms import (
     RestaurantAnswerForm,
 )
 
-from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
+from user.models import (
+    Review,
+    Comment,
+    RestaurantQuestion,
+    RestaurantAnswer,
+)
 
 from .utils import (
     query_yelp,
@@ -43,6 +48,7 @@ from .utils import (
     check_user_location,
     remove_reports_review,
     remove_reports_comment,
+    send_moderate_notification_email,
 )
 
 from django.http import HttpResponse
@@ -216,6 +222,8 @@ def get_restaurant_profile(request, restaurant_id):
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -239,6 +247,8 @@ def get_restaurant_profile(request, restaurant_id):
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -262,6 +272,18 @@ def edit_review(request, restaurant_id, comment_id, action):
         review.save()
         messages.success(request, "success")
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
+
+
+def edit_user_review(request, restaurant_id, comment_id, action):
+    if action == "delete":
+        Review.objects.filter(id=comment_id).delete()
+    if action == "put":
+        review = Review.objects.get(id=comment_id)
+        review.rating = request.POST.get("rating")
+        review.content = request.POST.get("content")
+        review.save()
+        messages.success(request, "success")
+    return HttpResponseRedirect(reverse("user:user_reviews"))
 
 
 def edit_comment(request, restaurant_id, review_id):
@@ -424,7 +446,17 @@ def report_review(request, restaurant_id, review_id):
         user = request.user
         form = Report_Review_Form(request.POST, review_id, user)
         form.save()
-        messages.success(request, "success")
+
+        review = Review.objects.get(pk=review_id)
+        target_user = review.user
+        restaurant = review.restaurant
+
+        messages.success(
+            request, "Your report is recorded and will be reviewed by admins"
+        )
+        send_moderate_notification_email(
+            request, target_user, restaurant, "review", "report"
+        )
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
 
@@ -434,7 +466,17 @@ def report_comment(request, restaurant_id, comment_id):
         user = request.user
         form = Report_Comment_Form(request.POST, comment_id, user)
         form.save()
-        messages.success(request, "success")
+
+        comment = Comment.objects.get(pk=comment_id)
+        target_user = comment.user
+        restaurant = comment.review.restaurant
+
+        messages.success(
+            request, "Your report is recorded and will be reviewed by admins"
+        )
+        send_moderate_notification_email(
+            request, target_user, restaurant, "comment", "report"
+        )
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
 
@@ -451,9 +493,15 @@ def hide_review(request, review_id):
             review = Review.objects.get(pk=review_id)
             review.hidden = True
             review.save()
+
+            target_user = review.user
+            restaurant = review.restaurant
             messages.success(
                 request,
                 "Reported review is hidden and all the related report tickets are closed!",
+            )
+            send_moderate_notification_email(
+                request, target_user, restaurant, "review", "hide"
             )
         else:
             messages.error(
@@ -476,9 +524,16 @@ def hide_comment(request, comment_id):
             comment = Comment.objects.get(pk=comment_id)
             comment.hidden = True
             comment.save()
+
+            target_user = comment.user
+            restaurant = comment.review.restaurant
+
             messages.success(
                 request,
                 "Reported comment is hidden and all the related report tickets are closed!",
+            )
+            send_moderate_notification_email(
+                request, target_user, restaurant, "comment", "hide"
             )
         else:
             messages.error(
@@ -534,12 +589,18 @@ def ignore_comment_report(request, comment_id):
 def delete_review_report(request, review_id):
     user = request.user
     url = reverse("user:admin_comment")
-    print(request)
     if user.is_staff:
         if remove_reports_review(review_id):
-            Review.objects.get(pk=review_id).delete()
+            review = Review.objects.get(pk=review_id)
+            target_user = review.user
+            restaurant = review.restaurant
+            review.delete()
+
             messages.success(
                 request, "All the related reports for this review have been deleted!"
+            )
+            send_moderate_notification_email(
+                request, target_user, restaurant, "review", "delete"
             )
         else:
             messages.error(
@@ -557,9 +618,16 @@ def delete_comment_report(request, comment_id):
     url = reverse("user:admin_comment")
     if user.is_staff:
         if remove_reports_comment(comment_id):
-            Comment.objects.get(pk=comment_id).delete()
+            comment = Comment.objects.get(pk=comment_id)
+            target_user = comment.user
+            restaurant = comment.review.restaurant
+            comment.delete()
+
             messages.success(
                 request, "All the related reports for this comment have been deleted!"
+            )
+            send_moderate_notification_email(
+                request, target_user, restaurant, "comment", "delete"
             )
         else:
             messages.error(
