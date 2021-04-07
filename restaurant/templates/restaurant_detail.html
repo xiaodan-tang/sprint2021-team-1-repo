@@ -1401,6 +1401,7 @@ internalReviews.forEach(review => {
   const reviewWrapper = document.getElementById('internal_review');
   const ratingReview = document.createElement('rating-review');
   ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
+  console.log(review);
   ratingReview.setAttribute('profile-img-alt', review.user__username);
   ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
   ratingReview.setAttribute('user-name', review.user__username);
