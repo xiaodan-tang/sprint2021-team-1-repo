@@ -30,7 +30,7 @@ urlpatterns = [
     ),
     # Reviews & Comments
     path(
-        "profile/<restaurant_id>/comment/<comment_id>/<action>",
+        "profile/<restaurant_id>/review/<review_id>/<action>/<source>",
         views.edit_review,
         name="edit_review",
     ),
@@ -86,6 +86,7 @@ urlpatterns = [
         views.delete_comment_report,
         name="delete_comment_report",
     ),
+    path("like/review/", views.like_review, name="like_review"),
     # Ask the community
     path(
         "profile/<restaurant_id>/ask_community/",

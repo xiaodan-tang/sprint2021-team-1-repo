@@ -1,0 +1,53 @@
+.yelp__body {
+    display: flex;
+    align-items: flex-start;
+}
+
+.yelp__root {
+    margin-bottom: 0.5rem;
+}
+
+.yelp__pic {
+    display: inline-block;
+    position: relative;
+    width: 7rem;
+    height: 7rem;
+    text-align: center;
+    border: #dee2e6;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 5rem rgb(0 0 0 / 15%);
+    line-height: 3rem;
+}
+.yelp__date {
+    margin-top: 0.5rem;
+}
+
+.yelp__name_rating_text {
+    margin-left: 15px;
+    width: 350px;
+}
+
+.yelp__text {
+    display: -webkit-box; 
+    -webkit-line-clamp: 4; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden;
+}
+
+.review__image {
+    flex: 1 1 auto;
+    width: auto;
+    height: 100px !important;
+    display: inline-block;
+    object-fit: contain;
+    align-items: center;
+    margin-left: 0.5rem;
+}
+
+.dropdown__icon {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+}
