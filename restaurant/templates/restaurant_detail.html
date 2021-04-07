@@ -1267,10 +1267,10 @@ class RatingReview extends HTMLElement {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
-          'content-type': 'application/json',
+          'content-type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
         },
-        body: JSON.stringify({ 'review_id': reviewId })
+        body: `review_id=${Number(reviewId)}`
       })
       .then(r => {
         if (!r.ok) return;
