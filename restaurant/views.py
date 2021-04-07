@@ -227,11 +227,6 @@ def get_restaurant_profile(request, restaurant_id):
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
-<<<<<<< HEAD
-                # Recommended Restuarants
-                "recommended_restaurants": recommended_restaurants,
-=======
->>>>>>> d968d188dd383993262a964fa7c5bce16ec6e498
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -264,11 +259,6 @@ def get_restaurant_profile(request, restaurant_id):
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
-<<<<<<< HEAD
-                # Recommended Restuarants
-                "recommended_restaurants": recommended_restaurants,
-=======
->>>>>>> d968d188dd383993262a964fa7c5bce16ec6e498
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
