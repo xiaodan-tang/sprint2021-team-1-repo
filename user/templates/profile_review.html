@@ -17,6 +17,236 @@
               <span id="internal_review"></span>
           </div>
         </div>
+        <!--Zoom Picture Style-->
+        <style>
+
+            /* The Modal (background) */
+            .modal1 {
+              display: none; /* Hidden by default */
+              position: fixed; /* Stay in place */
+              z-index: 9999; /* Sit on top */
+              padding-top: 100px; /* Location of the box */
+              left: 0;
+              top: 10px;
+              width: 100%; /* Full width */
+              height: 100%; /* Full height */
+              overflow: auto; /* Enable scroll if needed */
+              background-color: rgb(0,0,0); /* Fallback color */
+              background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+            }
+            
+            /* Modal Content (image) */
+            .modal1-content {
+              margin: auto;
+              display: block;
+              width: 80%;
+              max-width: 700px;
+            }
+      
+            
+            /* Add Animation */
+            .modal1-content {  
+              -webkit-animation-name: zoom;
+              -webkit-animation-duration: 0.6s;
+              animation-name: zoom;
+              animation-duration: 0.6s;
+            }
+            
+            @-webkit-keyframes zoom {
+              from {-webkit-transform:scale(0)} 
+              to {-webkit-transform:scale(1)}
+            }
+            
+            @keyframes zoom {
+              from {transform:scale(0)} 
+              to {transform:scale(1)}
+            }
+            
+            /* The Close Button */
+            .close1 {
+              position: absolute;
+              top: 25px;
+              right: 35px;
+              color: #f1f1f1;
+              font-size: 40px;
+              font-weight: bold;
+              transition: 0.3s;
+            }
+            
+            .close1:hover,
+            .close1:focus {
+              color: #bbb;
+              text-decoration: none;
+              cursor: pointer;
+            }
+            
+            /* 100% Image Width on Smaller Screens */
+            @media only screen and (max-width: 700px){
+              .modal1-content {
+                width: 100%;
+              }
+            }
+            </style>
+          <!-- Zoom Picture -->
+          <div id="myModal" class="modal1">
+            <span class="close1">&times;</span>
+            <img class="modal1-content" id="img01">
+          </div>
+          <script>
+            // Get the <span> element that closes the modal
+          var span = document.getElementsByClassName("close1")[0];
+          console.log(span)
+          // When the user clicks on <span> (x), close the modal
+          span.onclick = function() { 
+            var zoomModal = document.getElementById("myModal");
+            zoomModal.style.display = "none";
+          }
+          </script>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Tell us about your experience!</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form class="form-validate" method="POST" name="rating-form" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="modal-body">
+                    <p class="mb-2">How would you rate this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <p class="mb-2">How would you rate the safety of this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating_safety" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <p class="mb-2">How would you rate the accessibility of entry to this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating_entry" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <p class="mb-2">How would you rate the accessibility of doors at this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating_door" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <p class="mb-2">How would you rate the accessibility of tables at this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating_table" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <p class="mb-2">How would you rate the accessibility of bathrooms at this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating_bathroom" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <p class="mb-2">How would you rate the accessibility of pathways at this restaurant?</p>
+                    <div class="form-group mb-2" style="width: 200px;">
+                      <select class="selectpicker form-control" name="rating_path" data-style="btn-selectpicker" title="">
+                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                        <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                        <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                        <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                        <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                      </select>
+                    </div>
+                    <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden>
+                    <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
+                    <input type="text" id="saved_on" name="saved_on"   hidden>
+                    {% comment %} <p class="mb-2">Did you receive a temperature check?</p>
+                    <div class="form-group mb-2">
+                      <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
+                      <label for="temp_check_true" title="text">Yes</label>
+                      <input id="temp_check_false" type="radio" name="temperature_required" value="false" required/>
+                      <label for="temp_check_false" title="text">No</label>
+                    </div>
+                    <p class="mb-2">Were you or a member of your party required to provide contact tracing information?</p>
+                    <div class="form-group mb-2">
+                      <input id="contact_true" type="radio" name="contact_info_required" value="true" required/>
+                      <label for="contact_true" title="text">Yes</label>
+                      <input id="contact_false" type="radio" name="contact_info_required" value="false" required/>
+                      <label for="contact_false" title="text">No</label>
+                    </div>
+                    <p class="mb-2">Were restaurant staff wearing masks at all times?</p>
+                    <div class="form-group mb-2">
+                      <input id="employee_mask_true" type="radio" name="employee_mask" value="true" required/>
+                      <label for="employee_mask_true" title="text">Yes</label>
+                      <input id="employee_mask_false" type="radio" name="employee_mask" value="false" required/>
+                      <label for="employee_mask_false" title="text">No</label>
+                    </div>
+                    <p class="mb-2">Was in-door capacity under 25%?</p>
+                    <div class="form-group mb-2">
+                      <input id="capacity_true" type="radio" name="capacity_compliant" value="true" required/>
+                      <label for="capacity_true" title="text">Yes</label>
+                      <input id="capacity_false" type="radio" name="capacity_compliant" value="false" required/>
+                      <label for="capacity_false" title="text">No</label>
+                    </div>
+                    <p class="mb-2">Were you seated at least 6 feet from the nearest party?</p>
+                    <div class="form-group mb-2">
+                      <input id="distance_compliant_true" type="radio" name="distance_compliant" value="true" required/>
+                      <label for="distance_compliant_true" title="text">Yes</label>
+                      <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
+                      <label for="distance_compliant_false" title="text">No</label>
+                    </div> {% endcomment %}
+                    <p class="mb-2">Tell others about your thoughts!</p>
+                    <div class="form-group mb-2">
+                      <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
+                    </div>
+                    <label for="img"> Select image for Review Image 1: </label>
+                    <div class="form-group mb-2">
+                      <input type="file" class="form-control" name="image1" id="image1" accept="image/*" required></input>
+                    </div>
+                    <label for="img"> Select image for Review Image 2: </label>
+                    <div class="form-group mb-2">
+                      <input type="file" class="form-control" name="image2" id="image2" accept="image/*" required></input>
+                    </div>
+                    <label for="img"> Select image for Review Image 3: </label>
+                    <div class="form-group mb-2">
+                      <input type="file" class="form-control" name="image3" id="image3" accept="image/*" required></input>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" type="button" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved" id="rating-submit-button">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
 
 
   </div>
@@ -95,8 +325,51 @@
     this.comments.setAttribute('style', 'display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;');
     this.comments.className = 'text-muted text-sm';
     this.comments.innerText = this.getAttribute('review-text');
+
+    // 3 images
+    this.image1 = document.createElement('img');
+    this.image1.className= 'review-image';
+    this.image1.src = this.getAttribute('image1');
+    this.image1.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+    this.image2 = document.createElement('img');
+    this.image2.className= 'review-image';
+    this.image2.src = this.getAttribute('image2');
+    this.image2.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+    this.image3 = document.createElement('img');
+    this.image3.className= 'review-image';
+    this.image3.src = this.getAttribute('image3');
+    this.image3.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+    this.image1.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image1.src;
+      
+    });
+
+    this.image2.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image2.src;
+      
+    });
+
+    this.image3.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image3.src;
+      
+    });
     
     ratingBody.appendChild(this.comments);
+    ratingBody.appendChild(this.image1);
+    ratingBody.appendChild(this.image2);
+    ratingBody.appendChild(this.image3);
 
     this.rootDiv.appendChild(userProfile);
     this.rootDiv.appendChild(ratingBody);
@@ -109,7 +382,7 @@
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable', 'image1', 'image2', 'image3'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -136,6 +409,21 @@
       this.comments.innerText = newValue || '';
     } else if (name === 'editable') {
       this.attachOptionButton();
+    } else if (name === 'image1' && !newValue.endsWith('/media/')) {
+      this.image1.src = newValue;
+      this.image1.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image1.src;
+    } else if (name === 'image2' && !newValue.endsWith('/media/')) {
+      this.image2.src = newValue;
+      this.image2.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image2.src;
+    } else if (name === 'image3' && !newValue.endsWith('/media/')) {
+      this.image3.src = newValue;
+      this.image3.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image3.src;
     }
   }
 
@@ -163,7 +451,7 @@
     dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
 
     this.deleteForm = document.createElement('form');
-    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
+    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/user_comment/${this.getAttribute('review-id')}/delete`);
 
     ['Edit', 'Delete'].forEach((el, index) => {
       const anchor = document.createElement('a');
@@ -179,7 +467,7 @@
           const content = document.querySelector('textarea[name="content"]');
           content.value = this.getAttribute('review-text');
           content.dispatchEvent(new Event('change'));
-          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
+          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/user_comment/${this.getAttribute('review-id')}/put`);
         });
       } else {
         anchor.addEventListener('click', () => this.deleteForm.submit());
@@ -233,6 +521,11 @@
       ratingReview.setAttribute('review-id', review.id);
       const temp = "../restaurant/profile/" + review.restaurant__id;
       ratingReview.setAttribute('profile-url', temp);
+      ratingReview.setAttribute('restaurant-id', review.restaurant__id);
+      ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
+      ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
+      ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
+
       if (userId === review.user) {
         ratingReview.setAttribute('editable', 'editable');
       }

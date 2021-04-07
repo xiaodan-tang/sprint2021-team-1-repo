@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest import mock
 
 from restaurant.models import Categories, Restaurant
 
@@ -13,6 +14,7 @@ from .models import (
     RestaurantAnswer,
     UserActivityLog,
 )
+
 
 from restaurant.tests import create_restaurant
 
@@ -612,6 +614,24 @@ class CommentTest(TestCase):
             "/restaurant/profile/" + str(rest_id) + "/comment_delete/" + str(comm_id)
         )
         response = self.c.get(delete_url)
+        self.assertEqual(response.status_code, 302)
+
+
+@mock.patch("user.models.Review.objects")
+class EditCommentTests(BaseTest):
+    def test_edit_comment(self, queryset):
+        queryset.delete.return_value = None
+        queryset.filter.return_value = queryset
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/user_comment/comment_id/delete"
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_delete_comment(self, queryset):
+        queryset.get.return_value = mock.Mock(spec=Review)
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/user_comment/comment_id/put"
+        )
         self.assertEqual(response.status_code, 302)
 
 
