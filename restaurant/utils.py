@@ -646,6 +646,7 @@ def remove_reports_comment(comment_id):
         logger.warning("Comment ID could not be found: {}".format(comment_id))
         return False
 
+
 def send_moderate_notification_email(request, user, restaurant, subject, event):
     """
     Send a notification email to user's email address

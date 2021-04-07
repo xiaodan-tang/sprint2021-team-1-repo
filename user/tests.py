@@ -4,12 +4,7 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
 
-
 from restaurant.models import Categories, Restaurant
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> d968d188dd383993262a964fa7c5bce16ec6e498
 
 from .models import (
     Review,
@@ -20,13 +15,6 @@ from .models import (
     UserActivityLog,
 )
 
-<<<<<<< HEAD
-=======
-from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
->>>>>>> 2958b331e739c5241a199da3109ae2cd659c9e0a
-=======
-
->>>>>>> d968d188dd383993262a964fa7c5bce16ec6e498
 from restaurant.tests import create_restaurant
 
 from .forms import (
@@ -625,23 +613,6 @@ class CommentTest(TestCase):
             "/restaurant/profile/" + str(rest_id) + "/comment_delete/" + str(comm_id)
         )
         response = self.c.get(delete_url)
-        self.assertEqual(response.status_code, 302)
-
-@mock.patch("user.models.Review.objects")
-classmmentTests(BaseTest):
-    def test_edit_comment(self, queryset):
-        queryset.delete.return_value = None
-        queryset.filter.return_value = queryset
-        response = self.c.get(
-            "/restaurant/profile/restaurant_id/user_comment/comment_id/delete"
-        )
-        self.assertEqual(response.status_code, 302)
-
-    def test_delete_comment(self, queryset):
-        queryset.get.return_value = mock.Mock(spec=Review)
-        response = self.c.get(
-            "/restaurant/profile/restaurant_id/user_comment/comment_id/put"
-        )
         self.assertEqual(response.status_code, 302)
 
 class ShowReportTests(TestCase):

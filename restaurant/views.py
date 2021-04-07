@@ -518,7 +518,7 @@ def hide_review(request, review_id):
             review = Review.objects.get(pk=review_id)
             review.hidden = True
             review.save()
-            
+
             target_user = review.user
             restaurant = review.restaurant
             messages.success(
