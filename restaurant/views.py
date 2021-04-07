@@ -228,6 +228,8 @@ def get_restaurant_profile(request, restaurant_id):
                 "distribution": ratings_distribution,
                 "statistics_dict": statistics_dict,
                 "user_id": request.user.id,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
@@ -251,6 +253,8 @@ def get_restaurant_profile(request, restaurant_id):
                 "reviews_count": reviews_count,
                 "ratings_avg": ratings_avg,
                 "distribution": ratings_distribution,
+                # Recommended Restuarants
+                "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
@@ -280,6 +284,18 @@ def edit_review(request, restaurant_id, review_id, action, source):
         return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
     if source == "user":
         return HttpResponseRedirect(reverse("user:user_reviews"))
+
+
+def edit_user_review(request, restaurant_id, comment_id, action):
+    if action == "delete":
+        Review.objects.filter(id=comment_id).delete()
+    if action == "put":
+        review = Review.objects.get(id=comment_id)
+        review.rating = request.POST.get("rating")
+        review.content = request.POST.get("content")
+        review.save()
+        messages.success(request, "success")
+    return HttpResponseRedirect(reverse("user:user_reviews"))
 
 
 def edit_comment(request, restaurant_id, review_id):
