@@ -1039,15 +1039,16 @@ let __data__ = {
 };
 // TODO: remove this for demo
 if (restaurantId === '1686') {
+  const S3_CDN = 'https://dineline.s3.amazonaws.com/build';
   const reviews = document.getElementById('reviews');
   reviews.style.display = 'none';
   const runtime = document.createElement('script');
-  runtime.src = '/static/build/runtime.js';
+  runtime.src = `${S3_CDN}/runtime.js`;
   const script = document.createElement('script');
-  script.src = '/static/build/index.js';
+  script.src = `${S3_CDN}/index.js`;
   const style = document.createElement('link');
   style.setAttribute('rel', 'stylesheet');
-  style.setAttribute('href', '/static/build/index.css');
+  style.setAttribute('href', `${S3_CDN}/index.css`);
   document.body.appendChild(style);
   document.body.appendChild(runtime);
   document.body.appendChild(script);

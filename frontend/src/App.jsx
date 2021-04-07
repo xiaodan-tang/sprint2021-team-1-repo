@@ -4,7 +4,7 @@ import './App.css';
 
 import YelpReview from "./YelpReview";
 // import yelpReviews from "../../yelp_data.json";
-console.log('findmeee', yelpReviews, internalReviews);
+
 const App = ({yelpReviews, internalReviews}) => (
   <div className="App">
     <h6>
