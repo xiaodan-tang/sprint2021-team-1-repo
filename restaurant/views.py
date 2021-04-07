@@ -116,10 +116,11 @@ def get_restaurant_profile(request, restaurant_id):
                 "image2",
                 "image3",
                 "hidden",
-                "likes",
             )
         )
-
+        print("Internal review lists: \n")
+        for r in internal_reviews:
+            print(r)
         for idx in range(len(internal_reviews)):
             comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
             # get photo afterwards
@@ -136,9 +137,11 @@ def get_restaurant_profile(request, restaurant_id):
             # TODO: check if liked status is needed (remove if not)
             review = Review.objects.get(id=internal_reviews[idx]["id"])
             liked = review.likes.filter(id=request.user.id).exists()
+            likes_num = review.total_likes()
 
             internal_reviews[idx]["comments"] = comments
             internal_reviews[idx]["liked"] = liked
+            internal_reviews[idx]["likes_num"] = likes_num
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
@@ -397,20 +400,20 @@ def like_review(request):
     if request.method == "POST":
         user = request.user
         review = get_object_or_404(Review, id=request.POST.get("review_id"))
-        likes_count = review.total_likes()
+        likes_num = review.total_likes()
         liked = False
 
         if review.likes.filter(id=user.id).exists():
             review.likes.remove(user)
-            likes_count -= 1
+            likes_num -= 1
         else:
             review.likes.add(user)
-            likes_count += 1
+            likes_num += 1
             liked = True
 
         context = {
             "liked": liked,
-            "likes_count": likes_count,
+            "likes_num": likes_num,
         }
         return JsonResponse(context)
 

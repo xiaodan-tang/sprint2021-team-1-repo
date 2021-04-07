@@ -1194,7 +1194,7 @@ class RatingReview extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3', 'likes_num'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -1245,7 +1245,50 @@ class RatingReview extends HTMLElement {
       this.image3.style.display = "inline-block";
       var modalImg = document.getElementById("img01");
       modalImg.src = this.image3.src;
+    } else if (name === 'likes_num') {
+      this.attachHeart();
     }
+  }
+
+  attachHeart () {
+    const reviewId = this.getAttribute('review-id');
+    if (!reviewId || !userId) return;
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('mt-2');
+    const likeButton = document.createElement('i');
+    const likeNumber = document.createElement('span');
+    likeNumber.setAttribute('class', 'ml-3');
+    const liked = this.hasAttribute('liked');
+    likeNumber.innerText = this.getAttribute('likes_num');
+    likeButton.setAttribute('class', `fa fa-heart d-blcok ${liked ? 'text-primary' : 'text-muted'}`);
+    likeButton.setAttribute('style', 'cursor: pointer');
+    likeButton.addEventListener('click', e => {
+      fetch('/restaurant/like/review/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+        },
+        body: `review_id=${Number(reviewId)}`
+      })
+      .then(r => { 
+        if (!r.ok) return; 
+        return r.json();
+      })
+      .then(r => {
+        const { liked, likes_num } = r;
+        if (liked) {
+          likeButton.classList.replace('text-muted', 'text-primary');
+        } else {
+          likeButton.classList.replace('text-primary', 'text-muted');
+        }
+        likeNumber.innerText = likes_num;
+      })
+    });
+    wrapper.appendChild(likeButton);
+    wrapper.appendChild(likeNumber);
+    this.comments.appendChild(wrapper);
   }
 
   attachOptionButton ({ authorId }) {
@@ -1484,6 +1527,11 @@ if (document.getElementById('internal_review') != null) {
     ratingReview.setAttribute('review-id', review.id);
     ratingReview.setAttribute('restaurant-id', restaurantId);
     ratingReview.setAttribute('author-id', review.user);
+    if (review.liked) {
+      ratingReview.setAttribute('liked', true);
+    }
+    ratingReview.setAttribute('likes_num', review.likes_num || 0);
+
     ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
     ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
     ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
