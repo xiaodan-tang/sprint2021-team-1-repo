@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -116,6 +116,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "image2",
                 "image3",
                 "hidden",
+                "likes",
             )
         )
 
@@ -132,7 +133,12 @@ def get_restaurant_profile(request, restaurant_id):
                 }
                 for el in comments
             ]
+            # TODO: check if liked status is needed (remove if not)
+            review = Review.objects.get(id=internal_reviews[idx]["id"])
+            liked = review.likes.filter(id=request.user.id).exists()
+
             internal_reviews[idx]["comments"] = comments
+            internal_reviews[idx]["liked"] = liked
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
@@ -393,6 +399,29 @@ def delete_favorite_restaurant(request, business_id):
             Restaurant.objects.get(business_id=business_id)
         )
         return HttpResponse("Deleted")
+
+
+@login_required
+def like_review(request):
+    if request.method == "POST":
+        user = request.user
+        review = get_object_or_404(Review, id=request.POST.get("review_id"))
+        likes_count = review.total_likes()
+        liked = False
+
+        if review.likes.filter(id=user.id).exists():
+            review.likes.remove(user)
+            likes_count -= 1
+        else:
+            review.likes.add(user)
+            likes_count += 1
+            liked = True
+
+        context = {
+            "liked": liked,
+            "likes_count": likes_count,
+        }
+        return JsonResponse(context)
 
 
 @csrf_exempt

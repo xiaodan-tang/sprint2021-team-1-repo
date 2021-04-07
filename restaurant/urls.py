@@ -86,6 +86,7 @@ urlpatterns = [
         views.delete_comment_report,
         name="delete_comment_report",
     ),
+    path("like/review/", views.like_review, name="like_review"),
     # Ask the community
     path(
         "profile/<restaurant_id>/ask_community/",

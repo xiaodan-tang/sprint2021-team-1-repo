@@ -791,16 +791,21 @@
             </div>
           </div>
           <hr>
-          <h6>
-            <span class="text-primary">YELP</span> REVIEWS
-          </h6>
-          <span id="yelp_review"></span>
-          <hr>
-          <h6>
-            <span class="text-primary">INTERNAL</span> REVIEWS
-          </h6>
-          <span id="internal_review"></span>
-        </div>
+
+
+          <div id="root"></div>
+          <div id="reviews">
+            <h6>
+              <span class="text-primary">YELP</span> REVIEWS
+            </h6>
+            <span id="yelp_review"></span>
+            <hr>
+            <h6>
+              <span class="text-primary">INTERNAL</span> REVIEWS
+            </h6>
+            <span id="internal_review"></span>
+          </div>
+        </div> 
       </div>
       <div class="col-lg-4">
         <div class="pl-xl-4">
@@ -1032,6 +1037,21 @@ let __data__ = {
     id: null
   }
 };
+// TODO: remove this for demo
+if (restaurantId === '1686') {
+  const reviews = document.getElementById('reviews');
+  reviews.style.display = 'none';
+  const runtime = document.createElement('script');
+  runtime.src = '/static/build/runtime.js';
+  const script = document.createElement('script');
+  script.src = '/static/build/index.js';
+  const style = document.createElement('link');
+  style.setAttribute('rel', 'stylesheet');
+  style.setAttribute('href', '/static/build/index.css');
+  document.body.appendChild(style);
+  document.body.appendChild(runtime);
+  document.body.appendChild(script);
+}
 document.forms['report-abuse'].addEventListener('submit', e => {
   e.preventDefault();
   if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
@@ -1433,56 +1453,59 @@ class RatingReview extends HTMLElement {
 };
 customElements.define('rating-review', RatingReview);
 const yelpReviews = {{ yelp_info.reviews | safe }};
-
-yelpReviews['reviews'].forEach(review => {
-  const reviewWrapper = document.getElementById('yelp_review');
-  const ratingReview = document.createElement('rating-review');
-  ratingReview.setAttribute('profile-img', review.user.image_url);
-  ratingReview.setAttribute('profile-img-alt', review.user.name);
-  ratingReview.setAttribute('profile-url', review.user.profile_url);
-  ratingReview.setAttribute('user-name', review.user.name);
-  ratingReview.setAttribute('time-created', review.time_created);
-  ratingReview.setAttribute('user-rating', review.rating);
-  ratingReview.setAttribute('review-text', review.text);
-  reviewWrapper.appendChild(ratingReview);
-});
+if (document.getElementById('yelp_review') != null){
+  yelpReviews['reviews'].forEach(review => {
+    const reviewWrapper = document.getElementById('yelp_review');
+    const ratingReview = document.createElement('rating-review');
+    ratingReview.setAttribute('profile-img', review.user.image_url);
+    ratingReview.setAttribute('profile-img-alt', review.user.name);
+    ratingReview.setAttribute('profile-url', review.user.profile_url);
+    ratingReview.setAttribute('user-name', review.user.name);
+    ratingReview.setAttribute('time-created', review.time_created);
+    ratingReview.setAttribute('user-rating', review.rating);
+    ratingReview.setAttribute('review-text', review.text);
+    reviewWrapper.appendChild(ratingReview);
+  });
+}
 
 const internalReviews = {{ internal_reviews | safe }};
-internalReviews.forEach(review => {
-  if (review.hidden && review.user !== userId) return;
-  const reviewWrapper = document.getElementById('internal_review');
-  const ratingReview = document.createElement('rating-review');
-  ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
-  ratingReview.setAttribute('profile-img-alt', review.user__username);
-  ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
-  ratingReview.setAttribute('user-name', review.user__username);
-  ratingReview.setAttribute('time-created', review.time);
-  ratingReview.setAttribute('user-rating', review.rating);
-  ratingReview.setAttribute('review-text', review.content);
-  ratingReview.setAttribute('review-id', review.id);
-  ratingReview.setAttribute('restaurant-id', restaurantId);
-  ratingReview.setAttribute('author-id', review.user);
-  ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
-  ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
-  ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
+if (document.getElementById('internal_review') != null) {
+  internalReviews.forEach(review => {
+    if (review.hidden && review.user !== userId) return;
+    const reviewWrapper = document.getElementById('internal_review');
+    const ratingReview = document.createElement('rating-review');
+    ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
+    ratingReview.setAttribute('profile-img-alt', review.user__username);
+    ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
+    ratingReview.setAttribute('user-name', review.user__username);
+    ratingReview.setAttribute('time-created', review.time);
+    ratingReview.setAttribute('user-rating', review.rating);
+    ratingReview.setAttribute('review-text', review.content);
+    ratingReview.setAttribute('review-id', review.id);
+    ratingReview.setAttribute('restaurant-id', restaurantId);
+    ratingReview.setAttribute('author-id', review.user);
+    ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
+    ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
+    ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
 
-  if (review.hidden) {
-    ratingReview.setAttribute('hidden-flag', review.hidden);
-  } else {
-    // add replies here
-    review.comments.forEach(el => {
-      if (el.hidden && el.author !== userId) return;
-      ratingReview.renderReplies({
-        profile: el.profile || DEFAULT_AVATAR,
-        text: el.text,
-        author: el.author,
-        commentId: el.commentId,
-        hidden: el.hidden
-      })
-    });
-  }
-  reviewWrapper.appendChild(ratingReview);
-});
+    if (review.hidden) {
+      ratingReview.setAttribute('hidden-flag', review.hidden);
+    } else {
+      // add replies here
+      review.comments.forEach(el => {
+        if (el.hidden && el.author !== userId) return;
+        ratingReview.renderReplies({
+          profile: el.profile || DEFAULT_AVATAR,
+          text: el.text,
+          author: el.author,
+          commentId: el.commentId,
+          hidden: el.hidden
+        })
+      });
+    }
+    reviewWrapper.appendChild(ratingReview);
+  });
+}
 
 var data = {{ data | safe }};
 
@@ -1592,6 +1615,10 @@ function initMap() {
       
 
 </script>
+<!-- <script src="{% static 'build/runtime.js' %}"></script> -->
+<!-- <script src="{% static 'build/index.js' %}"></script> -->
+<!-- <link rel="stylesheet" href="{% static 'build/index.css' %}"></link> -->
+
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&map_ids={{google_map_id}}&callback=initMap"
     type="text/javascript">
 </script>
