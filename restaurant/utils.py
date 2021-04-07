@@ -1,6 +1,9 @@
 from django.conf import settings
+from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.db.models import F
+
+
 from .models import (
     InspectionRecords,
     Restaurant,
@@ -642,3 +645,49 @@ def remove_reports_comment(comment_id):
     except Comment.DoesNotExist:
         logger.warning("Comment ID could not be found: {}".format(comment_id))
         return False
+
+def send_moderate_notification_email(request, user, restaurant, subject, event):
+    """
+    Send a notification email to user's email address
+
+    :param request: HTTP request
+    :param model user: user object
+    :param model restaurant: restaurant object
+    :param str subject: review/comment issue to notify user
+    :param str event: report/hide/delete event
+    :return: list of recipients, which contains target user only
+    """
+    host_name = request.get_host()
+    # TODO: currently using public facing page as redirect page
+    base_url = host_name + "/user/facing_page/" + str(user.id)
+    if str(host_name).startswith("127.0.0.1"):
+        # For local tests
+        base_url = "http://" + base_url
+    else:
+        base_url = "https://" + base_url
+
+    email_subject = "Your " + subject + "is "
+    message = (
+        "Hi "
+        + user.username
+        + ", \n\n"
+        + "Your "
+        + subject
+        + " on Dineline's restaurant, "
+        + restaurant.restaurant_name
+        + ",  is "
+    )
+
+    operations = {
+        "report": "reported by other user!",
+        "hide": "hidden by admin!",
+        "delete": "deleted by admin!",
+    }
+    operation = operations[event]
+    email_subject += operation
+    message += operation
+
+    message += " \n\nPlease checkout link below for more details:\n\n" + base_url
+    email = EmailMessage(email_subject, message, to=[user.email])
+    logger.info("Send email to: %s", user.email)
+    return email.send()
