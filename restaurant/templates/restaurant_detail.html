@@ -702,7 +702,7 @@
             font-size: 10px;
           }
         </style>
-        <!-- Test Ask the Community Part, Show top 3 questions and the corresponding answers -->
+        <!-- Ask the Community Part, Show top 3 questions and the corresponding answers -->
         <div class="text-block">
           <h3 class="mb-4">Ask the community</h3>
           <div class="ask-community-container">
@@ -714,12 +714,12 @@
                 <hr></hr>
                 <p class="question">{{ q.question }}</p>
                 {% if q.answers|length < q.total_answers_count %}
-                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View more answers</a>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/question/{{ q.id }}/1">View more answers</a>
                 {% elif q.answers|length == 0 %}
                   <p>No answers yet. You can be the first!</p>
-                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">Answer</a>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/question/{{ q.id }}/1">Answer</a>
                 {% else %}
-                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View question details</a>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/question/{{ q.id }}/1">View question details</a>
                 {% endif %}
               </div>
             {% for a in q.answers %}
@@ -735,7 +735,12 @@
             </div>
           {% endfor %}
           </div>
-          <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all {{ total_question_count }} questions or Ask a question</a>
+          {% if total_question_count == 0 %}
+            <p>DineLine users haven't asked any questions yet about <strong>{{ yelp_info.info.name }}</strong>.</p>
+            <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/1">Ask a question</a>
+          {% else %}
+            <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/1">See all {{ total_question_count }} questions or Ask a question</a>
+          {% endif %}
         </div>
         <!-- End Test Ask the Community Part -->
         <div class="text-block">
@@ -859,9 +864,73 @@
               </ul>
             </div>
           </div>
-     </div>
+        </div>
       </div>
     </div>
+    <!-- Recommedn restaurant  -->
+    <!-- insert row here -->
+    <div class="row">
+        {% if recommended_restaurants  %}
+        <h3 class="mb-4">Similar restaurants</h3>
+        <div class="container-fluid">
+           <!-- Slider main container-->
+           <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+              <!-- Additional required wrapper-->
+              <div class="swiper-wrapper pb-5">
+                  {% for restaurant in recommended_restaurants %}
+                  {% if not restaurant.yelp_info.fake_info %}
+                  <div class="swiper-slide h-auto px-2">
+                      <!-- venue item-->
+                      <div class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
+                          <div class="card h-100 border-0 shadow">
+
+                              <div class="card-img-top overflow-hidden dark-overlay bg-cover" style="background-image: url({{ restaurant.yelp_info.image_url }}); min-height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' restaurant.id %}"></a>
+                                  <div class="card-img-overlay-bottom z-index-20">
+                                      <h4 class="text-white text-shadow">{{ restaurant.yelp_info.name }}</h4>
+                                      <p class="mb-2 text-xs">
+                                          {% for i in "x"|ljust:restaurant.yelp_info.rating %}
+                                              <i class="fa fa-star text-warning"></i>
+                                          {% endfor %}
+                                          {% with restaurant.yelp_info.rating|add:-5|abs as aa %}
+                                          {% if aa == 0 %}
+                                          {% else %}
+                                          {% for i in "x"|ljust:aa %}
+                                          <i class="fa fa-star text-gray-300"></i>
+                                          {% endfor %}
+                                          {% endif %}
+                                          {% endwith %}
+                                      </p>
+                                  </div>
+                              </div>
+                              <div class="card-body">
+                                  <p class="text-sm text-muted text-uppercase mb-1">
+                                      <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                      {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
+                                          <i class="fas fa-check-circle" style="color:#596ff8"></i>
+                                      {% endif %}
+                                  </p>
+                                  <p class="text-sm mb-0">
+                                      {% for cat in restaurant.yelp_info.categories %}
+                                      <a class="mr-1 disabled text-decoration-none">{{ cat.title}}</a>
+                                      {% endfor %}
+                                  </p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  {% endif %}
+                  {% endfor %}
+              </div>
+              <!-- If we need pagination-->
+              <div class="swiper-pagination"></div>
+          </div>
+        </div>
+        {% endif %}
+    </div> <!-- row ends-->
+
+
+
+
   </div>
 </section>
 

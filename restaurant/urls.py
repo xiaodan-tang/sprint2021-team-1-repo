@@ -88,12 +88,12 @@ urlpatterns = [
     ),
     # Ask the community
     path(
-        "profile/<restaurant_id>/ask_community/",
+        "profile/<restaurant_id>/ask_community/<page>",
         views.get_ask_community_page,
         name="ask_community",
     ),
     path(
-        "profile/<restaurant_id>/ask_community/<question_id>",
+        "profile/<restaurant_id>/question/<question_id>/<page>",
         views.answer_community_question,
         name="answer_community",
     ),
