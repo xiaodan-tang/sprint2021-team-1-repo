@@ -467,11 +467,9 @@
           const content = document.querySelector('textarea[name="content"]');
           content.value = this.getAttribute('review-text');
           content.dispatchEvent(new Event('change'));
-<<<<<<< HEAD
-          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/user_comment/${this.getAttribute('review-id')}/put`);
-=======
+
           document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/put/user`);
->>>>>>> b4b670afc36f1350662f61a8594795c932af3501
+
         });
       } else {
         anchor.addEventListener('click', () => this.deleteForm.submit());
