@@ -7,6 +7,9 @@ from unittest import mock
 
 from restaurant.models import Categories, Restaurant
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d968d188dd383993262a964fa7c5bce16ec6e498
 
 from .models import (
     Review,
@@ -17,9 +20,13 @@ from .models import (
     UserActivityLog,
 )
 
+<<<<<<< HEAD
 =======
 from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
 >>>>>>> 2958b331e739c5241a199da3109ae2cd659c9e0a
+=======
+
+>>>>>>> d968d188dd383993262a964fa7c5bce16ec6e498
 from restaurant.tests import create_restaurant
 
 from .forms import (
