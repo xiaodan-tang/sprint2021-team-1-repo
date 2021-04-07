@@ -136,9 +136,11 @@ def get_restaurant_profile(request, restaurant_id):
             # TODO: check if liked status is needed (remove if not)
             review = Review.objects.get(id=internal_reviews[idx]["id"])
             liked = review.likes.filter(id=request.user.id).exists()
+            likes_num = review.total_likes()
 
             internal_reviews[idx]["comments"] = comments
             internal_reviews[idx]["liked"] = liked
+            internal_reviews[idx]["likes_num"] = likes_num
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )

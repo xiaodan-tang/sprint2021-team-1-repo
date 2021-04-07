@@ -622,7 +622,6 @@ class EditReviewTests(BaseTest):
         queryset.get.return_value = mock.Mock(spec=Review)
         response = self.c.get(
             "/restaurant/profile/restaurant_id/review/comment_id/put/user"
-
         )
         self.assertEqual(response.status_code, 302)
 
