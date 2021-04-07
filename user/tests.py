@@ -6,7 +6,15 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from restaurant.models import Categories, Restaurant
 
-from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
+from .models import (
+    Review,
+    Comment,
+    Preferences,
+    RestaurantQuestion,
+    RestaurantAnswer,
+    UserActivityLog,
+)
+
 
 from restaurant.tests import create_restaurant
 
@@ -816,3 +824,76 @@ class TestRestaurantAnswerForm(BaseTest):
         form_data = {}
         answer_form = RestaurantAnswerForm(self.dummy_user, self.question, form_data)
         self.assertFalse(answer_form.is_valid())
+
+
+class TestUserActivityLogModel(BaseTest):
+    def setUp(self):
+        self.restaurant1 = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+        self.restaurant2 = create_restaurant(
+            restaurant_name="Paint N Pour Nyc",
+            business_address="2080 FREDERICK DOUGLASS BLVD",
+            yelp_detail=None,
+            postcode="10026",
+            business_id="5qWjq_Qv6O6-iGdbBZb0tg",
+        )
+        super(TestUserActivityLogModel, self).setUp()
+
+    def test_user_activity_str_function(self):
+        user_activity = UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant1,
+        )
+        self.assertEqual(
+            str(user_activity),
+            "myuser viewed JUST SALAD 1 times, last visited at "
+            + str(user_activity.last_visit),
+        )
+
+    def test_user_activity_field_update(self):
+        user_activity_1 = UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant1,
+            visits=1,
+        )
+        user_activity_2 = UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant2,
+            visits=1,
+        )
+
+        # Assume user viewed restaurant1 again, increment field visits by 1
+        # Save object will auto update the last_visit timestamp
+        first_visit_time = user_activity_1.last_visit
+        user_activity_1.visits = 2
+        user_activity_1.save()
+        self.assertNotEqual(user_activity_1.last_visit, first_visit_time)
+
+        # Test filter by user and ordering by -last_visit
+        activity_log = UserActivityLog.objects.filter(user=self.dummy_user)
+        self.assertEqual(activity_log.count(), 2)
+        self.assertEqual(activity_log[0], user_activity_1)
+        self.assertEqual(activity_log[1], user_activity_2)
+
+        # Test filter by restaurant
+        activity_log = UserActivityLog.objects.filter(restaurant=self.restaurant1)
+        self.assertEqual(activity_log.count(), 1)
+        self.assertEqual(activity_log[0].user, self.dummy_user)
+        activity_log = UserActivityLog.objects.filter(restaurant=self.restaurant2)
+        self.assertEqual(activity_log.count(), 1)
+        self.assertEqual(activity_log[0].user, self.dummy_user)
+
+    def test_user_activity_related_name(self):
+        activity_log = UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant1,
+        )
+        user_activity_log = self.dummy_user.activity_log.first()
+        rest_activity_log = self.restaurant1.activity_log.first()
+        self.assertEqual(user_activity_log, activity_log)
+        self.assertEqual(rest_activity_log, activity_log)

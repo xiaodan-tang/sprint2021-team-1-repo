@@ -230,3 +230,25 @@ class RestaurantAnswer(models.Model):
         question_user = self.question.user.username
         restaurant = self.question.restaurant.restaurant_name
         return f"{answer_user} answered {question_user}'s question for {restaurant}"
+
+
+class UserActivityLog(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="activity_log"
+    )
+    restaurant = models.ForeignKey(
+        Restaurant, on_delete=models.CASCADE, related_name="activity_log"
+    )
+    visits = models.PositiveIntegerField(default=1)
+    last_visit = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_visit"]
+
+    def __str__(self):
+        user = self.user.username
+        restaurant = self.restaurant.restaurant_name
+        return (
+            f"{user} viewed {restaurant} {self.visits} times, "
+            + f"last visited at {self.last_visit}"
+        )
