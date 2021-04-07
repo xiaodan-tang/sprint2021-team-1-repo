@@ -615,6 +615,7 @@ class CommentTest(TestCase):
         response = self.c.get(delete_url)
         self.assertEqual(response.status_code, 302)
 
+
 class ShowReportTests(TestCase):
     def setUp(self):
         self.c = Client()
