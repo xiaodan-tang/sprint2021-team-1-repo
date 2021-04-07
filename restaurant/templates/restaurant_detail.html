@@ -1272,13 +1272,18 @@ class RatingReview extends HTMLElement {
         },
         body: `review_id=${Number(reviewId)}`
       })
+      .then(r => { 
+        if (!r.ok) return; 
+        return r.json();
+      })
       .then(r => {
-        if (!r.ok) return;
+        const { liked, likes_num } = r;
         if (!liked) {
           likeButton.classList.replace('text-muted', 'text-primary');
         } else {
           likeButton.classList.replace('text-primary', 'text-muted');
         }
+        likeNumber.innerText = likes_num;
       })
     });
     wrapper.appendChild(likeButton);
