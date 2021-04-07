@@ -266,21 +266,38 @@ $(document).ready(function(){
                                     zoom: 12,
                                 });
                                 
-                                function addMarker(coords, restaurantName) {
+                                function addMarker(coords, restaurantName, restaurantId) {
                                     var marker = new google.maps.Marker({
                                         position: coords,
                                         map,
                                         title: restaurantName
                                     });
-                                
+                                    
+                                    // Used to add infowindow and redirect when clicked
+                                    const url = "../restaurant/profile/" + restaurantId
+                          
+                                    const contentString = '<div><strong>' + restaurantName + '<p><a href=' + url + ">" +"Visit</a> "
+                    
+                                    var infoWindow = new google.maps.InfoWindow({
+                                        content: contentString
+                                    })
+
+                                    marker.addListener('mouseover', function() {
+                                        infoWindow.open(map, this);
+                                    })
+                                    
+                                    marker.addListener('click', function() {
+                                        window.location.href = url
+                                    })
                                 }
 
                                 for(var i = 0; i < resData.length; ++i) {
                                     var lat_restaurant = Number(resData[i].yelp_info.latitude);
                                     var long_restaurant = Number(resData[i].yelp_info.longitude);
                                     var restaurant_name = resData[i].yelp_info.name;
-                                            
-                                    addMarker({lat: lat_restaurant, lng: long_restaurant}, restaurant_name);
+                                    var restaurant_id = resData[i].id
+
+                                    addMarker({lat: lat_restaurant, lng: long_restaurant}, restaurant_name, restaurant_id);
                                 }                           
                             }
 

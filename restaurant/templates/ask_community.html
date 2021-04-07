@@ -112,7 +112,7 @@
         }
     }
 </style>
-<!-- This is a test page for ask community -->
+<!-- for ask community -->
 <div class="main-container">
     <a href="/restaurant/profile/{{ restaurant.id }}">Back to Restaurant</a>
     <hr></hr>
@@ -123,13 +123,14 @@
             <p class="timestamp" style="float: left;">{{ q.time }}</p>
             <hr></hr>
             <p class="question">{{ q.question }}</p>
-        <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">View question details</a>
         <br></br>
         {% if q.answers|length < q.total_answers_count %}
-            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">View more answers</a>
+            <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ q.id }}/1">View more answers</a>
         {% elif q.answers|length == 0 %}
             <p>No answers yet. You can be the first!</p>
-            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">Answer</a>
+            <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ q.id }}/1">Answer</a>
+        {% else %}
+            <a href="/restaurant/profile/{{ restaurant.id }}/question/{{ q.id }}/1">View question details</a>
         {% endif %}
     </div>
         <center>
@@ -143,12 +144,32 @@
             {% endfor %}
         </center>
     {% endfor %}
+    {% if total_questions_count == 0 %}
+        <p class="text-center">DineLine users haven't asked any questions yet about <strong>{{ restaurant.restaurant_name }}</strong>.</p>
+    {% endif %}
+    <div class="pagination d-flex justify-content-center">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/1">&laquo; first</a>
+                <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ page_obj.next_page_number }}">next</a>
+                <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
     </div>
     <div class="post-question">
         <form method="POST">
             {% csrf_token %}
                 <div>
-                    <input class="input-question" type="text" name="question" placeholder="Your question" id="question"></div>
+                    <input class="input-question" type="text" name="question" placeholder="Your question" id="question">
                     <input id="submit-button" type="submit" value="Post Question">
                 </div>
         </form>

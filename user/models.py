@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 from restaurant.models import Restaurant, Categories
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import datetime
@@ -135,8 +137,14 @@ class Review(models.Model):
     image2 = models.ImageField(null=True, blank=True, upload_to="review_images/")
     image3 = models.ImageField(null=True, blank=True, upload_to="review_images/")
 
+    # Like
+    likes = models.ManyToManyField(DineSafelyUser, blank=True)
+
     def __str__(self):
         return f"{self.user.username} review on {self.restaurant.restaurant_name}"
+
+    def total_likes(self):
+        return self.likes.count()
 
 
 class Comment(models.Model):
@@ -230,3 +238,25 @@ class RestaurantAnswer(models.Model):
         question_user = self.question.user.username
         restaurant = self.question.restaurant.restaurant_name
         return f"{answer_user} answered {question_user}'s question for {restaurant}"
+
+
+class UserActivityLog(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="activity_log"
+    )
+    restaurant = models.ForeignKey(
+        Restaurant, on_delete=models.CASCADE, related_name="activity_log"
+    )
+    visits = models.PositiveIntegerField(default=1)
+    last_visit = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_visit"]
+
+    def __str__(self):
+        user = self.user.username
+        restaurant = self.restaurant.restaurant_name
+        return (
+            f"{user} viewed {restaurant} {self.visits} times, "
+            + f"last visited at {self.last_visit}"
+        )

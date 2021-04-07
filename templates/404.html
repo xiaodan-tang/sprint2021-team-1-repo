@@ -1,0 +1,23 @@
+{% extends 'base.html' %} {% load static %} 
+{% block title %} 404 Error {% endblock %} 
+{% block content %}
+<section class="pt-4 pb-6">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="content">
+
+                    <div class="container contact p-4">
+                        <div class="text-center p-2">
+                            <h1 class="font-weight-bold text-uppercase">We were unable to find the page you requested</h1>
+                            <div class="mt-5">
+                                <a class="btn btn-primary" href="{% url 'index' %}">Return to Homepage</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
