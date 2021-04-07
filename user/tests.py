@@ -609,19 +609,20 @@ class CommentTest(TestCase):
 
 
 @mock.patch("user.models.Review.objects")
-class EditCommentTests(BaseTest):
-    def test_edit_comment(self, queryset):
+class EditReviewTests(BaseTest):
+    def test_edit_review(self, queryset):
         queryset.delete.return_value = None
         queryset.filter.return_value = queryset
         response = self.c.get(
-            "/restaurant/profile/restaurant_id/user_comment/comment_id/delete"
+            "/restaurant/profile/restaurant_id/review/comment_id/delete/user"
         )
         self.assertEqual(response.status_code, 302)
 
-    def test_delete_comment(self, queryset):
+    def test_delete_review(self, queryset):
         queryset.get.return_value = mock.Mock(spec=Review)
         response = self.c.get(
-            "/restaurant/profile/restaurant_id/user_comment/comment_id/put"
+            "/restaurant/profile/restaurant_id/review/comment_id/put/user"
+
         )
         self.assertEqual(response.status_code, 302)
 
