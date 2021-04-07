@@ -529,6 +529,7 @@ def hide_review(request, review_id):
                 request,
                 "Reported review is hidden and all the related report tickets are closed!",
             )
+
             send_moderate_notification_email(
                 request, target_user, restaurant, "review", "hide"
             )

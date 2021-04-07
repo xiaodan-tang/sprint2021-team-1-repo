@@ -4,7 +4,9 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
 
+
 from restaurant.models import Categories, Restaurant
+<<<<<<< HEAD
 
 from .models import (
     Review,
@@ -15,6 +17,9 @@ from .models import (
     UserActivityLog,
 )
 
+=======
+from .models import Review, Comment, Preferences, RestaurantQuestion, RestaurantAnswer
+>>>>>>> 2958b331e739c5241a199da3109ae2cd659c9e0a
 from restaurant.tests import create_restaurant
 
 from .forms import (
@@ -614,7 +619,6 @@ class CommentTest(TestCase):
         )
         response = self.c.get(delete_url)
         self.assertEqual(response.status_code, 302)
-
 
 @mock.patch("user.models.Review.objects")
 classmmentTests(BaseTest):
