@@ -231,6 +231,95 @@
         </section>
     </div >
 </section>
+<style>
+    /* Recent Activity Feed Class Styles*/
+    .recent-activity-content {
+        color: rgb(43, 43, 43);
+        font-size: 12.5px;
+        opacity: 1.0;
+        font-weight: bold;
+    }
+    .review-metadata-box {
+        line-height: 95%;
+    }
+    .review-metadata-box:after{
+        content: "";
+        display: table;
+        clear: both;
+    }
+    .user-name {
+        font-weight: bold;
+        color: rgb(68, 68, 255);
+        font-size: 15px;
+        vertical-align: baseline;
+        padding-right: 5px;
+        opacity: 1.0;
+    }
+    .timestamp {
+        font-size: 12px;
+        color: rgb(43, 43, 43);
+        opacity: 1.0;
+        font-weight: bold;
+    }
+    .opaque-container {
+        background-color: rgb(214, 214, 214);
+        opacity: 0.8;
+        padding: 10px;
+        border-radius: 5px;
+    }
+</style>
+<section class="pt-4 pb-6">
+    <div class="container">
+        <div class="text-center pb-lg-4">
+            <h2 class="mb-5">Recent Activity</h2>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <!-- Slider main container-->
+        <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+            <!-- Additional required wrapper-->
+            <div class="swiper-wrapper pb-5">
+                {% for recent in restaurant_review_list %}
+                <div class="swiper-slide h-auto px-2">
+                    <!-- venue item-->
+                    <div class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
+                        <div class="card h-100 border-0 shadow">
+
+                            <div class="card-img overflow-hidden dark-overlay bg-cover" style="background-image: url({{ recent.restaurant.yelp_detail.img_url }}); height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' recent.restaurant.id %}"></a>
+                                <div class="card-img-overlay-bottom z-index-20">
+                                    <h4 class="text-white text-shadow">{{ recent.restaurant.restaurant_name }}</h4>
+                                    <p class="mb-2 text-xs">
+                                        {% for i in "x"|ljust:recent.rating %}
+                                            <i class="fa fa-star text-warning"></i>
+                                        {% endfor %}
+                                        {% with recent.rating|add:-5|abs as aa %}
+                                        {% if aa == 0 %}
+                                        {% else %}
+                                        {% for i in "x"|ljust:aa %}
+                                        <i class="fa fa-star text-gray-300"></i>
+                                        {% endfor %}
+                                        {% endif %}
+                                        {% endwith %}
+                                    </p>
+                                    <div class="opaque-container">
+                                        <div class="review-metadata-box">
+                                            <p class="user-name" style="float: left;">{{ recent.user }}</p>
+                                            <p class="timestamp" style="float: left;">{{ recent.time }}</p>                      
+                                        </div>
+                                        <p class="recent-activity-content">{{ recent.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- If we need pagination-->
+            <div class="swiper-pagination"></div>
+        </div>
+</div>
+</section>
 <section class="pt-4 pb-6">
     <section class="container">
         <div class="pb-lg-4">
