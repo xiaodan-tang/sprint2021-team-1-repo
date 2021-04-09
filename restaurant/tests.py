@@ -1397,20 +1397,85 @@ class RestaurantRecommendationsTest(TestCase):
         self.assertEqual(response2.status_code, 200)
 
 
+class ReviewTests(BaseTest):
+    def setUp(self):
+        self.c = Client()
+        # Initialize 2 test users
+        self.user1 = get_user_model().objects.create(
+            username="user1",
+            email="test1@gmail.com",
+        )
+        self.user1.set_password("test1234Report")
+        self.user1.save()
+
+        self.user2 = get_user_model().objects.create(
+            username="user2",
+            email="test2@gmail.com",
+        )
+        self.user2.set_password("test4321Report")
+        self.user2.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+    def test_like_review(self):
+        self.c.login(username="user2", password="test4321Report")
+        url = "/restaurant/like/review/"
+        form = {"review_id": self.temp_review.id}
+
+        # First post, like the review
+        response1 = self.c.post(url, form)
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response1.json()["liked"], True)
+        self.assertEqual(response1.json()["likes_num"], 1)
+        self.assertEqual(self.temp_review.total_likes(), 1)
+
+        # Second post, undo the like
+        response2 = self.c.post(url, form)
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response2.json()["liked"], False)
+        self.assertEqual(response2.json()["likes_num"], 0)
+        self.assertEqual(self.temp_review.total_likes(), 0)
+
+        # Third post with invalid form
+        # invalid_form = {"review_id": 1000}
+        # response3 = self.c.post(url, invalid_form)
+        # self.assertEqual(response3.status_code, 404)
+
+        self.c.logout()
+
+
 @mock.patch("user.models.Review.objects")
-class EditCommentTests(BaseTest):
-    def test_edit_comment(self, queryset):
+class EditReviewTests(BaseTest):
+    def test_edit_review(self, queryset):
         queryset.delete.return_value = None
         queryset.filter.return_value = queryset
         response = self.c.get(
-            "/restaurant/profile/restaurant_id/comment/comment_id/delete"
+            "/restaurant/profile/restaurant_id/review/comment_id/delete/restaurant"
         )
         self.assertEqual(response.status_code, 302)
 
-    def test_delete_comment(self, queryset):
+    def test_delete_review(self, queryset):
         queryset.get.return_value = mock.Mock(spec=Review)
         response = self.c.get(
-            "/restaurant/profile/restaurant_id/comment/comment_id/put"
+            "/restaurant/profile/restaurant_id/review/comment_id/put/restaurant"
         )
         self.assertEqual(response.status_code, 302)
 
