@@ -1,0 +1,236 @@
+{% extends 'base.html' %} {% load static %} {% block content %}{% load mathfilters %}
+
+<div class="main-container">
+    <section class="py-6 bg-gray-100">
+        <div class="container">
+            <div class="text-center pb-lg-4">
+                <h2 class="mb-5">View History</h2>
+            </div>
+        </div>
+        <div class="container">
+            <!-- card deck -->
+            <div class="card-deck" style="display:grid;   grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); grid-gap:10px;">
+            
+                        {% for restaurant in restaurants %}
+                        {% if not restaurant.yelp_info.fake_info %}
+                        
+                            <!-- venue item-->
+                            <div class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
+                                <div class="card h-100 border-0 shadow">
+
+                                    <div class="card-img-top overflow-hidden dark-overlay bg-cover" style="background-image: url({{ restaurant.yelp_info.image_url }}); min-height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' restaurant.id %}"></a>
+                                        <div class="card-img-overlay-bottom z-index-20">
+                                            <h4 class="text-white text-shadow">{{ restaurant.yelp_info.name }}</h4>
+                                            <p class="mb-2 text-xs">
+                                                {% for i in "x"|ljust:restaurant.yelp_info.rating %}
+                                                    <i class="fa fa-star text-warning"></i>
+                                                {% endfor %}
+                                                {% with restaurant.yelp_info.rating|add:-5|abs as aa %}
+                                                {% if aa == 0 %}
+                                                {% else %}
+                                                {% for i in "x"|ljust:aa %}
+                                                <i class="fa fa-star text-gray-300"></i>
+                                                {% endfor %}
+                                                {% endif %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-sm text-muted text-uppercase mb-1">
+                                            <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                            {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
+                                                <i class="fas fa-check-circle" style="color:#596ff8"></i>
+                                            {% endif %}
+                                        </p>
+                                        <p class="text-sm mb-0">
+                                            {% for cat in restaurant.yelp_info.categories %}
+                                            <a class="mr-1 disabled text-decoration-none">{{ cat.title}}</a>
+                                            {% endfor %}
+                                        </p>
+                                    </div>
+                                    <div class="card-footer text-center">
+                                        <button type="button" class="btn btn-danger">Delete</button>
+                                            <!--small class="text-muted">Last updated 3 mins ago</small-->
+                                    </div>
+
+                                </div>
+                            </div>
+                        
+                        {% endif %}
+                        {% endfor %}
+
+            </div>  
+            <div>
+                <div class="text-center">
+                        <p class="mb-2">
+                            <button class="btn  btn-outline-danger h-100" id="clearAll" type="submit" style="float:right">Clear all</button>
+                        </p>
+                </div>  
+            </div>  
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+<!--style>
+    .main-container {
+        padding: 10px;
+        margin: 10px;
+    }
+    .main-container:after{
+        content: "";
+        display: table;
+        clear: both;
+    }
+    .ask-container {
+        height: 500px;
+        float: left;
+        width: 50%;
+        overflow: scroll;
+    }
+    .ask-container::-webkit-scrollbar {
+        display: none;
+    }
+    .text-block-question {
+        font-size: 14px;
+        padding-top: 10px;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        margin: 20px;
+        line-height: 80%;
+    }
+
+    .text-block-answer {
+        font-size: 12px;
+        text-align: left;
+        margin: 20px;
+        padding-top: 10px;
+        padding: 20px;
+        width: 70%;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        line-height: 80%;
+    }
+    .post-question {
+        width: 50%;
+        float: left;
+        height: 500px;
+    }
+
+    .input-question {
+        width: 100%;
+        padding: 5px;
+        margin: 5px;
+    }
+
+    #submit-button {
+        width: 50%;
+        padding: 5px;
+        margin: 5px;
+        background-color: white;
+        border: 1px solid gray;
+        border-radius: 5px;
+    }
+
+    .user-name {
+        font-weight: bold;
+        color: rgb(68, 68, 255);
+        font-size: 14px;
+        vertical-align: baseline;
+        padding-right: 5px;
+    }
+
+    .question {
+        color: rgb(34, 34, 34);
+        font-size: 16px;
+        vertical-align: baseline;
+    }
+
+    .answer {
+        color: rgb(34, 34, 34);
+        font-size: 14px;
+        vertical-align: baseline;
+    }
+
+    .timestamp {
+        color: rgb(99, 99, 99);
+        font-size: 10px;
+    }
+
+    @media screen and (max-width: 750px) {
+        .ask-container {
+            width: 100%;
+        }
+        .post-question {
+            width: 100%;
+            height: 200px;
+        }
+        #submit-button {
+            width: 100%;
+        }
+    }
+
+    @media screen and (max-width: 500px) {
+        .ask-container {
+            width: 100%;
+        }
+        .post-question {
+            width: 90%;
+            height: 100px;
+            padding: 5px;
+        }
+        #submit-button {
+            width: 100%;
+        }
+    }
+</style-->
+<!-- This is a test page for ask community -->
+<!--div class="main-container">
+    <a href="/restaurant/profile/{{ restaurant.id }}">Back to Restaurant</a>
+    <hr></hr>
+    <div class="ask-container">
+    {% for q in question_list %}
+    <div class="text-block-question">
+            <p class="user-name" style="float: left;">{{ q.user__username }}</p>
+            <p class="timestamp" style="float: left;">{{ q.time }}</p>
+            <hr></hr>
+            <p class="question">{{ q.question }}</p>
+        <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">View question details</a>
+        <br></br>
+        {% if q.answers|length < q.total_answers_count %}
+            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">View more answers</a>
+        {% elif q.answers|length == 0 %}
+            <p>No answers yet. You can be the first!</p>
+            <a href="/restaurant/profile/{{ restaurant.id }}/ask_community/{{ q.id }}">Answer</a>
+        {% endif %}
+    </div>
+        <center>
+            {% for a in q.answers %}
+                <div class="text-block-answer">
+                    <p class="user-name" style="float: left;">{{ a.user__username }}</p>
+                    <p class="timestamp" style="float: left;">{{ a.time }}</p>
+                    <hr></hr>
+                    <p class="answer">{{ a.text }}</p>
+                </div>
+            {% endfor %}
+        </center>
+    {% endfor %}
+    </div>
+    <div class="post-question">
+        <form method="POST">
+            {% csrf_token %}
+                <div>
+                    <input class="input-question" type="text" name="question" placeholder="Your question" id="question"></div>
+                    <input id="submit-button" type="submit" value="Post Question">
+                </div>
+        </form>
+    </div>  
+</div-->

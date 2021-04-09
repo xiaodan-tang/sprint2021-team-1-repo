@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
+from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
 
 from .models import (
     User_Profile,
@@ -288,6 +289,23 @@ def profile(request):
             "user_pref": user_pref,
         },
     )
+
+#view the viewing history
+def view_history(request):
+    dummy_restaurants = get_filtered_restaurants(
+            limit=11,
+           # category='chinese',
+          #  rating=ratings,
+           # compliant=compliance,
+          #  price=prices,
+           # neighborhood=neighborhoods,
+        )
+    dummy_restaurants = restaurants_to_dict(dummy_restaurants)
+
+    print( "length:", len(dummy_restaurants))
+    my_dict = {'restaurants' : dummy_restaurants}
+    return render(request, 'view_history.html', context= my_dict)
+
 
 
 def reset_password_link(request, base64_id, token):
