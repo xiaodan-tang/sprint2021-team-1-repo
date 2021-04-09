@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 
 error_exit()
 {
-    echo "${RED}ERROR: $1 ${NC}"
+    echo -e "${RED}ERROR: $1 ${NC}"
     exit 1
 }
 
