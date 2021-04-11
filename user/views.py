@@ -12,6 +12,7 @@ from .models import (
     Report_Ticket_Comment,
     Report_Ticket_Review,
     Preferences,
+    UserActivityLog,
 )
 
 from restaurant.models import Categories
@@ -298,18 +299,15 @@ def profile(request):
 
 #view the viewing history
 def view_history(request):
-    dummy_restaurants = get_filtered_restaurants(
-            limit=11,
-           # category='chinese',
-          #  rating=ratings,
-           # compliant=compliance,
-          #  price=prices,
-           # neighborhood=neighborhoods,
-        )
-    dummy_restaurants = restaurants_to_dict(dummy_restaurants)
-
-    print( "length:", len(dummy_restaurants))
-    my_dict = {'restaurants' : dummy_restaurants}
+    viewed_restaurants = []
+    if request.user.is_authenticated:
+        user_activity = UserActivityLog.objects.filter(user=request.user)
+        # get viewed restaurants
+        for idx in range(user_activity.count()):
+            viewed_restaurants.append(user_activity[idx].restaurant)
+        viewed_restaurants = restaurants_to_dict(viewed_restaurants)
+    # add restaurants to context
+    my_dict = {'restaurants' : viewed_restaurants}
     return render(request, 'view_history.html', context= my_dict)
 
 
