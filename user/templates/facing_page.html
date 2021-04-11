@@ -104,7 +104,8 @@
                   </ul>
                   {% endfor %}  
   				</div>
-  			</div>
+        </div>
+
             <div class="tab-pane text-center gallery" id="works">
                 <div class="row">
                     <span id="internal_review"></span>
@@ -180,8 +181,52 @@
                           this.comments.setAttribute('style', 'display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;');
                           this.comments.className = 'text-muted text-sm';
                           this.comments.innerText = this.getAttribute('review-text');
+
+                          // 3 images
+                          this.image1 = document.createElement('img');
+                          this.image1.className= 'review-image';
+                          this.image1.src = this.getAttribute('image1');
+                          this.image1.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+                          this.image2 = document.createElement('img');
+                          this.image2.className= 'review-image';
+                          this.image2.src = this.getAttribute('image2');
+                          this.image2.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+                          this.image3 = document.createElement('img');
+                          this.image3.className= 'review-image';
+                          this.image3.src = this.getAttribute('image3');
+                          this.image3.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
+
+                          this.image1.addEventListener('click', () => {
+                            var zoomModal = document.getElementById("myModal");
+                            zoomModal.style.display = "block";
+                            var modalImg = document.getElementById("img01");
+                            modalImg.src = this.image1.src;
+                            
+                          });
+
+                          this.image2.addEventListener('click', () => {
+                            var zoomModal = document.getElementById("myModal");
+                            zoomModal.style.display = "block";
+                            var modalImg = document.getElementById("img01");
+                            modalImg.src = this.image2.src;
+                            
+                          });
+
+                          this.image3.addEventListener('click', () => {
+                            var zoomModal = document.getElementById("myModal");
+                            zoomModal.style.display = "block";
+                            var modalImg = document.getElementById("img01");
+                            modalImg.src = this.image3.src;
+                            
+                          });
                           
                           ratingBody.appendChild(this.comments);
+                          ratingBody.appendChild(this.image1);
+                          ratingBody.appendChild(this.image2);
+                          ratingBody.appendChild(this.image3);
+
                       
                           this.rootDiv.appendChild(userProfile);
                           this.rootDiv.appendChild(ratingBody);
@@ -194,7 +239,7 @@
                         }
                       
                         static get observedAttributes() {
-                          return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable'];
+                          return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable', 'image1', 'image2', 'image3'];
                         }
                       
                         attributeChangedCallback(name, oldValue, newValue) {
@@ -221,6 +266,21 @@
                             this.comments.innerText = newValue || '';
                           } else if (name === 'editable') {
                             this.attachOptionButton();
+                          } else if (name === 'image1' && !newValue.endsWith('/media/')) {
+                            this.image1.src = newValue;
+                            this.image1.style.display = "inline-block";
+                            var modalImg = document.getElementById("img01");
+                            modalImg.src = this.image1.src;
+                          } else if (name === 'image2' && !newValue.endsWith('/media/')) {
+                            this.image2.src = newValue;
+                            this.image2.style.display = "inline-block";
+                            var modalImg = document.getElementById("img01");
+                            modalImg.src = this.image2.src;
+                          } else if (name === 'image3' && !newValue.endsWith('/media/')) {
+                            this.image3.src = newValue;
+                            this.image3.style.display = "inline-block";
+                            var modalImg = document.getElementById("img01");
+                            modalImg.src = this.image3.src;
                           }
                         }
                       
@@ -317,6 +377,10 @@
                             ratingReview.setAttribute('review-id', review.id);
                             const temp = "/restaurant/profile/" + review.restaurant__id;
                             ratingReview.setAttribute('profile-url', temp);
+                            ratingReview.setAttribute('profile-url', temp);
+                            ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
+                            ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
+                            ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
                             reviewWrapper.appendChild(ratingReview);
                           });
                    </script>
@@ -341,8 +405,8 @@
     </div>
   
   </div>
-  </div>
-
+</div>
+</div>
 <script>
   $(document).ready(() => {
     const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png'; 

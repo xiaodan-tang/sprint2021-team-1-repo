@@ -30,9 +30,14 @@ urlpatterns = [
     ),
     # Reviews & Comments
     path(
-        "profile/<restaurant_id>/comment/<comment_id>/<action>",
+        "profile/<restaurant_id>/review/<review_id>/<action>/<source>",
         views.edit_review,
         name="edit_review",
+    ),
+    path(
+        "profile/<restaurant_id>/user_comment/<comment_id>/<action>",
+        views.edit_user_review,
+        name="edit_user_review",
     ),
     path(
         "profile/<restaurant_id>/comment_edit/<review_id>",
@@ -81,14 +86,15 @@ urlpatterns = [
         views.delete_comment_report,
         name="delete_comment_report",
     ),
+    path("like/review/", views.like_review, name="like_review"),
     # Ask the community
     path(
-        "profile/<restaurant_id>/ask_community/",
+        "profile/<restaurant_id>/ask_community/<page>",
         views.get_ask_community_page,
         name="ask_community",
     ),
     path(
-        "profile/<restaurant_id>/ask_community/<question_id>",
+        "profile/<restaurant_id>/question/<question_id>/<page>",
         views.answer_community_question,
         name="answer_community",
     ),

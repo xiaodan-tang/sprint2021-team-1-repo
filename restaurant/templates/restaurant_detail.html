@@ -341,6 +341,90 @@
             </div>
           </div>
         </div>
+        <!--Zoom Picture Style-->
+        <style>
+      
+          /* The Modal (background) */
+          .modal1 {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 9999; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 10px;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+          }
+          
+          /* Modal Content (image) */
+          .modal1-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+          }
+    
+          
+          /* Add Animation */
+          .modal1-content {  
+            -webkit-animation-name: zoom;
+            -webkit-animation-duration: 0.6s;
+            animation-name: zoom;
+            animation-duration: 0.6s;
+          }
+          
+          @-webkit-keyframes zoom {
+            from {-webkit-transform:scale(0)} 
+            to {-webkit-transform:scale(1)}
+          }
+          
+          @keyframes zoom {
+            from {transform:scale(0)} 
+            to {transform:scale(1)}
+          }
+          
+          /* The Close Button */
+          .close1 {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+          }
+          
+          .close1:hover,
+          .close1:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+          }
+          
+          /* 100% Image Width on Smaller Screens */
+          @media only screen and (max-width: 700px){
+            .modal1-content {
+              width: 100%;
+            }
+          }
+          </style>
+        <!-- Zoom Picture -->
+        <div id="myModal" class="modal1">
+          <span class="close1">&times;</span>
+          <img class="modal1-content" id="img01">
+        </div>
+        <script>
+          // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close1")[0];
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() { 
+          var zoomModal = document.getElementById("myModal");
+          zoomModal.style.display = "none";
+        }
+        </script>
           <!-- Delete Favorite Restaurant -->
         <div class="modal fade" id="delete_favorite" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -387,7 +471,7 @@
         </div>
 
 
-        <!-- Modal -->
+        
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -618,7 +702,7 @@
             font-size: 10px;
           }
         </style>
-        <!-- Test Ask the Community Part, Show top 3 questions and the corresponding answers -->
+        <!-- Ask the Community Part, Show top 3 questions and the corresponding answers -->
         <div class="text-block">
           <h3 class="mb-4">Ask the community</h3>
           <div class="ask-community-container">
@@ -630,12 +714,12 @@
                 <hr></hr>
                 <p class="question">{{ q.question }}</p>
                 {% if q.answers|length < q.total_answers_count %}
-                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View more answers</a>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/question/{{ q.id }}/1">View more answers</a>
                 {% elif q.answers|length == 0 %}
                   <p>No answers yet. You can be the first!</p>
-                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">Answer</a>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/question/{{ q.id }}/1">Answer</a>
                 {% else %}
-                  <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/{{ q.id }}">View question details</a>
+                  <a href="/restaurant/profile/{{ restaurant_id }}/question/{{ q.id }}/1">View question details</a>
                 {% endif %}
               </div>
             {% for a in q.answers %}
@@ -651,7 +735,12 @@
             </div>
           {% endfor %}
           </div>
-          <a href="/restaurant/profile/{{ restaurant_id }}/ask_community">See all {{ total_question_count }} questions or Ask a question</a>
+          {% if total_question_count == 0 %}
+            <p>DineLine users haven't asked any questions yet about <strong>{{ yelp_info.info.name }}</strong>.</p>
+            <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/1">Ask a question</a>
+          {% else %}
+            <a href="/restaurant/profile/{{ restaurant_id }}/ask_community/1">See all {{ total_question_count }} questions or Ask a question</a>
+          {% endif %}
         </div>
         <!-- End Test Ask the Community Part -->
         <div class="text-block">
@@ -707,16 +796,21 @@
             </div>
           </div>
           <hr>
-          <h6>
-            <span class="text-primary">YELP</span> REVIEWS
-          </h6>
-          <span id="yelp_review"></span>
-          <hr>
-          <h6>
-            <span class="text-primary">INTERNAL</span> REVIEWS
-          </h6>
-          <span id="internal_review"></span>
-        </div>
+
+
+          <div id="root"></div>
+          <div id="reviews">
+            <h6>
+              <span class="text-primary">YELP</span> REVIEWS
+            </h6>
+            <span id="yelp_review"></span>
+            <hr>
+            <h6>
+              <span class="text-primary">DINELINE</span> REVIEWS
+            </h6>
+            <span id="internal_review"></span>
+          </div>
+        </div> 
       </div>
       <div class="col-lg-4">
         <div class="pl-xl-4">
@@ -844,6 +938,7 @@
 
   </div>
 </section>
+
 <!--Insert values into HTML-->
 <script>
 var inspection_data = {{ lasted_inspection | safe}};
@@ -1011,6 +1106,22 @@ let __data__ = {
     id: null
   }
 };
+// TODO: remove this for demo
+if (restaurantId === '1686') {
+  const S3_CDN = 'https://dineline.s3.amazonaws.com/build';
+  const reviews = document.getElementById('reviews');
+  reviews.style.display = 'none';
+  const runtime = document.createElement('script');
+  runtime.src = `${S3_CDN}/runtime.js`;
+  const script = document.createElement('script');
+  script.src = `${S3_CDN}/index.js`;
+  const style = document.createElement('link');
+  style.setAttribute('rel', 'stylesheet');
+  style.setAttribute('href', `${S3_CDN}/index.css`);
+  document.body.appendChild(style);
+  document.body.appendChild(runtime);
+  document.body.appendChild(script);
+}
 document.forms['report-abuse'].addEventListener('submit', e => {
   e.preventDefault();
   if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
@@ -1108,6 +1219,31 @@ class RatingReview extends HTMLElement {
     this.image3.src = this.getAttribute('image3');
     this.image3.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
 
+    this.image1.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image1.src;
+      
+    });
+
+    this.image2.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image2.src;
+      
+    });
+
+    this.image3.addEventListener('click', () => {
+      var zoomModal = document.getElementById("myModal");
+      zoomModal.style.display = "block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image3.src;
+      
+    });
+
+
     this.serviceHint = document.createElement('em');
     this.serviceHint.setAttribute('style', 'display: none; font-size: 0.6rem; line-height: 0.8rem;');
     this.serviceHint.setAttribute('class', 'text-secondary');
@@ -1122,13 +1258,14 @@ class RatingReview extends HTMLElement {
     this.container.appendChild(userProfile);
     this.container.appendChild(ratingBody);
 
+
     this.rootDiv.appendChild(this.container);
     
     this.shadowRoot.appendChild(this.rootDiv);
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3', 'likes_num'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -1167,13 +1304,62 @@ class RatingReview extends HTMLElement {
     } else if (name === 'image1' && !newValue.endsWith('/media/')) {
       this.image1.src = newValue;
       this.image1.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image1.src;
     } else if (name === 'image2' && !newValue.endsWith('/media/')) {
       this.image2.src = newValue;
       this.image2.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image2.src;
     } else if (name === 'image3' && !newValue.endsWith('/media/')) {
       this.image3.src = newValue;
       this.image3.style.display = "inline-block";
+      var modalImg = document.getElementById("img01");
+      modalImg.src = this.image3.src;
+    } else if (name === 'likes_num') {
+      this.attachHeart();
     }
+  }
+
+  attachHeart () {
+    const reviewId = this.getAttribute('review-id');
+    if (!reviewId || !userId) return;
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('mt-2');
+    const likeButton = document.createElement('i');
+    const likeNumber = document.createElement('span');
+    likeNumber.setAttribute('class', 'ml-3');
+    const liked = this.hasAttribute('liked');
+    likeNumber.innerText = this.getAttribute('likes_num');
+    likeButton.setAttribute('class', `fa fa-heart d-blcok ${liked ? 'text-primary' : 'text-muted'}`);
+    likeButton.setAttribute('style', 'cursor: pointer');
+    likeButton.addEventListener('click', e => {
+      fetch('/restaurant/like/review/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+        },
+        body: `review_id=${Number(reviewId)}`
+      })
+      .then(r => { 
+        if (!r.ok) return; 
+        return r.json();
+      })
+      .then(r => {
+        const { liked, likes_num } = r;
+        if (liked) {
+          likeButton.classList.replace('text-muted', 'text-primary');
+        } else {
+          likeButton.classList.replace('text-primary', 'text-muted');
+        }
+        likeNumber.innerText = likes_num;
+      })
+    });
+    wrapper.appendChild(likeButton);
+    wrapper.appendChild(likeNumber);
+    this.comments.appendChild(wrapper);
   }
 
   attachOptionButton ({ authorId }) {
@@ -1200,7 +1386,7 @@ class RatingReview extends HTMLElement {
       this.dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
 
       this.deleteForm = document.createElement('form');
-      this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/delete`);
+      this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/delete/restaurant`);
 
       this.optionButtonWrapper.appendChild(this.optionButton);
       this.optionButtonWrapper.appendChild(this.dropdownWrapper);
@@ -1232,7 +1418,7 @@ class RatingReview extends HTMLElement {
           const content = document.querySelector('textarea[name="content"]');
           content.value = this.getAttribute('review-text');
           content.dispatchEvent(new Event('change'));
-          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/comment/${this.getAttribute('review-id')}/put`);
+          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/put/restaurant`);
         });
       } else if (index === 1) {
         anchor.addEventListener('click', () => this.deleteForm.submit());
@@ -1381,56 +1567,64 @@ class RatingReview extends HTMLElement {
 };
 customElements.define('rating-review', RatingReview);
 const yelpReviews = {{ yelp_info.reviews | safe }};
-
-yelpReviews['reviews'].forEach(review => {
-  const reviewWrapper = document.getElementById('yelp_review');
-  const ratingReview = document.createElement('rating-review');
-  ratingReview.setAttribute('profile-img', review.user.image_url);
-  ratingReview.setAttribute('profile-img-alt', review.user.name);
-  ratingReview.setAttribute('profile-url', review.user.profile_url);
-  ratingReview.setAttribute('user-name', review.user.name);
-  ratingReview.setAttribute('time-created', review.time_created);
-  ratingReview.setAttribute('user-rating', review.rating);
-  ratingReview.setAttribute('review-text', review.text);
-  reviewWrapper.appendChild(ratingReview);
-});
+if (document.getElementById('yelp_review') != null){
+  yelpReviews['reviews'].forEach(review => {
+    const reviewWrapper = document.getElementById('yelp_review');
+    const ratingReview = document.createElement('rating-review');
+    ratingReview.setAttribute('profile-img', review.user.image_url);
+    ratingReview.setAttribute('profile-img-alt', review.user.name);
+    ratingReview.setAttribute('profile-url', review.user.profile_url);
+    ratingReview.setAttribute('user-name', review.user.name);
+    ratingReview.setAttribute('time-created', review.time_created);
+    ratingReview.setAttribute('user-rating', review.rating);
+    ratingReview.setAttribute('review-text', review.text);
+    reviewWrapper.appendChild(ratingReview);
+  });
+}
 
 const internalReviews = {{ internal_reviews | safe }};
-internalReviews.forEach(review => {
-  if (review.hidden && review.user !== userId) return;
-  const reviewWrapper = document.getElementById('internal_review');
-  const ratingReview = document.createElement('rating-review');
-  ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
-  ratingReview.setAttribute('profile-img-alt', review.user__username);
-  ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
-  ratingReview.setAttribute('user-name', review.user__username);
-  ratingReview.setAttribute('time-created', review.time);
-  ratingReview.setAttribute('user-rating', review.rating);
-  ratingReview.setAttribute('review-text', review.content);
-  ratingReview.setAttribute('review-id', review.id);
-  ratingReview.setAttribute('restaurant-id', restaurantId);
-  ratingReview.setAttribute('author-id', review.user);
-  ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
-  ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
-  ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
+if (document.getElementById('internal_review') != null) {
+  internalReviews.forEach(review => {
+    if (review.hidden && review.user !== userId) return;
+    const reviewWrapper = document.getElementById('internal_review');
+    const ratingReview = document.createElement('rating-review');
+    ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
+    ratingReview.setAttribute('profile-img-alt', review.user__username);
+    ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
+    ratingReview.setAttribute('user-name', review.user__username);
+    ratingReview.setAttribute('time-created', review.time);
+    ratingReview.setAttribute('user-rating', review.rating);
+    ratingReview.setAttribute('review-text', review.content);
+    ratingReview.setAttribute('review-id', review.id);
+    ratingReview.setAttribute('restaurant-id', restaurantId);
+    ratingReview.setAttribute('author-id', review.user);
+    if (review.liked) {
+      ratingReview.setAttribute('liked', true);
+    }
+    ratingReview.setAttribute('likes_num', review.likes_num || 0);
 
-  if (review.hidden) {
-    ratingReview.setAttribute('hidden-flag', review.hidden);
-  } else {
-    // add replies here
-    review.comments.forEach(el => {
-      if (el.hidden && el.author !== userId) return;
-      ratingReview.renderReplies({
-        profile: el.profile || DEFAULT_AVATAR,
-        text: el.text,
-        author: el.author,
-        commentId: el.commentId,
-        hidden: el.hidden
-      })
-    });
-  }
-  reviewWrapper.appendChild(ratingReview);
-});
+    ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
+    ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
+    ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
+
+    if (review.hidden) {
+      ratingReview.setAttribute('hidden-flag', review.hidden);
+    } else {
+      // add replies here
+      review.comments.forEach(el => {
+        if (el.hidden && el.author !== userId) return;
+        ratingReview.renderReplies({
+          profile: el.profile || DEFAULT_AVATAR,
+          text: el.text,
+          author: el.author,
+          commentId: el.commentId,
+          hidden: el.hidden
+        })
+      });
+    }
+    reviewWrapper.appendChild(ratingReview);
+  });
+}
 
 var data = {{ data | safe }};
 
@@ -1537,10 +1731,13 @@ function initMap() {
         }
       });
 }
-
-
+      
 
 </script>
+<!-- <script src="{% static 'build/runtime.js' %}"></script> -->
+<!-- <script src="{% static 'build/index.js' %}"></script> -->
+<!-- <link rel="stylesheet" href="{% static 'build/index.css' %}"></link> -->
+
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&map_ids={{google_map_id}}&callback=initMap"
     type="text/javascript">
 </script>
@@ -1603,6 +1800,7 @@ function initMap() {
                 });
             });
 </script>
+  
 
 
 {% endblock %}

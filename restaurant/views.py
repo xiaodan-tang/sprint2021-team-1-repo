@@ -1,10 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.paginator import Paginator
 from datetime import datetime
 import random
 
@@ -14,8 +15,6 @@ from .forms import (
     # QuestionnaireForm,
     SearchFilterForm,
 )
-
-
 from user.forms import (
     UserQuestionaireForm,
     Report_Review_Form,
@@ -24,7 +23,13 @@ from user.forms import (
     RestaurantAnswerForm,
 )
 
-from user.models import Review, Comment, RestaurantQuestion, RestaurantAnswer
+from user.models import (
+    Review,
+    Comment,
+    RestaurantQuestion,
+    RestaurantAnswer,
+    UserActivityLog,
+)
 
 from .utils import (
     query_yelp,
@@ -43,6 +48,7 @@ from .utils import (
     check_user_location,
     remove_reports_review,
     remove_reports_comment,
+    send_moderate_notification_email,
 )
 
 from django.http import HttpResponse
@@ -112,7 +118,9 @@ def get_restaurant_profile(request, restaurant_id):
                 "hidden",
             )
         )
-
+        print("Internal review lists: \n")
+        for r in internal_reviews:
+            print(r)
         for idx in range(len(internal_reviews)):
             comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
             # get photo afterwards
@@ -126,7 +134,14 @@ def get_restaurant_profile(request, restaurant_id):
                 }
                 for el in comments
             ]
+            # TODO: check if liked status is needed (remove if not)
+            review = Review.objects.get(id=internal_reviews[idx]["id"])
+            liked = review.likes.filter(id=request.user.id).exists()
+            likes_num = review.total_likes()
+
             internal_reviews[idx]["comments"] = comments
+            internal_reviews[idx]["liked"] = liked
+            internal_reviews[idx]["likes_num"] = likes_num
         reviews_count, ratings_avg, ratings_distribution = get_reviews_stats(
             internal_reviews
         )
@@ -187,6 +202,12 @@ def get_restaurant_profile(request, restaurant_id):
                 compliant=compliant_status,
             )
             recommended_restaurants = restaurants_to_dict(similar_restaurants)
+
+            # Remove the duplicated current restaurant
+            recommended_restaurants = remove_duplicate(
+                recommended_restaurants, restaurant.business_id
+            )
+
         except Exception:
             pass
 
@@ -219,6 +240,15 @@ def get_restaurant_profile(request, restaurant_id):
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
             }
+            # Save restaurant profile page view in UserActivityLog
+            activity_log = UserActivityLog.objects.filter(
+                restaurant=restaurant, user=user
+            ).first()
+            if activity_log:
+                activity_log.visits += 1
+                activity_log.save()
+            else:
+                UserActivityLog.objects.create(user=user, restaurant=restaurant)
         else:
             parameter_dict = {
                 "google_key": settings.GOOGLE_MAP_KEY,
@@ -251,7 +281,22 @@ def get_restaurant_profile(request, restaurant_id):
         )
 
 
-def edit_review(request, restaurant_id, comment_id, action):
+def edit_review(request, restaurant_id, review_id, action, source):
+    if action == "delete":
+        Review.objects.filter(id=review_id).delete()
+    if action == "put":
+        review = Review.objects.get(id=review_id)
+        review.rating = request.POST.get("rating")
+        review.content = request.POST.get("content")
+        review.save()
+        messages.success(request, "success")
+    if source == "restaurant":
+        return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
+    if source == "user":
+        return HttpResponseRedirect(reverse("user:user_reviews"))
+
+
+def edit_user_review(request, restaurant_id, comment_id, action):
     if action == "delete":
         Review.objects.filter(id=comment_id).delete()
     if action == "put":
@@ -260,7 +305,7 @@ def edit_review(request, restaurant_id, comment_id, action):
         review.content = request.POST.get("content")
         review.save()
         messages.success(request, "success")
-    return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
+    return HttpResponseRedirect(reverse("user:user_reviews"))
 
 
 def edit_comment(request, restaurant_id, review_id):
@@ -376,6 +421,29 @@ def delete_favorite_restaurant(request, business_id):
         return HttpResponse("Deleted")
 
 
+@login_required
+def like_review(request):
+    if request.method == "POST":
+        user = request.user
+        review = get_object_or_404(Review, id=request.POST.get("review_id"))
+        likes_num = review.total_likes()
+        liked = False
+
+        if review.likes.filter(id=user.id).exists():
+            review.likes.remove(user)
+            likes_num -= 1
+        else:
+            review.likes.add(user)
+            likes_num += 1
+            liked = True
+
+        context = {
+            "liked": liked,
+            "likes_num": likes_num,
+        }
+        return JsonResponse(context)
+
+
 @csrf_exempt
 def chatbot_keyword(request):
     if request.method == "POST":
@@ -409,6 +477,21 @@ def chatbot_keyword(request):
             return HttpResponseBadRequest(e)
 
 
+# Remove duplicated restaurant from list
+def remove_duplicate(restaurant_list, business_id):
+    for i, restaurant in enumerate(restaurant_list):
+        if restaurant["business_id"] == business_id:
+            restaurant_list[i], restaurant_list[-1] = (
+                restaurant_list[-1],
+                restaurant_list[i],
+            )
+            break
+
+    restaurant_list.pop()
+
+    return restaurant_list
+
+
 def get_faqs_list(request):
     faqs_list = FAQ.objects.all()
     context = {
@@ -423,7 +506,17 @@ def report_review(request, restaurant_id, review_id):
         user = request.user
         form = Report_Review_Form(request.POST, review_id, user)
         form.save()
-        messages.success(request, "success")
+
+        review = Review.objects.get(pk=review_id)
+        target_user = review.user
+        restaurant = review.restaurant
+
+        messages.success(
+            request, "Your report is recorded and will be reviewed by admins"
+        )
+        send_moderate_notification_email(
+            request, target_user, restaurant, "review", "report"
+        )
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
 
@@ -433,7 +526,17 @@ def report_comment(request, restaurant_id, comment_id):
         user = request.user
         form = Report_Comment_Form(request.POST, comment_id, user)
         form.save()
-        messages.success(request, "success")
+
+        comment = Comment.objects.get(pk=comment_id)
+        target_user = comment.user
+        restaurant = comment.review.restaurant
+
+        messages.success(
+            request, "Your report is recorded and will be reviewed by admins"
+        )
+        send_moderate_notification_email(
+            request, target_user, restaurant, "comment", "report"
+        )
         url = reverse("restaurant:profile", args=[restaurant_id])
         return HttpResponseRedirect(url)
 
@@ -450,9 +553,16 @@ def hide_review(request, review_id):
             review = Review.objects.get(pk=review_id)
             review.hidden = True
             review.save()
+
+            target_user = review.user
+            restaurant = review.restaurant
             messages.success(
                 request,
                 "Reported review is hidden and all the related report tickets are closed!",
+            )
+
+            send_moderate_notification_email(
+                request, target_user, restaurant, "review", "hide"
             )
         else:
             messages.error(
@@ -475,10 +585,18 @@ def hide_comment(request, comment_id):
             comment = Comment.objects.get(pk=comment_id)
             comment.hidden = True
             comment.save()
+
+            target_user = comment.user
+            restaurant = comment.review.restaurant
             messages.success(
                 request,
                 "Reported comment is hidden and all the related report tickets are closed!",
             )
+
+            send_moderate_notification_email(
+                request, target_user, restaurant, "comment", "hide"
+            )
+
         else:
             messages.error(
                 request, "Comment ID could not be found: {}".format(comment_id)
@@ -533,13 +651,21 @@ def ignore_comment_report(request, comment_id):
 def delete_review_report(request, review_id):
     user = request.user
     url = reverse("user:admin_comment")
-    print(request)
+
     if user.is_staff:
         if remove_reports_review(review_id):
-            Review.objects.get(pk=review_id).delete()
+            review = Review.objects.get(pk=review_id)
+            target_user = review.user
+            restaurant = review.restaurant
+            review.delete()
+
             messages.success(
                 request, "All the related reports for this review have been deleted!"
             )
+            send_moderate_notification_email(
+                request, target_user, restaurant, "review", "delete"
+            )
+
         else:
             messages.error(
                 request, "Review ID could not be found: {}".format(review_id)
@@ -556,9 +682,16 @@ def delete_comment_report(request, comment_id):
     url = reverse("user:admin_comment")
     if user.is_staff:
         if remove_reports_comment(comment_id):
-            Comment.objects.get(pk=comment_id).delete()
+            comment = Comment.objects.get(pk=comment_id)
+            target_user = comment.user
+            restaurant = comment.review.restaurant
+            comment.delete()
+
             messages.success(
                 request, "All the related reports for this comment have been deleted!"
+            )
+            send_moderate_notification_email(
+                request, target_user, restaurant, "comment", "delete"
             )
         else:
             messages.error(
@@ -571,7 +704,7 @@ def delete_comment_report(request, comment_id):
 
 
 # Ask the community
-def get_ask_community_page(request, restaurant_id):
+def get_ask_community_page(request, restaurant_id, page):
     user = request.user
     restaurant = Restaurant.objects.get(pk=restaurant_id)
 
@@ -581,19 +714,20 @@ def get_ask_community_page(request, restaurant_id):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Successfully posted your question!")
-                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                url = reverse("restaurant:ask_community", args=[restaurant_id, page])
                 return HttpResponseRedirect(url)
             else:
                 messages.error(request, "Failed to post your question!")
-                url = reverse("restaurant:ask_community", args=[restaurant_id])
+                url = reverse("restaurant:ask_community", args=[restaurant_id, page])
                 return HttpResponseRedirect(url)
         else:
             messages.info(request, "Please login first!")
             url = reverse("user:login")
             return HttpResponseRedirect(url)
     else:
-        # Get full question list and limit 2 answers per question
-        question_list = list(
+        # Get question list for current page, 10 questions per page
+        # Limit 2 answers per question
+        full_question_list = list(
             RestaurantQuestion.objects.filter(restaurant=restaurant)
             .order_by("-time")
             .values(
@@ -604,6 +738,8 @@ def get_ask_community_page(request, restaurant_id):
                 "time",
             )
         )
+        curr_page = Paginator(full_question_list, 10).page(page)
+        question_list = curr_page.object_list
         for idx in range(len(question_list)):
             answers = list(
                 RestaurantAnswer.objects.filter(question_id=question_list[idx]["id"])
@@ -623,13 +759,15 @@ def get_ask_community_page(request, restaurant_id):
         context = {
             "restaurant": restaurant,
             "question_list": question_list,
+            "total_questions_count": len(full_question_list),
+            "page_obj": curr_page,
         }
         return render(
-            request=request, template_name="test_ask_community.html", context=context
+            request=request, template_name="ask_community.html", context=context
         )
 
 
-def answer_community_question(request, restaurant_id, question_id):
+def answer_community_question(request, restaurant_id, question_id, page):
     user = request.user
     restaurant = Restaurant.objects.get(pk=restaurant_id)
     question = RestaurantQuestion.objects.get(pk=question_id)
@@ -641,13 +779,15 @@ def answer_community_question(request, restaurant_id, question_id):
                 form.save()
                 messages.success(request, "Successfully posted your answer!")
                 url = reverse(
-                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                    "restaurant:answer_community",
+                    args=[restaurant_id, question_id, page],
                 )
                 return HttpResponseRedirect(url)
             else:
                 messages.error(request, "Failed to post your answer!")
                 url = reverse(
-                    "restaurant:answer_community", args=[restaurant_id, question_id]
+                    "restaurant:answer_community",
+                    args=[restaurant_id, question_id, page],
                 )
                 return HttpResponseRedirect(url)
         else:
@@ -655,13 +795,17 @@ def answer_community_question(request, restaurant_id, question_id):
             url = reverse("user:login")
             return HttpResponseRedirect(url)
     else:
-        # Get full answer list
-        answer_list = RestaurantAnswer.objects.filter(question=question)
+        # Get answer list for current page, 10 answers per page
+        full_answer_list = RestaurantAnswer.objects.filter(question=question)
+        curr_page = Paginator(full_answer_list, 10).page(page)
+        answer_list = curr_page.object_list
         context = {
             "restaurant": restaurant,
             "question": question,
             "answer_list": answer_list,
+            "total_answers_count": full_answer_list.count(),
+            "page_obj": curr_page,
         }
         return render(
-            request=request, template_name="test_answer_community.html", context=context
+            request=request, template_name="answer_community.html", context=context
         )

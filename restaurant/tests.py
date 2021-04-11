@@ -18,7 +18,7 @@ from .models import (
     AccessibilityRecord,
     FAQ,
 )
-from user.models import Preferences
+from user.models import Preferences, UserActivityLog
 from .views import (
     get_inspection_info,
     get_landing_page,
@@ -26,6 +26,7 @@ from .views import (
     get_faqs_list,
     get_ask_community_page,
     answer_community_question,
+    remove_duplicate,
 )
 from .utils import (
     merge_yelp_info,
@@ -41,9 +42,10 @@ from .utils import (
     questionnaire_report,
     questionnaire_statistics,
     check_user_location,
+    restaurants_to_dict,
 )
 
-from dinesafelysite.views import index
+from dinesafelysite.views import index, get_recent_views_recommendation
 
 from user.models import (
     Review,
@@ -844,6 +846,53 @@ class RestaurantViewTests(TestCase):
         response = get_faqs_list(request)
         self.assertEqual(response.status_code, 200)
 
+    def test_create_activity_log(self):
+        request = self.factory.get("restaurant:profile")
+        request.restaurant = self.restaurant
+        request.user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        empty_activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        response = get_restaurant_profile(request, self.restaurant.id)
+        activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(empty_activity_log, None)
+        self.assertEqual(activity_log.visits, 1)
+        self.assertEqual(activity_log.restaurant, request.restaurant)
+        self.assertEqual(activity_log.user, request.user)
+
+    def test_update_activity_log(self):
+        request = self.factory.get("restaurant:profile")
+        request.restaurant = self.restaurant
+        request.user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        # First profile page visit
+        get_restaurant_profile(request, self.restaurant.id)
+        activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        self.assertEqual(activity_log.visits, 1)
+        self.assertEqual(activity_log.restaurant, request.restaurant)
+        self.assertEqual(activity_log.user, request.user)
+        old_time = activity_log.last_visit
+        # Second profile page visit
+        get_restaurant_profile(request, self.restaurant.id)
+        activity_log = UserActivityLog.objects.filter(
+            restaurant=request.restaurant, user=request.user
+        ).first()
+        new_time = activity_log.last_visit
+        self.assertTrue(new_time > old_time)
+        self.assertEqual(activity_log.visits, 2)
+        self.assertEqual(activity_log.restaurant, request.restaurant)
+        self.assertEqual(activity_log.user, request.user)
+
 
 class RestaurantUtilsTests(TestCase):
     def test_merge_yelp_info(self):
@@ -1348,20 +1397,85 @@ class RestaurantRecommendationsTest(TestCase):
         self.assertEqual(response2.status_code, 200)
 
 
+class ReviewTests(BaseTest):
+    def setUp(self):
+        self.c = Client()
+        # Initialize 2 test users
+        self.user1 = get_user_model().objects.create(
+            username="user1",
+            email="test1@gmail.com",
+        )
+        self.user1.set_password("test1234Report")
+        self.user1.save()
+
+        self.user2 = get_user_model().objects.create(
+            username="user2",
+            email="test2@gmail.com",
+        )
+        self.user2.set_password("test4321Report")
+        self.user2.save()
+
+        # Initialize temp restaurant
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant.save()
+
+        # Initialize temp review
+        self.temp_review = create_review(
+            self.user1,
+            self.temp_restaurant,
+            "review for tests",
+            5,
+        )
+        self.temp_review.save()
+
+    def test_like_review(self):
+        self.c.login(username="user2", password="test4321Report")
+        url = "/restaurant/like/review/"
+        form = {"review_id": self.temp_review.id}
+
+        # First post, like the review
+        response1 = self.c.post(url, form)
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response1.json()["liked"], True)
+        self.assertEqual(response1.json()["likes_num"], 1)
+        self.assertEqual(self.temp_review.total_likes(), 1)
+
+        # Second post, undo the like
+        response2 = self.c.post(url, form)
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response2.json()["liked"], False)
+        self.assertEqual(response2.json()["likes_num"], 0)
+        self.assertEqual(self.temp_review.total_likes(), 0)
+
+        # Third post with invalid form
+        # invalid_form = {"review_id": 1000}
+        # response3 = self.c.post(url, invalid_form)
+        # self.assertEqual(response3.status_code, 404)
+
+        self.c.logout()
+
+
 @mock.patch("user.models.Review.objects")
-class EditCommentTests(BaseTest):
-    def test_edit_comment(self, queryset):
+class EditReviewTests(BaseTest):
+    def test_edit_review(self, queryset):
         queryset.delete.return_value = None
         queryset.filter.return_value = queryset
         response = self.c.get(
-            "/restaurant/profile/restaurant_id/comment/comment_id/delete"
+            "/restaurant/profile/restaurant_id/review/comment_id/delete/restaurant"
         )
         self.assertEqual(response.status_code, 302)
 
-    def test_delete_comment(self, queryset):
+    def test_delete_review(self, queryset):
         queryset.get.return_value = mock.Mock(spec=Review)
         response = self.c.get(
-            "/restaurant/profile/restaurant_id/comment/comment_id/put"
+            "/restaurant/profile/restaurant_id/review/comment_id/put/restaurant"
         )
         self.assertEqual(response.status_code, 302)
 
@@ -2127,7 +2241,7 @@ class AskCommunityTest(TestCase):
 
     def test_get_ask_community_page(self):
         response = self.c.get(
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/"
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1"
         )
         self.assertEqual(response.resolver_match.func, get_ask_community_page)
         self.assertEqual(response.status_code, 200)
@@ -2142,7 +2256,7 @@ class AskCommunityTest(TestCase):
             "question": "How is this business operating during COVID-19?",
         }
         response = self.c.post(
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1", form
         )
         self.assertEqual(response.resolver_match.func, get_ask_community_page)
         self.assertRedirects(
@@ -2163,12 +2277,12 @@ class AskCommunityTest(TestCase):
             "question": "How is this business operating during COVID-19?",
         }
         response = self.c.post(
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/", form
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1", form
         )
         self.assertEqual(response.resolver_match.func, get_ask_community_page)
         self.assertRedirects(
             response,
-            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/",
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1",
             status_code=302,
             target_status_code=200,
             fetch_redirect_response=True,
@@ -2185,8 +2299,9 @@ class AskCommunityTest(TestCase):
         response = self.c.get(
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
+            + "/question/"
             + str(self.question.id)
+            + "/1"
         )
         self.assertEqual(response.resolver_match.func, answer_community_question)
         self.assertEqual(response.status_code, 200)
@@ -2203,8 +2318,9 @@ class AskCommunityTest(TestCase):
         response = self.c.post(
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
-            + str(self.question.id),
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
             form,
         )
         self.assertEqual(response.resolver_match.func, answer_community_question)
@@ -2228,8 +2344,9 @@ class AskCommunityTest(TestCase):
         response = self.c.post(
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
-            + str(self.question.id),
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
             form,
         )
         self.assertEqual(response.resolver_match.func, answer_community_question)
@@ -2237,8 +2354,9 @@ class AskCommunityTest(TestCase):
             response,
             "/restaurant/profile/"
             + str(self.restaurant.id)
-            + "/ask_community/"
-            + str(self.question.id),
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
             status_code=302,
             target_status_code=200,
             fetch_redirect_response=True,
@@ -2373,3 +2491,225 @@ class SimilarRestaurantsTest(TestCase):
         response = get_restaurant_profile(request, self.restaurant1.id)
 
         self.assertEqual(response.status_code, 200)
+
+    def test_restaurant_duplicate(self):
+        restaurants = restaurants_to_dict(
+            [self.restaurant1, self.restaurant2, self.restaurant3]
+        )
+        business_id = self.restaurant2.business_id
+
+        restaurant_list = remove_duplicate(restaurants, business_id)
+
+        self.assertEqual(len(restaurant_list), 2)
+        self.assertListEqual(
+            restaurant_list, restaurants_to_dict([self.restaurant1, self.restaurant3])
+        )
+
+
+class RecentViewsRecommendationTest(TestCase):
+    """ Test provide recommended restaurant based on user recent views """
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        # Create 1st restaurant
+        business_id = "5qWjq_Qv6O6-iGdbBZb0tg"
+        neighborhood = "Chelsea and Clinton"
+        price = "$"
+        rating = 5.0
+        img_url = "https://s3-media3.fl.yelpcdn.com/bphoto/pol6YeUS-47wemNAP6V2Mg/o.jpg"
+        latitude = 40.80211
+        longitude = -73.95665
+
+        details_1 = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+        self.restaurant1 = create_restaurant(
+            restaurant_name="Paint N Pour Nyc",
+            business_address="2080 FREDERICK DOUGLASS BLVD",
+            yelp_detail=details_1,
+            postcode="10026",
+            business_id="5qWjq_Qv6O6-iGdbBZb0tg",
+        )
+        self.restaurant1.compliant_status = "Compliant"
+        self.restaurant1.mopd_compliance_status = "Non-Compliant"
+        self.restaurant1.save()
+
+        create_inspection_records(
+            restaurant_inspection_id=1,
+            restaurant_name="Paint N Pour Nyc",
+            postcode="10026",
+            business_address="2080 FREDERICK DOUGLASS BLVD",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="5qWjq_Qv6O6-iGdbBZb0tg",
+        )
+
+        # Create 2nd restaurant
+        business_id = "blaTQKod-nz94F3Fm_ZoYQ"
+        neighborhood = "Upper East Side"
+        price = "$$$"
+        rating = 4.5
+        img_url = "https://s3-media3.fl.yelpcdn.com/bphoto/xafcmRm6DDvcg7PYDrwICA/o.jpg"
+        latitude = 40.80251
+        longitude = -73.95355
+
+        details_2 = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+        self.restaurant2 = create_restaurant(
+            restaurant_name="Osteria Laura NYC",
+            business_address="1890 Adam Clayton Powell Jr. Blvd.",
+            yelp_detail=details_2,
+            postcode="10026",
+            business_id="blaTQKod-nz94F3Fm_ZoYQ",
+        )
+        self.restaurant2.compliant_status = "Compliant"
+        self.restaurant2.mopd_compliance_status = "Non-Compliant"
+        self.restaurant2.save()
+
+        create_inspection_records(
+            restaurant_inspection_id=2,
+            restaurant_name="Osteria Laura NYC",
+            postcode="10026",
+            business_address="1890 Adam Clayton Powell Jr. Blvd.",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="blaTQKod-nz94F3Fm_ZoYQ",
+        )
+
+        # Create 3rd restaurant
+        business_id = "DzlCEhXW6OadK6ETcmJpwQ"
+        neighborhood = "Lower East Side"
+        price = "$$"
+        rating = 4.0
+        img_url = "https://s3-media4.fl.yelpcdn.com/bphoto/zyKuc6OmXL8W-gWnu9sMHw/o.jpg"
+        latitude = 40.8022697271481
+        longitude = -73.9567852020264
+
+        details_3 = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+        self.restaurant3 = create_restaurant(
+            restaurant_name="67 Orange Street",
+            business_address="2082 Frederick Douglass Blvd",
+            yelp_detail=details_3,
+            postcode="10027",
+            business_id="DzlCEhXW6OadK6ETcmJpwQ",
+        )
+        self.restaurant3.compliant_status = "Compliant"
+        self.restaurant3.mopd_compliance_status = "Compliant"
+        self.restaurant3.save()
+
+        create_inspection_records(
+            restaurant_inspection_id=3,
+            restaurant_name="67 Orange Street",
+            postcode="10027",
+            business_address="2082 Frederick Douglass Blvd",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="DzlCEhXW6OadK6ETcmJpwQ",
+        )
+
+        # Create 4th restaurant
+        business_id = "WavvLdfdP6g8aZTtbBQHTw"
+        neighborhood = "Lower East Side"
+        price = "$"
+        rating = 4.0
+        img_url = "https://s3-media1.fl.yelpcdn.com/bphoto/C4emY32GDusdMCybR6NmpQ/o.jpg"
+        latitude = 40.8522129
+        longitude = -73.8290069
+
+        details_4 = create_yelp_restaurant_details(
+            business_id,
+            neighborhood,
+            price,
+            rating,
+            img_url,
+            latitude,
+            longitude,
+        )
+        self.restaurant4 = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th street, Manhattan, NY",
+            yelp_detail=details_4,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.restaurant4.compliant_status = "Compliant"
+        self.restaurant4.mopd_compliance_status = "Non-Compliant"
+        self.restaurant4.save()
+
+        create_inspection_records(
+            restaurant_inspection_id=4,
+            restaurant_name="Tacos El Paisa",
+            postcode="10040",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th street, Manhattan, NY",
+            is_roadway_compliant="Compliant",
+            skipped_reason="Nan",
+            inspected_on=datetime(2020, 10, 24, 17, 36),
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+
+        self.c = Client()
+        self.dummy_user = get_user_model().objects.create(
+            username="myuser",
+            email="abcd@gmail.com",
+        )
+        self.dummy_user.set_password("pass123")
+        self.dummy_user.save()
+
+    def test_get_recent_views_recommendation(self):
+        # Manually setting visits, ONLY FOR TESTING PURPOSE!!!
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant1,
+            visits=100,
+        )
+        # Force update the last_visit time, ONLY FOR TESTING PURPOSE!!!
+        UserActivityLog.objects.filter(restaurant=self.restaurant1).update(
+            last_visit=datetime(2011, 5, 18, 10, 59, 42, 518352),
+        )
+        # Manually setting visits, ONLY FOR TESTING PURPOSE!!!
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant2,
+            visits=5,
+        )
+        # Force update the last_visit time, ONLY FOR TESTING PURPOSE!!!
+        UserActivityLog.objects.filter(restaurant=self.restaurant2).update(
+            last_visit=datetime(2018, 12, 2, 5, 10, 23, 518399),
+        )
+        # Manually setting visits, ONLY FOR TESTING PURPOSE!!!
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.restaurant3,
+            visits=18,
+            last_visit=datetime.now(),
+        )
+        suggested_restaurant_list = get_recent_views_recommendation(self.dummy_user)
+        self.assertEqual(suggested_restaurant_list[0], self.restaurant3)
+        self.assertEqual(suggested_restaurant_list[1], self.restaurant4)
+        self.assertEqual(suggested_restaurant_list[2], self.restaurant1)
+        self.assertEqual(suggested_restaurant_list[3], self.restaurant2)
