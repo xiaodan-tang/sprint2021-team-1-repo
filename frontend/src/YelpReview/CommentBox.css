@@ -1,0 +1,32 @@
+.comment__alignment {
+  display: inline-block;
+  border-bottom: 2px solid #e7e7e7;
+  border-left: 2px solid #e7e7e7;
+  border-radius: 5px;
+  height: 40px;
+  width: 50px;
+}
+
+.comment__profile__pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+
+.comment__text {
+  display: inline-block;
+  margin-left: 1rem;
+  width: 50%;
+  vertical-align: middle;
+}
+
+.comment__wrapper {
+  padding-left: 70px;
+  align-items: baseline; 
+}
+
+.comment__container {
+  display: inline-block;
+  width: 570px;
+}

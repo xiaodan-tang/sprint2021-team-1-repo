@@ -12,7 +12,7 @@ import random
 from .models import Restaurant, FAQ
 
 from .forms import (
-    # QuestionnaireForm,
+    QuestionnaireForm,
     SearchFilterForm,
 )
 from user.forms import (
@@ -61,14 +61,27 @@ logger = logging.getLogger(__name__)
 
 
 def get_restaurant_profile(request, restaurant_id):
-
     if request.method == "POST" and "content" in request.POST:
-        form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
         url = reverse("restaurant:profile", args=[restaurant_id])
-        # if form.is_valid():
-        form.save()
-        messages.success(request, "Thank you for your review!")
-        return HttpResponseRedirect(url)
+        if request.user.is_authenticated:
+            form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
+            # if form.is_valid():
+            form.save()
+            messages.success(request, "Thank you for your review!")
+            return HttpResponseRedirect(url)
+        else:
+            messages.error(request, "Please login before making review")
+            return HttpResponseRedirect(url)
+
+    if request.method == "POST" and "employee_mask" in request.POST:
+        form = QuestionnaireForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "Thank you for your feedback!", extra_tags="feedback"
+            )
+            url = reverse("restaurant:profile", args=[restaurant_id])
+            return HttpResponseRedirect(url)
 
     try:
         csv_file = get_csv_from_github()
@@ -292,6 +305,7 @@ def edit_review(request, restaurant_id, review_id, action, source):
         review = Review.objects.get(id=review_id)
         review.rating = request.POST.get("rating")
         review.content = request.POST.get("content")
+        review.hidden = False
         review.save()
         messages.success(request, "success")
     if source == "restaurant":

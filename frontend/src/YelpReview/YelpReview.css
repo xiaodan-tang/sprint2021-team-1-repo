@@ -10,8 +10,8 @@
 .yelp__pic {
     display: inline-block;
     position: relative;
-    width: 7rem;
-    height: 7rem;
+    width: 6rem;
+    height: 6rem;
     text-align: center;
     border: #dee2e6;
     border-radius: 50%;
@@ -30,19 +30,25 @@
 
 .yelp__text {
     display: -webkit-box; 
-    -webkit-line-clamp: 4; 
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical; 
     overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: break-word;
 }
 
-.review__image {
+.review__image__container > img {
     flex: 1 1 auto;
     width: auto;
-    height: 100px !important;
+    height: 80px !important;
     display: inline-block;
     object-fit: contain;
     align-items: center;
-    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+.review__image__container > img:not(:first-child) {
+    margin-left: 0.3rem;
 }
 
 .dropdown__icon {
