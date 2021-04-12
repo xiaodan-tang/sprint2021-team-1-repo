@@ -3,7 +3,6 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
-
 from .models import (
     User_Profile,
     Review,

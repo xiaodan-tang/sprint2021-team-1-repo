@@ -451,7 +451,7 @@
     dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
 
     this.deleteForm = document.createElement('form');
-    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/user_comment/${this.getAttribute('review-id')}/delete`);
+    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/delete/user`);
 
     ['Edit', 'Delete'].forEach((el, index) => {
       const anchor = document.createElement('a');
@@ -467,7 +467,7 @@
           const content = document.querySelector('textarea[name="content"]');
           content.value = this.getAttribute('review-text');
           content.dispatchEvent(new Event('change'));
-          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/user_comment/${this.getAttribute('review-id')}/put`);
+          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/put/user`);
         });
       } else {
         anchor.addEventListener('click', () => this.deleteForm.submit());
