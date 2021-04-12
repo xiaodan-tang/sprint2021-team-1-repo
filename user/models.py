@@ -260,3 +260,17 @@ class UserActivityLog(models.Model):
             f"{user} viewed {restaurant} {self.visits} times, "
             + f"last visited at {self.last_visit}"
         )
+
+
+class Email(models.Model):
+    user = models.ForeignKey(
+        DineSafelyUser, on_delete=models.CASCADE, related_name="other_emails"
+    )
+    email = models.EmailField()
+    active = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.active:
+            return f"{self.user} {self.email} is active"
+        else:
+            return f"{self.user} {self.email} is not active"

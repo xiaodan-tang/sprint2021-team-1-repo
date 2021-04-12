@@ -10,6 +10,7 @@ from .models import (
     RestaurantQuestion,
     RestaurantAnswer,
     UserActivityLog,
+    Email,
 )
 
 admin.site.register(DineSafelyUser)
@@ -21,3 +22,4 @@ admin.site.register(Report_Ticket_Comment)
 admin.site.register(RestaurantQuestion)
 admin.site.register(RestaurantAnswer)
 admin.site.register(UserActivityLog)
+admin.site.register(Email)

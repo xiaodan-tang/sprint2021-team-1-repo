@@ -15,7 +15,7 @@ import boto3
 import random
 import string
 
-from .models import User_Profile, Preferences, RestaurantQuestion, RestaurantAnswer
+from .models import User_Profile, Preferences, RestaurantQuestion, RestaurantAnswer, Email
 
 logger = logging.getLogger(__name__)
 
@@ -658,3 +658,29 @@ class RestaurantAnswerForm(forms.Form):
             text=self.cleaned_data.get("answer"),
         )
         return restaurant_answer
+
+
+class AddUserEmailForm(forms.Form):
+    email = forms.EmailField()
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(AddUserEmailForm, self).__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].lower()
+        if not email:
+            raise ValidationError("Email is required")
+        r1 = get_user_model().objects.filter(email=email)
+        r2 = Email.objects.filter(email=email)
+        if r1.count() or r2.count():
+            raise ValidationError("Email already linked to another account")
+        return email
+
+    def save(self, commit=True):
+        user_email = Email.objects.create(
+            user=self.user,
+            email=self.cleaned_data.get("email"),
+            active=False,
+        )
+        return user_email

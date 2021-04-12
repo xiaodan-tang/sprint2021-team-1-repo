@@ -105,6 +105,108 @@
         </div>
         <div class="card mt-3 shadow">
           <div class="card-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Emails</h6>
+              </div>
+              <div class="col-sm-9">
+                <div class="row">
+                  <div class="col-sm-9">
+                    <span class="text-secondary">{{ user.email }}</span>
+                    <span> - </span>
+                    <span class="text-primary">Primary</span>
+                    <span class="text-primary">
+                      <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="bottom" title="This email will be used for account-related notifications and password resets."></i>
+                    </span>
+                  </div>
+                  <div class="col-sm-3">
+                    <form class="form-validate" method="post" id="delete_primary_email_form">
+                    {% csrf_token %}
+                      <input type="hidden" id="primary_email" name="primary_email" value="{{ user_email.email }}">
+                      <button id="submit-delete-primary-email-form" name="submit-delete-primary-email-form" class="fa_button text-secondary" onclick="deleteEmail()">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% if user_emails %}
+              {% for user_email in user_emails %}
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                  </div>
+                  <div class="col-sm-9">
+                    <div class="row">
+                      <div class="col-sm-9">
+                        <span class="text-secondary">{{ user_email.email }}</span>
+                        {% if not user_email.active %}
+                          <span> - </span>
+                          <span class="text-muted">Inactive</span>
+                          <span class="text-muted">
+                            <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="bottom" title="We have sent further instructions to your email. Please follow the steps for verifying your email."></i>
+                          </span>
+                        {% endif %}
+                      </div>
+                      <div class="col-sm-3">
+                        <form class="form-validate" method="post" id="delete_email_form_{{ forloop.counter0 }}">
+                        {% csrf_token %}
+                          <input type="hidden" id="email_{{ forloop.counter0 }}" name="email" value="{{ user_email.email }}">
+                          <button type="submit" form="delete_email_form_{{ forloop.counter0 }}" id="submit-delete-email-form" name="submit-delete-email-form" class="fa_button text-secondary">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+            <div class="row">
+              <div class="col-sm-3">
+              </div>
+              <div class="col-sm-9 text-right">
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse" data-target="#addEmail"
+                  aria-expanded="false" aria-controls="manageEmail">Add</button>
+              </div>
+            </div>
+            <form class="form-validate" method="post" id="add_email_form">
+              {% csrf_token %}
+              <div class="collapse" id="addEmail">
+                <div class="row mt-4" id="sub_add_email_form">
+                  <div id="error_update">
+
+                  </div>
+                  <div class="form-group col-12">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input class="form-control" type="email" name="email" id="other_email" required>
+                  </div>
+                </div>
+                <input type="submit" class="btn btn-outline-primary" id="submit-add-email-form" name="submit-add-email-form" value="Add Email">
+              </div>
+            </form>
+          </div>
+        </div>
+        <script>
+          $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+          })
+          function deleteEmail() {
+            if (confirm("Are you sure you want to remove this email from your account? Once removed, one of your other emails will become your primary email.")) {
+              document.getElementById("delete_primary_email_form").submit();
+            }
+          }
+        </script>
+        <style>
+          .fa_button {
+              background: none;
+              padding: 0px;
+              border: none;
+            }
+        </style>
+        <div class="card mt-3 shadow">
+          <div class="card-body">
             {% load socialaccount %} {% get_social_accounts user as accounts %} 
             {% if accounts.facebook or accounts.google %} 
             {% else %}
