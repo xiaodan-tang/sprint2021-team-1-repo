@@ -32,7 +32,12 @@ def send_reset_password_email(request, email):
 def send_verification_email(request, email):
     user = get_user_model().objects.get(email=email)
     host_name = request.get_host()
-    base_url = "http://" + host_name + "/user/verification/"
+    base_url = host_name + "/user/verification/"
+    if str(host_name).startswith("127.0.0.1"):
+        base_url = "http://" + base_url
+    else:
+        base_url = "https://" + base_url
+
     logger.info(base_url)
     c = {
         "base_url": base_url,

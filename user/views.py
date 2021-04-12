@@ -225,6 +225,7 @@ def user_reviews(request):
             "restaurant__restaurant_name",
             "restaurant__yelp_detail__img_url",
             "restaurant__id",
+            "hidden",
         )
     )
     return render(
