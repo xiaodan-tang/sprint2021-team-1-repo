@@ -313,7 +313,6 @@ def view_history(request):
 
 def delete_viewed_restaurant(request, business_id):
     if request.method == "POST":
-        viewed_restaurants = []
         if request.user.is_authenticated:
             user = request.user
             #current restaurant we want to delete
@@ -322,7 +321,12 @@ def delete_viewed_restaurant(request, business_id):
             UserActivityLog.objects.filter(user=user, 
                 restaurant=restaurant_to_delete).first().delete()
         return HttpResponse("Restaurant Removed")
-        
+
+def clear_viewed_restaurants(request):
+    if request.method == "POST" and  request.user.is_authenticated:
+        UserActivityLog.objects.filter(user=request.user).delete()
+        return HttpResponse("Restaurants Cleared")
+
 
 
 

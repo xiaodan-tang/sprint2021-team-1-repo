@@ -75,7 +75,9 @@
                     <div class="text-center" style="margin-top: 20px;">
                         <p class="mb-2">
                             <!--button class="btn btn-dark mb-2" id="loadMore" type="submit" style="float:center ">Load more</button-->
-                            <button class="btn  btn-outline-danger h-100" id="clearAll" type="submit" style="float:right">Clear all</button>
+                            <form name="viewed_restaurants_clear" class="viewed_rest" onsubmit="return false;"  method="POST">
+                                <button class="btn  btn-outline-danger h-100" id="clearAll" type="submit" style="float:right">Clear all</button>
+                            </form>
                         </p>
                     </div>  
                 </center>
@@ -134,4 +136,50 @@
       });
     });
   </script>
+
+<!-- clear all functions -->
+<script>
+        $('body').on('submit', "form[name='viewed_restaurants_clear']", function (event) {
+          var currentForm = $(this);
+          event.preventDefault();
+          var formData = currentForm.serialize();
+          console.log("all value is : ", formData);
+          $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+              function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                  var cookies = document.cookie.split(';');
+                  for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                    }
+                  }
+                }
+                return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+            }
+          });
+          $.ajax({
+            type: 'POST',
+            url: "../user/clear_all/viewed_restaurants"   ,
+            data: formData,
+            processData: false,
+            contentType: false,
+            // handle a successful response
+            success: function (response) {
+                 $('.card-deck').hide();
+                 $('#clearAll').hide();
+            },
+            error: function (xhr, errmsg, err) {
+              console.log('Error')
+            }
+          });
+        });
+      </script>
 {% endblock %}
