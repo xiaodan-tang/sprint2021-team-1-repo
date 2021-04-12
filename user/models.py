@@ -121,7 +121,6 @@ class Review(models.Model):
     time = models.DateTimeField(default=datetime.now, editable=False, db_index=True)
     content = models.TextField()
     hidden = models.BooleanField(default=False)
-    
 
     # Ratings
     rating = models.PositiveIntegerField(default=0)
