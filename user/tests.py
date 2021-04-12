@@ -4,7 +4,6 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
 
-
 from restaurant.models import Categories, Restaurant
 
 from .models import (

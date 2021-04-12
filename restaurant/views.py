@@ -12,7 +12,7 @@ import random
 from .models import Restaurant, FAQ
 
 from .forms import (
-    # QuestionnaireForm,
+    QuestionnaireForm,
     SearchFilterForm,
 )
 from user.forms import (
@@ -61,14 +61,27 @@ logger = logging.getLogger(__name__)
 
 
 def get_restaurant_profile(request, restaurant_id):
-
     if request.method == "POST" and "content" in request.POST:
-        form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
         url = reverse("restaurant:profile", args=[restaurant_id])
-        # if form.is_valid():
-        form.save()
-        messages.success(request, "Thank you for your review!")
-        return HttpResponseRedirect(url)
+        if request.user.is_authenticated:
+            form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
+            # if form.is_valid():
+            form.save()
+            messages.success(request, "Thank you for your review!")
+            return HttpResponseRedirect(url)
+        else:
+            messages.error(request, "Please login before making review")
+            return HttpResponseRedirect(url)
+
+    if request.method == "POST" and "employee_mask" in request.POST:
+        form = QuestionnaireForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "Thank you for your feedback!", extra_tags="feedback"
+            )
+            url = reverse("restaurant:profile", args=[restaurant_id])
+            return HttpResponseRedirect(url)
 
     try:
         csv_file = get_csv_from_github()
@@ -236,8 +249,6 @@ def get_restaurant_profile(request, restaurant_id):
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
-                # Recommended Restuarants
-                "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -270,8 +281,6 @@ def get_restaurant_profile(request, restaurant_id):
                 # Recommended Restuarants
                 "recommended_restaurants": recommended_restaurants,
                 "media_url_prefix": settings.MEDIA_URL,
-                # Recommended Restuarants
-                "recommended_restaurants": recommended_restaurants,
                 # Restaurant Q&As
                 "restaurant_question_list": restaurant_question_list,
                 "total_question_count": total_question_count,
@@ -292,6 +301,7 @@ def edit_review(request, restaurant_id, review_id, action, source):
         review = Review.objects.get(id=review_id)
         review.rating = request.POST.get("rating")
         review.content = request.POST.get("content")
+        review.hidden = False
         review.save()
         messages.success(request, "success")
     if source == "restaurant":
@@ -564,6 +574,7 @@ def hide_review(request, review_id):
                 request,
                 "Reported review is hidden and all the related report tickets are closed!",
             )
+
             send_moderate_notification_email(
                 request, target_user, restaurant, "review", "hide"
             )
@@ -591,14 +602,15 @@ def hide_comment(request, comment_id):
 
             target_user = comment.user
             restaurant = comment.review.restaurant
-
             messages.success(
                 request,
                 "Reported comment is hidden and all the related report tickets are closed!",
             )
+
             send_moderate_notification_email(
                 request, target_user, restaurant, "comment", "hide"
             )
+
         else:
             messages.error(
                 request, "Comment ID could not be found: {}".format(comment_id)
@@ -653,6 +665,7 @@ def ignore_comment_report(request, comment_id):
 def delete_review_report(request, review_id):
     user = request.user
     url = reverse("user:admin_comment")
+
     if user.is_staff:
         if remove_reports_review(review_id):
             review = Review.objects.get(pk=review_id)
@@ -666,6 +679,7 @@ def delete_review_report(request, review_id):
             send_moderate_notification_email(
                 request, target_user, restaurant, "review", "delete"
             )
+
         else:
             messages.error(
                 request, "Review ID could not be found: {}".format(review_id)
