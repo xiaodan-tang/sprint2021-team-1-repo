@@ -25,7 +25,7 @@
 
 .yelp__name_rating_text {
     margin-left: 15px;
-    width: 350px;
+    width: 480px;
 }
 
 .yelp__text {
@@ -49,6 +49,13 @@
 
 .review__image__container > img:not(:first-child) {
     margin-left: 0.3rem;
+}
+
+.showmore__button {
+    width: 620px;
+    height: 2rem;
+
+    cursor: pointer;
 }
 
 .dropdown__icon {
