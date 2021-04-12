@@ -21,7 +21,7 @@ urlpatterns = [
     path("profile", views.profile, name="profile"),
     path("view_history", views.view_history, name="view_history"), #view history
     path(
-        "delete/viewed_restaurants/user/<business_id>",
+        "delete/viewed_restaurants/<business_id>",
         views.delete_viewed_restaurant,
         name="delete_viewed_restaurant",
     ),
