@@ -13,6 +13,7 @@ from .models import (
     Report_Ticket_Review,
     Preferences,
     UserActivityLog,
+    Restaurant,
 )
 
 from restaurant.models import Categories
@@ -309,6 +310,19 @@ def view_history(request):
     # add restaurants to context
     my_dict = {'restaurants' : viewed_restaurants}
     return render(request, 'view_history.html', context= my_dict)
+
+def delete_viewed_restaurant(request, business_id):
+    if request.method == "POST":
+        viewed_restaurants = []
+        if request.user.is_authenticated:
+            user = request.user
+            #current restaurant we want to delete
+            restaurant_to_delete= Restaurant.objects.filter(business_id=business_id).first()
+            # delete activity log
+            UserActivityLog.objects.filter(user=user, 
+                restaurant=restaurant_to_delete).first().delete()
+        return HttpResponse("Restaurant Removed")
+        
 
 
 

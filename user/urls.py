@@ -20,6 +20,11 @@ urlpatterns = [
     path("verification", views.forget_password, name="verification"),
     path("profile", views.profile, name="profile"),
     path("view_history", views.view_history, name="view_history"), #view history
+    path(
+        "delete/viewed_restaurants/user/<business_id>",
+        views.delete_viewed_restaurant,
+        name="delete_viewed_restaurant",
+    ),
     path("facing_page/<int:user_id>", views.user_facing, name="user_facing"),
     path("user_reviews", views.user_reviews, name="user_reviews"),
     path("update_password", views.update_password, name="update_password"),
