@@ -16,15 +16,18 @@ def insert_static_mopd_data():
             if is_header:
                 is_header = False
                 continue
-            obj, created = AccessibilityRecord.objects.get_or_create(
-                restaurant_name=row[0],
-                compliant=row[1],
-                business_address=row[2],
-                street_number=row[3],
-                street_name=row[4],
-                city=row[5],
-                postcode=row[6],
-            )
+            try:
+                obj, created = AccessibilityRecord.objects.get_or_create(
+                    restaurant_name=row[0],
+                    compliant=row[1],
+                    business_address=row[2],
+                    street_number=row[3],
+                    street_name=row[4],
+                    city=row[5],
+                    postcode=row[6],
+                )
+            except Exception:
+                continue
 
 
 def populate_mopd_compliance_status():
@@ -46,7 +49,10 @@ def insert_static_faq_data():
             if is_header:
                 is_header = False
                 continue
-            obj, created = FAQ.objects.get_or_create(question=row[0], answer=row[1])
+            try:
+                obj, created = FAQ.objects.get_or_create(question=row[0], answer=row[1])
+            except Exception:
+                continue
 
 
 if __name__ == "__main__":
