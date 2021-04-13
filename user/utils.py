@@ -70,7 +70,7 @@ def send_verification_secondary_email(request, email):
         "base_url": base_url,
         "uid": urlsafe_base64_encode(force_bytes(request.user.pk)),
         "token": PasswordResetTokenGenerator().make_token(request.user),
-        "email": email,
+        "encoded_email": urlsafe_base64_encode(force_bytes(email)),
     }
     htmltemp = template.loader.get_template("verify_email_template.html")
     html_content = htmltemp.render(c)

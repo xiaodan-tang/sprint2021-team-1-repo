@@ -257,22 +257,36 @@ def profile(request):
             form = AddUserEmailForm(user, request.POST)
             if form.is_valid():
                 form.save()
-                send_verification_secondary_email(request, form.cleaned_data.get("email"))
-                messages.success(request, "We have sent further instructions to your email. Please follow the steps for verifying your email.")
+                send_verification_secondary_email(
+                    request, form.cleaned_data.get("email")
+                )
+                messages.success(
+                    request,
+                    "We have sent further instructions to your email. "
+                    + "Please follow the steps for verifying your email.",
+                )
                 return redirect("user:profile")
             else:
-                messages.error(request, "Form is invalid!")
+                for field in form:
+                    for error in field.errors:
+                        messages.error(request, error)
         elif "submit-delete-email-form" in request.POST:
             user_email = Email.objects.get(user=user, email=request.POST["email"])
             user_email.delete()
-        elif "submit-delete-primary-email-form" in request.POST:
+            return redirect("user:profile")
+        elif "primary_email" in request.POST:
             user_email = Email.objects.filter(user=user, active=True).first()
             if user_email:
                 user.email = user_email.email
                 user.save()
                 user_email.delete()
+                return redirect("user:profile")
             else:
-                messages.error(request, "You do not have other active emails. Please add/activate one before deleting primary email.")
+                messages.error(
+                    request,
+                    "You do not have other active emails. "
+                    + "Please add/activate one before deleting primary email.",
+                )
         else:
             form = ProfileUpdateForm(user=user, data=request.POST)
             if form.is_valid():
@@ -354,19 +368,19 @@ def verify_user_link(request, base64_id, token):
     return redirect("user:login")
 
 
-def verify_email_link(request, base64_id, token, email):
+def verify_email_link(request, base64_id, base64_email, token):
     uid = force_text(urlsafe_base64_decode(base64_id))
     user = get_user_model().objects.get(pk=uid)
     if not user or not PasswordResetTokenGenerator().check_token(user, token):
         return HttpResponse("This is invalid!")
+    email = force_text(urlsafe_base64_decode(base64_email))
     user_email = Email.objects.filter(user=user, email=email).first()
-    if user_email:
-        user_email.active = True
-        user_email.save()
-        messages.success(request, "Your email " + email + " has been activated!")
-        return redirect("user:profile")
-    else:
+    if not user_email:
         return HttpResponse("This is invalid!")
+    user_email.active = True
+    user_email.save()
+    messages.success(request, "Your email " + email + " has been activated!")
+    return redirect("user:profile")
 
 
 def forget_password(request):

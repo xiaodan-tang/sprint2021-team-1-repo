@@ -17,7 +17,7 @@ urlpatterns = [
         name="verify_user_link",
     ),
     path(
-        "email/verification/<base64_id>/<token>/<email>",
+        "email/verification/<base64_id>/<base64_email>/<token>",
         views.verify_email_link,
         name="verify_email_link",
     ),

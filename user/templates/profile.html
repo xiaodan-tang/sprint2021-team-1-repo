@@ -120,10 +120,10 @@
                     </span>
                   </div>
                   <div class="col-sm-3">
-                    <form class="form-validate" method="post" id="delete_primary_email_form">
+                    <form class="form-validate" method="post" id="delete_primary_email_form" name="delete_primary_email_form">
                     {% csrf_token %}
-                      <input type="hidden" id="primary_email" name="primary_email" value="{{ user_email.email }}">
-                      <button id="submit-delete-primary-email-form" name="submit-delete-primary-email-form" class="fa_button text-secondary" onclick="deleteEmail()">
+                      <input type="hidden" id="primary_email" name="primary_email" value="{{ user.email }}">
+                      <button type="button" id="submit-delete-primary-email-form" name="submit-delete-primary-email-form" class="fa_button text-secondary" onclick="deleteEmail()">
                         <i class="fas fa-trash"></i>
                       </button>
                     </form>
@@ -168,16 +168,13 @@
               </div>
               <div class="col-sm-9 text-right">
                 <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse" data-target="#addEmail"
-                  aria-expanded="false" aria-controls="manageEmail">Add</button>
+                  aria-expanded="false" aria-controls="addEmail">Add</button>
               </div>
             </div>
             <form class="form-validate" method="post" id="add_email_form">
               {% csrf_token %}
               <div class="collapse" id="addEmail">
                 <div class="row mt-4" id="sub_add_email_form">
-                  <div id="error_update">
-
-                  </div>
                   <div class="form-group col-12">
                     <label class="form-label" for="email">Email Address</label>
                     <input class="form-control" type="email" name="email" id="other_email" required>
@@ -193,7 +190,8 @@
             $('[data-toggle="tooltip"]').tooltip()
           })
           function deleteEmail() {
-            if (confirm("Are you sure you want to remove this email from your account? Once removed, one of your other emails will become your primary email.")) {
+            let r = confirm("Are you sure you want to remove this email from your account? Once removed, one of your other emails will become your primary email.")
+            if (r == true) {
               document.getElementById("delete_primary_email_form").submit();
             }
           }

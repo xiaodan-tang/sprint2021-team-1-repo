@@ -15,7 +15,13 @@ import boto3
 import random
 import string
 
-from .models import User_Profile, Preferences, RestaurantQuestion, RestaurantAnswer, Email
+from .models import (
+    User_Profile,
+    Preferences,
+    RestaurantQuestion,
+    RestaurantAnswer,
+    Email,
+)
 
 logger = logging.getLogger(__name__)
 
