@@ -11,6 +11,7 @@ from .models import (
     RestaurantAnswer,
     UserActivityLog,
     Preferences,
+    Email,
 )
 
 admin.site.register(DineSafelyUser)
@@ -23,3 +24,4 @@ admin.site.register(RestaurantQuestion)
 admin.site.register(RestaurantAnswer)
 admin.site.register(UserActivityLog)
 admin.site.register(Preferences)
+admin.site.register(Email)
