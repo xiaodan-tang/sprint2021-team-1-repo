@@ -512,6 +512,85 @@ class TestDeletePrefView(BaseTest):
         self.assertEqual(response.status_code, 200)
 
 
+class TestDeleteViewedRestaurant(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize dummy user
+        self.dummy_user = get_user_model().objects.create(
+            username="testuser",
+            email="test@gmail.com",
+        )
+        self.dummy_user.set_password("test1234Restaurant")
+        self.dummy_user.save()
+        self.c.login(username="testuser", password="test1234Restaurant")
+
+        # Initialize temp restaurants
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant2 = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+
+        self.temp_restaurant3 = create_restaurant(
+            "random_name",
+            "random_address",
+            None,
+            "random_postcode",
+            "U8C69ISrhGTTubjqoVgZYg",
+        )
+        self.temp_restaurant.save()
+        self.temp_restaurant2.save()
+        self.temp_restaurant3.save()
+
+        # user clicks to restaurants
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.temp_restaurant,
+        ).save()
+
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.temp_restaurant2,
+        ).save()
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.temp_restaurant2,
+        ).save()
+
+    def test_del_rest_valid(self):
+        user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
+        # initally user has 3 logs
+        self.assertEqual(user_activity.all().count(), 3)
+        # delete restaurant from viewed histroy
+        url = reverse(
+            "user:delete_viewed_restaurant",
+            args=[str(self.temp_restaurant.business_id)],
+        )
+        response = self.c.post(path=url)
+        self.assertEqual(response.status_code, 200)
+        user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
+        # deleted 1 restaurant, 2 remaining restaurants
+        self.assertEqual(user_activity.all().count(), 2)
+
+    def test_clear_rest_valid(self):
+        url = reverse("user:clear_viewed_restaurants")
+        response = self.c.post(path=url)
+        self.assertEqual(response.status_code, 200)
+        user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
+        # deleted all restaurants, 0 remaining restaurants
+        self.assertEqual(user_activity.all().count(), 0)
+
+
 class TestContactFormView(BaseTest):
     def test_contact_form_valid_data(self):
         response = self.c.post(
