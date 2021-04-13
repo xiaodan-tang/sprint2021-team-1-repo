@@ -61,3 +61,20 @@ def send_feedback_email(request, email, subject, message):
         return True
     except Exception:
         return False
+
+
+def send_verification_secondary_email(request, email):
+    host_name = request.get_host()
+    base_url = "http://" + host_name + "/user/email/verification/"
+    c = {
+        "base_url": base_url,
+        "uid": urlsafe_base64_encode(force_bytes(request.user.pk)),
+        "encoded_email": urlsafe_base64_encode(force_bytes(email)),
+        "token": PasswordResetTokenGenerator().make_token(request.user),
+    }
+    htmltemp = template.loader.get_template("verify_email_template.html")
+    html_content = htmltemp.render(c)
+    email_subject = "Verify your email!"
+    email = EmailMultiAlternatives(email_subject, to=[email])
+    email.attach_alternative(html_content, "text/html")
+    return email.send()

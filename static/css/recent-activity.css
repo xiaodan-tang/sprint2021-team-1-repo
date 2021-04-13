@@ -1,0 +1,52 @@
+.recent-activity-content {
+    color: rgb(43, 43, 43);
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 1.0;
+}
+.review-metadata-box {
+    line-height: 95%;
+}
+.review-metadata-box:after{
+    content: "";
+    display: table;
+    clear: both;
+}
+.user-name {
+    font-weight: bold;
+    color: rgb(68, 68, 255);
+    font-size: 15px;
+    vertical-align: baseline;
+    opacity: 1.0;
+    padding-right: 5px;
+}
+.timestamp {
+    font-size: 10px;
+    color: rgb(43, 43, 43);
+    opacity: 1.0;
+}
+.opaque-container {
+    background-color: rgb(214, 214, 214);
+    opacity: 0.85;
+    padding: 10px;
+    border-radius: 5px;
+}
+.avatar-container {
+    float: left;
+    width: 30%;
+}
+.user-timestamp {
+    float: left;
+    width: 70%;
+    line-height: 80%;
+}
+.avatar-img {
+    border-radius: 50%;
+    border-style: solid;
+    border-color: rgb(59, 59, 59);
+    border-width: 2px;
+}
+.content-container {
+    overflow: scroll;
+    height: 50px;
+}
