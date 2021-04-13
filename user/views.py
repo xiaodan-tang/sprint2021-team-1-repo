@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
+from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
 
 from .models import (
     User_Profile,
@@ -11,6 +12,8 @@ from .models import (
     Report_Ticket_Comment,
     Report_Ticket_Review,
     Preferences,
+    UserActivityLog,
+    Restaurant,
     Email,
 )
 
@@ -337,6 +340,41 @@ def profile(request):
             "user_emails": user_emails,
         },
     )
+
+
+# view the viewing history
+def view_history(request):
+    viewed_restaurants = []
+    if request.user.is_authenticated:
+        user_activity = UserActivityLog.objects.filter(user=request.user)
+        # get viewed restaurants
+        for idx in range(user_activity.count()):
+            viewed_restaurants.append(user_activity[idx].restaurant)
+        viewed_restaurants = restaurants_to_dict(viewed_restaurants)
+    # add restaurants to context
+    my_dict = {"restaurants": viewed_restaurants}
+    return render(request, "view_history.html", context=my_dict)
+
+
+def delete_viewed_restaurant(request, business_id):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            user = request.user
+            # current restaurant we want to delete
+            restaurant_to_delete = Restaurant.objects.filter(
+                business_id=business_id
+            ).first()
+            # delete activity log
+            UserActivityLog.objects.filter(
+                user=user, restaurant=restaurant_to_delete
+            ).first().delete()
+        return HttpResponse("Restaurant Removed")
+
+
+def clear_viewed_restaurants(request):
+    if request.method == "POST" and request.user.is_authenticated:
+        UserActivityLog.objects.filter(user=request.user).delete()
+        return HttpResponse("Restaurants Cleared")
 
 
 def reset_password_link(request, base64_id, token):
