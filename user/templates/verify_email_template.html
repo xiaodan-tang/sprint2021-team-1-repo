@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Account verification</title>
+    <title>Email verification</title>
     <meta name="viewport" content="width = 375, initial-scale = -1">
 </head>
 
@@ -11,10 +11,10 @@
         <!-- BEGIN EMAIL -->
         <tr>
             <td align="center" bgcolor="#ffffff" style="padding:30px">
-                <p style="text-align:left">Hello,<br><br> To activate your account, please click the button below.
+                <p style="text-align:left">Hello,<br><br> To activate your email, please click the button below.
                 </p>
                 <p>
-                    <a target="_blank" style="text-decoration:none; background-color: black; border: black 1px solid; color: #fff; padding:10px 10px; display:block;" href="{{ base_url }}{{ uid }}/{{ token }}">
+                    <a target="_blank" style="text-decoration:none; background-color: black; border: black 1px solid; color: #fff; padding:10px 10px; display:block;" href="{{ base_url }}{{ uid }}/{{ encoded_email }}/{{ token }}">
                         <strong>Verify</strong></a>
                 </p>
                 <p style="text-align:left">

@@ -14,6 +14,7 @@ from .models import (
     Preferences,
     UserActivityLog,
     Restaurant,
+    Email,
 )
 
 from restaurant.models import Categories
@@ -33,6 +34,7 @@ from .utils import (
     send_reset_password_email,
     send_verification_email,
     send_feedback_email,
+    send_verification_secondary_email,
 )
 
 from .forms import (
@@ -44,6 +46,7 @@ from .forms import (
     UserPreferenceForm,
     ContactForm,
     ProfileUpdateForm,
+    AddUserEmailForm,
 )
 
 import logging
@@ -253,15 +256,53 @@ def profile(request):
 
     user = request.user
     if request.method == "POST":
-        form = ProfileUpdateForm(user=user, data=request.POST)
-        if form.is_valid():
-            if "profile-pic" in request.FILES:
-                profile_pic = form.save_image(request.FILES["profile-pic"])
-                User_Profile.objects.update_or_create(
-                    user=user, defaults={"photo": profile_pic}
+        if "submit-add-email-form" in request.POST:
+            form = AddUserEmailForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                send_verification_secondary_email(
+                    request, form.cleaned_data.get("email")
                 )
-            form.save()
-            return redirect("user:profile")
+                messages.success(
+                    request,
+                    "We have sent further instructions to your email. "
+                    + "Please follow the steps for verifying your email.",
+                )
+                return redirect("user:profile")
+            else:
+                for field in form:
+                    for error in field.errors:
+                        messages.error(request, error)
+        elif "submit-delete-email-form" in request.POST:
+            user_email = Email.objects.filter(
+                user=user, email=request.POST["email"]
+            ).first()
+            if user_email:
+                user_email.delete()
+                return redirect("user:profile")
+        elif "primary_email" in request.POST:
+            user_email = Email.objects.filter(user=user, active=True).first()
+            if user_email:
+                user.email = user_email.email
+                user.save()
+                user_email.delete()
+                return redirect("user:profile")
+            else:
+                messages.error(
+                    request,
+                    "You do not have other active emails. "
+                    + "Please add/activate one before deleting primary email.",
+                )
+        else:
+            form = ProfileUpdateForm(user=user, data=request.POST)
+            if form.is_valid():
+                if "profile-pic" in request.FILES:
+                    profile_pic = form.save_image(request.FILES["profile-pic"])
+                    User_Profile.objects.update_or_create(
+                        user=user, defaults={"photo": profile_pic}
+                    )
+                form.save()
+                return redirect("user:profile")
     user_profile = User_Profile.objects.get(user=user)
     favorite_restaurant_list = user.favorite_restaurants.all()
     user_pref_list = user.preferences.all()
@@ -283,6 +324,7 @@ def profile(request):
         compliance_pref,
         price_pref,
     ]
+    user_emails = Email.objects.filter(user=user)
 
     return render(
         request=request,
@@ -295,6 +337,7 @@ def profile(request):
             "categories": categories,
             "neighbourhoods": neighbourhoods,
             "user_pref": user_pref,
+            "user_emails": user_emails,
         },
     )
 
@@ -364,6 +407,21 @@ def verify_user_link(request, base64_id, token):
     user.save()
 
     return redirect("user:login")
+
+
+def verify_email_link(request, base64_id, base64_email, token):
+    uid = force_text(urlsafe_base64_decode(base64_id))
+    user = get_user_model().objects.get(pk=uid)
+    if not user or not PasswordResetTokenGenerator().check_token(user, token):
+        return HttpResponse("This is invalid!")
+    email = force_text(urlsafe_base64_decode(base64_email))
+    user_email = Email.objects.filter(user=user, email=email).first()
+    if not user_email:
+        return HttpResponse("This is invalid!")
+    user_email.active = True
+    user_email.save()
+    messages.success(request, "Your email " + email + " has been activated!")
+    return redirect("user:profile")
 
 
 def forget_password(request):
