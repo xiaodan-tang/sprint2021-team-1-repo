@@ -567,6 +567,11 @@ class TestDeleteViewedRestaurant(TestCase):
             restaurant=self.temp_restaurant3,
         ).save()
 
+    def test_view_history(self):
+        url = "user/view_history"
+        response = self.c.get((url))
+        self.assertEqual(response.status_code, 200)
+
     def test_del_rest_valid(self):
         user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
         # initally user has 3 logs
