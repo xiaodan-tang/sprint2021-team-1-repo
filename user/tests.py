@@ -564,7 +564,7 @@ class TestDeleteViewedRestaurant(TestCase):
         ).save()
         UserActivityLog.objects.create(
             user=self.dummy_user,
-            restaurant=self.temp_restaurant2,
+            restaurant=self.temp_restaurant3,
         ).save()
 
     def test_del_rest_valid(self):
