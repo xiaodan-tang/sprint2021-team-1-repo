@@ -271,9 +271,12 @@ def profile(request):
                     for error in field.errors:
                         messages.error(request, error)
         elif "submit-delete-email-form" in request.POST:
-            user_email = Email.objects.get(user=user, email=request.POST["email"])
-            user_email.delete()
-            return redirect("user:profile")
+            user_email = Email.objects.filter(
+                user=user, email=request.POST["email"]
+            ).first()
+            if user_email:
+                user_email.delete()
+                return redirect("user:profile")
         elif "primary_email" in request.POST:
             user_email = Email.objects.filter(user=user, active=True).first()
             if user_email:

@@ -13,6 +13,7 @@ from .models import (
     RestaurantQuestion,
     RestaurantAnswer,
     UserActivityLog,
+    Email,
 )
 
 
@@ -27,8 +28,10 @@ from .forms import (
     ContactForm,
     RestaurantQuestionForm,
     RestaurantAnswerForm,
+    AddUserEmailForm,
 )
 from .utils import send_reset_password_email, send_feedback_email
+from .views import verify_email_link, profile
 from django.test import Client
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -915,3 +918,212 @@ class TestUserActivityLogModel(BaseTest):
         rest_activity_log = self.restaurant1.activity_log.first()
         self.assertEqual(user_activity_log, activity_log)
         self.assertEqual(rest_activity_log, activity_log)
+
+
+class TestEmailModel(BaseTest):
+    """ Test Email Model """
+
+    def test_email_str_function(self):
+        email = "test@test.com"
+        user_email = Email.objects.create(user=self.dummy_user, email=email)
+        self.assertEqual(str(user_email), "myuser test@test.com is not active")
+
+        user_email.active = True
+        user_email.save()
+        self.assertEqual(str(user_email), "myuser test@test.com is active")
+
+    def test_email_related_name(self):
+        email = "test@test.com"
+        user_email = Email.objects.create(user=self.dummy_user, email=email)
+        self.assertEqual(self.dummy_user.other_emails.first(), user_email)
+
+
+class TestAddUserEmailForm(BaseTest):
+    """ Test AddUserEmailForm """
+
+    def test_add_email_form_invalid(self):
+        # Test invalid email
+        form_data = {
+            "email": "invalid_email",
+        }
+        form = AddUserEmailForm(self.dummy_user, form_data)
+        self.assertFalse(form.is_valid())
+
+        # Test email that already exists
+        form_data = {
+            "email": "abcd@gmail.com",
+        }
+        form = AddUserEmailForm(self.dummy_user, form_data)
+        self.assertFalse(form.is_valid())
+
+    def test_add_email_form_valid(self):
+        form_data = {
+            "email": "test@test.com",
+        }
+        form = AddUserEmailForm(self.dummy_user, form_data)
+        self.assertTrue(form.is_valid())
+
+
+class TestAddUserEmailView(BaseTest):
+    """ Test Add & Verify User Email View """
+
+    def test_add_email_view(self):
+        self.c.login(username="myuser", password="pass123")
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 0)
+
+        # Post valid form data
+        form_data = {
+            "submit-add-email-form": "",
+            "email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 1)
+
+        # Post invalid form data
+        form_data = {
+            "submit-add-email-form": "",
+            "email": "",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 1)
+
+        self.c.logout()
+
+    def test_verify_email_link_view_valid(self):
+        email = "test@test.com"
+        secondary_email = Email.objects.create(user=self.dummy_user, email=email)
+        self.assertFalse(secondary_email.active)
+
+        response = self.c.post(
+            "/user/email/verification/"
+            + urlsafe_base64_encode(force_bytes(self.dummy_user.pk))
+            + "/"
+            + urlsafe_base64_encode(force_bytes(email))
+            + "/"
+            + PasswordResetTokenGenerator().make_token(self.dummy_user)
+        )
+        # redirect to profile page after reset
+        # if user not logged in, redirect to login page
+        self.assertEqual(response.resolver_match.func, verify_email_link)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=302,
+            fetch_redirect_response=True,
+        )
+        secondary_email = Email.objects.get(user=self.dummy_user, email=email)
+        self.assertTrue(secondary_email.active)
+
+    def test_verify_email_link_view_invalid(self):
+        valid_email = "test1@test.com"
+        invalid_email = "test2@test.com"
+        secondary_email = Email.objects.create(
+            user=self.dummy_user, email=valid_email, active=False
+        )
+        self.assertFalse(secondary_email.active)
+
+        response = self.c.post(
+            "/user/email/verification/"
+            + urlsafe_base64_encode(force_bytes(self.dummy_user.pk))
+            + "/"
+            + urlsafe_base64_encode(force_bytes(invalid_email))
+            + "/"
+            + PasswordResetTokenGenerator().make_token(self.dummy_user)
+        )
+        # return invalid http response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode("utf-8"), "This is invalid!")
+        secondary_email = Email.objects.get(user=self.dummy_user, email=valid_email)
+        self.assertFalse(secondary_email.active)
+
+
+class TestDeleteUserEmailView(BaseTest):
+    """ Test Delete User Primary and Other Emails View """
+
+    def test_delete_primary_email_view(self):
+        self.c.login(username="myuser", password="pass123")
+
+        # If user has active secondary emails, the user can delete primary email
+        email = "test@test.com"
+        user_email = Email.objects.create(user=self.dummy_user, email=email)
+        user_email.active = True
+        user_email.save()
+        form_data = {
+            "primary_email": "abcd@gmail.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+
+        # If user doesn't have active secondary emails, the user cannot delete primary email
+        form_data = {
+            "primary_email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+
+        email = "test2@test.com"
+        Email.objects.create(user=self.dummy_user, email=email)
+        form_data = {
+            "primary_email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+
+        self.c.logout()
+
+    def test_delete_other_email_view(self):
+        self.c.login(username="myuser", password="pass123")
+
+        email = "test@test.com"
+        Email.objects.create(user=self.dummy_user, email=email)
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 1)
+
+        # Post valid form data
+        form_data = {
+            "submit-delete-email-form": "",
+            "email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 0)
+
+        # Post invalid form data
+        form_data = {
+            "submit-delete-email-form": "",
+            "email": "test2@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 0)
+
+        self.c.logout()
