@@ -351,6 +351,9 @@ def view_history(request):
         for idx in range(user_activity.count()):
             viewed_restaurants.append(user_activity[idx].restaurant)
         viewed_restaurants = restaurants_to_dict(viewed_restaurants)
+        # Add last visit date
+        for idx in range(user_activity.count()):
+            viewed_restaurants[idx]["last_visit"] = user_activity[idx].last_visit.date()
     # add restaurants to context
     my_dict = {"restaurants": viewed_restaurants}
     return render(request, "view_history.html", context=my_dict)
