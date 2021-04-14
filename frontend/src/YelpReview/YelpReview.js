@@ -56,6 +56,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
     const [showCreateComment, setShowCreateComment] = useState(false);
     const [liked, setLiked] = useState(isInternal ? review.liked : null);
     const [likesCount, setLikesCount] = useState(isInternal ? review.likes_num : 0);
+    const [commentIndex, setCommentIndex] = useState(3);
     const isAuthor = data.userId === userId;
 
     const onReplyClick = e => {
@@ -118,7 +119,6 @@ export default ({ review, restaurantId, userId, isInternal }) => {
     };
 
     const onImageClick = (img) => {
-        console.log(img);
         const zoomModal = document.getElementById("myModal");
         zoomModal.style.display = "block";
         const modalImg = document.getElementById("img01");
@@ -131,7 +131,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
             <div className="yelp__body d-block d-sm-flex">
                 <div className="yelp__pic_date" style={{ opacity: data.hidden ? 0.5 : 1 }}>
                     <div className="text-center">
-                        <img src={data.profilePic || DEFAULT_AVATAR} className="yelp__pic p-2"/>
+                        <img src={data.profilePic || DEFAULT_AVATAR} className="yelp__pic p-2" style={{ cursor: 'pointer' }} onClick={() => window.open(`/user/facing_page/${userId}`, '_blank') }/>
                     </div>
                     <div className="yelp__date text-muted text-sm">
                         {data.time}
@@ -139,7 +139,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                 </div>
                 <div className = "yelp__name_rating_text text-muted" style={{ opacity: data.hidden ? 0.5 : 1 }}>
                     <div className="yelp__name">
-                        <a href={data.reviewUrl}>
+                        <a href={`/user/facing_page/${userId}`}>
                             {data.userName}
                         </a>
                     </div>
@@ -179,9 +179,12 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                     ) : null
                 }
             </div>
-            { data.comments.map((el, index) => {
+            { data.comments.slice(0, commentIndex).map((el, index) => {
                 return <CommentBox key={index} {...el} userId={userId} restaurantId={restaurantId} reviewId={data.id} onReport={onReportClick} />;
               })
+            }
+            {
+                commentIndex < data.comments.length ? <div className="text-primary text-sm text-center showmore__button d-flex justify-content-center align-items-center" onClick={() => { setCommentIndex(Math.min(commentIndex + 3, data.comments.length)) }}>show more...</div> : null
             }
             { showCreateComment ? <CommentBox userId={userId} restaurantId={restaurantId} reviewId={data.id} onClose={() => setShowCreateComment(false)} /> : null }
         </div>

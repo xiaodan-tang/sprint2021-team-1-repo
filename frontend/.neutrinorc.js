@@ -24,6 +24,10 @@ module.exports = {
     }),
     neutrino => {
       neutrino.config.output.filename('[name].js');
+      neutrino.config.entry('index')
+                      .add('./src/index.jsx')
+                      .add('./src/Sidebar.jsx')
+
       neutrino.config.optimization.splitChunks(false);
     },
   ],

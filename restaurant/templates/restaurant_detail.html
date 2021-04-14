@@ -306,20 +306,6 @@
           </div>
           <div class="text-block">
           </div>
-
-
-{#              {% if saved_restaurants %}#}
-{#              <!-- Button trigger delete restaurant from favorite -->#}
-{#              <button type="button" class="fa fa-heart fa-2x" data-toggle="modal" data-target="#delete_favorite" id="delete_fav_button" >#}
-{#                Remove from favorite#}
-{#              </button>#}
-{#              {% else %}#}
-{#                <!-- Button trigger save restaurant as favorite -->#}
-{#                <button type="button" class="fa fa-heart fa-2x" data-toggle="modal" data-target="#save_favorite" id="save_fav_button" color="red" >#}
-{#                  Do you like this restaurant?#}
-{#                </button>#}
-{##}
-{#              {% endif %}#}
         </div>
 
           <!-- Save Favorite Restaurant -->
@@ -637,41 +623,6 @@
                   <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden>
                   <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
                   <input type="text" id="saved_on" name="saved_on"   hidden>
-                  {% comment %} <p class="mb-2">Did you receive a temperature check?</p>
-                  <div class="form-group mb-2">
-                    <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
-                    <label for="temp_check_true" title="text">Yes</label>
-                    <input id="temp_check_false" type="radio" name="temperature_required" value="false" required/>
-                    <label for="temp_check_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Were you or a member of your party required to provide contact tracing information?</p>
-                  <div class="form-group mb-2">
-                    <input id="contact_true" type="radio" name="contact_info_required" value="true" required/>
-                    <label for="contact_true" title="text">Yes</label>
-                    <input id="contact_false" type="radio" name="contact_info_required" value="false" required/>
-                    <label for="contact_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Were restaurant staff wearing masks at all times?</p>
-                  <div class="form-group mb-2">
-                    <input id="employee_mask_true" type="radio" name="employee_mask" value="true" required/>
-                    <label for="employee_mask_true" title="text">Yes</label>
-                    <input id="employee_mask_false" type="radio" name="employee_mask" value="false" required/>
-                    <label for="employee_mask_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Was in-door capacity under 25%?</p>
-                  <div class="form-group mb-2">
-                    <input id="capacity_true" type="radio" name="capacity_compliant" value="true" required/>
-                    <label for="capacity_true" title="text">Yes</label>
-                    <input id="capacity_false" type="radio" name="capacity_compliant" value="false" required/>
-                    <label for="capacity_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Were you seated at least 6 feet from the nearest party?</p>
-                  <div class="form-group mb-2">
-                    <input id="distance_compliant_true" type="radio" name="distance_compliant" value="true" required/>
-                    <label for="distance_compliant_true" title="text">Yes</label>
-                    <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
-                    <label for="distance_compliant_false" title="text">No</label>
-                  </div> {% endcomment %}
                   <p class="mb-2">Tell others about your thoughts!</p>
                   <div class="form-group mb-2">
                     <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
@@ -879,26 +830,10 @@
           <div id="root"></div>
         </div> 
       </div>
+      
       <div class="col-lg-4">
         <div class="pl-xl-4">
-          <!-- Opening Hours      -->
-          <div class="card border-0 shadow mb-5">
-            <div class="card-header bg-gray-100 py-4 border-0">
-              <div class="media align-items-center">
-                <div class="media-body">
-<!--                  <p class="subtitle text-sm text-primary">Overnight Status : <span id="res_overnight_status"></span></p>-->
-                  <h4 class="mb-0">Opening Hours </h4> </div>
-                <svg class="svg-icon svg-icon svg-icon-light w-3rem h-3rem ml-3 text-muted">
-                  <use xlink:href="#wall-clock-1"> </use>
-                </svg>
-              </div>
-            </div>
-            <div class="card-body">
-              <table id="res_open_hours" class="table text-sm mb-0">
-
-              </table>
-            </div>
-          </div>
+        <div id="sidebar"></div>
           <!-- Contact-->
           <div class="card border-0 shadow mb-5">
             <div class="card-header bg-gray-100 py-4 border-0">
@@ -1004,7 +939,6 @@
 <!--Insert values into HTML-->
 <script>
 var inspection_data = {{ lasted_inspection | safe}};
-
 document.getElementById("res_compliance_status").innerHTML = inspection_data.is_roadway_compliant;
 document.getElementById("res_last_inspection").innerHTML = inspection_data.inspected_on;
 
@@ -1103,32 +1037,6 @@ function timeChangeFunc(x) {
   var mins = x.slice(2,4);
   hrs = hrs%12 || 12;
   return(hrs + ":" + mins + " " + a);
-}
-
-var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-var day_time = [0, 0, 0, 0, 0, 0, 0];
-for (i = 0; i < yelp_info.hours[0].open.length; i++) {
-    var curr = yelp_info.hours[0].open[i].day;
-    day_time[curr]++;
-}
-var prev_day = -1;
-for (i = 0; i < yelp_info.hours[0].open.length; i++) {
-    var opening_hours = document.getElementById("res_open_hours");
-    var row = document.createElement("tr");
-    opening_hours.appendChild(row);
-    var curr_day = yelp_info.hours[0].open[i].day;
-    if (curr_day != prev_day) {
-        var thh = document.createElement("th");
-        thh.className = "pl-0";
-        thh.innerHTML = days[curr_day];
-        thh.rowSpan = day_time[curr_day];
-        row.appendChild(thh);
-    }
-    prev_day = curr_day;
-    var tdd = document.createElement("td");
-    tdd.className = "pr-0 text-right";
-    tdd.innerHTML = timeChangeFunc(yelp_info.hours[0].open[i].start) + "-" + timeChangeFunc(yelp_info.hours[0].open[i].end);
-    row.appendChild(tdd);
 }
 
 for (i = 0; i < yelp_info.photos.length; i++) {
@@ -1286,13 +1194,7 @@ function initMap() {
         }
       });
 }
-      
-
 </script>
-<!-- <script src="{% static 'build/runtime.js' %}"></script> -->
-<!-- <script src="{% static 'build/index.js' %}"></script> -->
-<!-- <link rel="stylesheet" href="{% static 'build/index.css' %}"></link> -->
-
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&map_ids={{google_map_id}}&callback=initMap"
     type="text/javascript">
 </script>
@@ -1357,6 +1259,5 @@ function initMap() {
 </script>
 <script src="https://dineline.s3.amazonaws.com/build/runtime.js"></script>
 <script src="https://dineline.s3.amazonaws.com/build/index.js"></script>
-
 
 {% endblock %}
