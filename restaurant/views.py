@@ -6,13 +6,13 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.paginator import Paginator
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 
 from .models import Restaurant, FAQ
 
 from .forms import (
-    # QuestionnaireForm,
+    QuestionnaireForm,
     SearchFilterForm,
 )
 from user.forms import (
@@ -61,14 +61,47 @@ logger = logging.getLogger(__name__)
 
 
 def get_restaurant_profile(request, restaurant_id):
-
+    # When user add a review
     if request.method == "POST" and "content" in request.POST:
-        form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
         url = reverse("restaurant:profile", args=[restaurant_id])
-        # if form.is_valid():
-        form.save()
-        messages.success(request, "Thank you for your review!")
+        date_from = datetime.now() - timedelta(days=1)
+
+        # 24 hour limit for reviews on the same restaurant, 1 review at most
+        lastday_reviews_num_rest = Review.objects.filter(
+            user=request.user, restaurant_id=restaurant_id, time__gte=date_from
+        ).count()
+
+        # 24 hour limit for the user, 2 reviews at most
+        lastday_reviews_num_user = Review.objects.filter(
+            user=request.user, time__gte=date_from
+        ).count()
+
+        if lastday_reviews_num_rest > 0:
+            messages.error(
+                request,
+                "Sorry, you've made a review for this restaurant within last 24 hours.",
+            )
+        elif lastday_reviews_num_user >= 2:
+            messages.error(request, "Sorry, you've made 2 reviews within last 24 hours")
+        elif request.user.is_authenticated:
+            form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
+            # if form.is_valid():
+            form.save()
+            messages.success(request, "Thank you for your review!")
+        else:
+            messages.error(request, "Please login before making review")
+
         return HttpResponseRedirect(url)
+
+    if request.method == "POST" and "employee_mask" in request.POST:
+        form = QuestionnaireForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "Thank you for your feedback!", extra_tags="feedback"
+            )
+            url = reverse("restaurant:profile", args=[restaurant_id])
+            return HttpResponseRedirect(url)
 
     try:
         csv_file = get_csv_from_github()
@@ -118,9 +151,7 @@ def get_restaurant_profile(request, restaurant_id):
                 "hidden",
             )
         )
-        print("Internal review lists: \n")
-        for r in internal_reviews:
-            print(r)
+
         for idx in range(len(internal_reviews)):
             comments = Comment.objects.filter(review_id=internal_reviews[idx]["id"])
             # get photo afterwards
@@ -284,12 +315,14 @@ def get_restaurant_profile(request, restaurant_id):
 def edit_review(request, restaurant_id, review_id, action, source):
     if action == "delete":
         Review.objects.filter(id=review_id).delete()
+        messages.success(request, "Your review is removed!")
     if action == "put":
         review = Review.objects.get(id=review_id)
         review.rating = request.POST.get("rating")
         review.content = request.POST.get("content")
+        review.hidden = False
         review.save()
-        messages.success(request, "success")
+        messages.success(request, "Your review is saved!")
     if source == "restaurant":
         return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
     if source == "user":
@@ -314,11 +347,13 @@ def edit_comment(request, restaurant_id, review_id):
     comment.text = request.GET.get("text")
     comment.time = datetime.now()
     comment.save()
+    messages.success(request, "Your comment is saved!")
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
 def delete_comment(request, restaurant_id, comment_id):
     Comment.objects.get(pk=comment_id).delete()
+    messages.success(request, "Your comment is removed!")
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
