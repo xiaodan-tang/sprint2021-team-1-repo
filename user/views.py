@@ -356,7 +356,7 @@ def view_history(request, page):
         # Add last visit date
         for idx in range(user_activity.count()):
             viewed_restaurants[idx]["last_visit"] = user_activity[idx].last_visit.date()
-    page_obj = Paginator(viewed_restaurants, 10).get_page(page)
+    page_obj = Paginator(viewed_restaurants, 8).get_page(page)
     # add restaurants to context
     context = {
         "total_restaurant_count": len(viewed_restaurants),
