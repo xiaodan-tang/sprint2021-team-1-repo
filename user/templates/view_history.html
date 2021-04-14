@@ -1,0 +1,188 @@
+{% extends 'base.html' %} {% load static %} {% block content %}{% load mathfilters %}
+
+<div class="main-container">
+    <section class="py-6 bg-gray-100">
+        <div class="container">
+            <div class="text-center pb-lg-4">
+                <h2 class="mb-5">View History</h2>
+            </div>
+        </div>
+        <div class="container">
+            {% if not restaurants %}
+            <center>
+            <h4 id="no_restaurants"class="mb-5">No restaurants found</h4>
+            </center>
+            {% endif %}
+            <!-- card deck -->
+            <div class="card-deck" style="display:grid;   grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); grid-gap:10px;">
+            
+                        {% for restaurant in restaurants %}
+                        {% if not restaurant.yelp_info.fake_info %}
+                        
+                            <!-- venue item-->
+                            <div id="{{ restaurant.yelp_info.business_id }}" class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
+                                <div class="card h-100 border-0 shadow">
+                                    <div class="card-img-top overflow-hidden dark-overlay bg-cover" style="background-image: url({{ restaurant.yelp_info.image_url }}); min-height: 200px;"><a class="tile-link" href="{% url 'restaurant:profile' restaurant.id %}"></a>
+                                        <div class="card-img-overlay-bottom z-index-20">
+                                            <h4 class="text-white text-shadow">{{ restaurant.yelp_info.name }}</h4>
+                                            <p class="mb-2 text-xs">
+                                                {% for i in "x"|ljust:restaurant.yelp_info.rating %}
+                                                    <i class="fa fa-star text-warning"></i>
+                                                {% endfor %}
+                                                {% with restaurant.yelp_info.rating|add:-5|abs as aa %}
+                                                {% if aa == 0 %}
+                                                {% else %}
+                                                {% for i in "x"|ljust:aa %}
+                                                <i class="fa fa-star text-gray-300"></i>
+                                                {% endfor %}
+                                                {% endif %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-sm text-muted text-uppercase mb-1">
+                                            <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                            {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
+                                                <i class="fas fa-check-circle" style="color:#596ff8"></i>
+                                            {% endif %}
+                                        </p>
+                                        <p class="text-sm mb-1">
+                                            {% for cat in restaurant.yelp_info.categories %}
+                                            <a class="mr-1 disabled text-decoration-none">{{ cat.title}}</a>
+                                            {% endfor %}
+                                        </p>
+                                        <p class="text-sm mb-0">
+                                            <a class="mr-1 disabled text-decoration-none text-muted">Last visited on {{ restaurant.last_visit }}</a>
+                                        </p>
+                                    </div>
+                                    <div class="card-footer text-center">
+                                        
+                                        <form name="viewed_restaurant_delete" class="viewed_rest" onsubmit="return false;" business_id="{{ restaurant.yelp_info.business_id }}"  method="POST">
+                                            <div class="text-secondary"> 
+                                                <button type="submit" class="btn btn-danger">Delete
+                                                </button>
+                                            </div>
+                                        </form>                         
+                                    </div>
+                                </div>
+                            </div>       
+                        {% endif %}
+                        {% endfor %}
+
+            </div>    
+            <div>
+            <!-- load more button and clear all button -->
+            {% if restaurants %}
+                <center>
+                    <div class="text-center" style="margin-top: 20px;">
+                        <p class="mb-2">
+                            <!--button class="btn btn-dark mb-2" id="loadMore" type="submit" style="float:center ">Load more</button-->
+                            <form name="viewed_restaurants_clear" class="viewed_rest" onsubmit="return false;"  method="POST">
+                                <button class="btn  btn-outline-danger h-100" id="clearAll" type="submit" style="float:right">Clear all</button>
+                            </form>
+                        </p>
+                    </div>  
+                </center>
+            {% endif %}
+            </div>  
+        </div>
+    </section>
+</div>
+
+
+<!-- delete functions -->
+<script>
+    $('body').on('submit', "form[name='viewed_restaurant_delete']", function (event) {
+      var currentForm = $(this);
+      event.preventDefault();
+      var formData = currentForm.serialize();
+      console.log("all value is : ", formData);
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+          if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+          }
+        }
+      });
+      $.ajax({
+        type: 'POST',
+        url: "../user/delete/viewed_restaurants/" + currentForm.attr("business_id")  ,
+        data: formData,
+        processData: false,
+        contentType: false,
+        // handle a successful response
+        success: function (response) {
+            $('#' + currentForm.attr("business_id")).hide();
+            if($('.card-deck').children(':visible').length == 0) {
+             // hide clear all button
+             $('#clearAll').hide();
+            }
+        },
+        error: function (xhr, errmsg, err) {
+          console.log('Error')
+        }
+      });
+    });
+  </script>
+
+<!-- clear all functions -->
+<script>
+        $('body').on('submit', "form[name='viewed_restaurants_clear']", function (event) {
+          var currentForm = $(this);
+          event.preventDefault();
+          var formData = currentForm.serialize();
+          console.log("all value is : ", formData);
+          $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+              function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                  var cookies = document.cookie.split(';');
+                  for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                    }
+                  }
+                }
+                return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+            }
+          });
+          $.ajax({
+            type: 'POST',
+            url: "../user/clear_all/viewed_restaurants"   ,
+            data: formData,
+            processData: false,
+            contentType: false,
+            // handle a successful response
+            success: function (response) {
+                 $('.card-deck').hide();
+                 $('#clearAll').hide();
+            },
+            error: function (xhr, errmsg, err) {
+              console.log('Error')
+            }
+          });
+        });
+      </script>
+{% endblock %}
