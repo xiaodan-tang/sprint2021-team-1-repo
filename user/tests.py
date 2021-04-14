@@ -571,7 +571,7 @@ class TestDeleteViewedRestaurant(TestCase):
         ).save()
 
     def test_view_history(self):
-        url = "user/view_history"
+        url = "user/view_history/1"
         response = self.c.get((url))
         self.assertEqual(response.status_code, 200)
 
