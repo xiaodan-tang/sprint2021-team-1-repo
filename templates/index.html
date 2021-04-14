@@ -254,7 +254,11 @@
                                     <div class="opaque-container">
                                         <div class="review-metadata-box">
                                             <div class="avatar-container">
-                                                <img class="avatar-img" src="{{ recent.user.user_profile.photo }}" alt="" height="50" width="50" />
+                                                {% if recent.user.user_profile.photo %}
+                                                    <img class="avatar-img" src="{{ recent.user.user_profile.photo }}" alt="" height="50" width="50" />
+                                                {% else %}
+                                                    <img class="avatar-img" src="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" alt="" height="50" width="50" />
+                                                {% endif %}
                                             </div>
                                             <div class="user-timestamp">
                                                 <p class="user-name" style="float: left;">{{ recent.user }}</p>

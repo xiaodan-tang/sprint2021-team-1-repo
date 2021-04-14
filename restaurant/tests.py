@@ -1527,12 +1527,12 @@ class CreateCommentTest(BaseTest):
     @mock.patch("user.models.Review.objects")
     @mock.patch("user.models.Comment.__init__", mock.Mock(return_value=None))
     @mock.patch("user.models.Comment.save", mock.Mock(return_value=None))
-    def test_edit_comment(self, queryset):
+    def test_edit_comment_guest(self, queryset):
         queryset.get.return_value = None
         response = self.c.get(
             "/restaurant/profile/restaurant_id/comment_edit/review_id"
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
 
 class DeleteCommentTest(BaseTest):
@@ -1589,6 +1589,19 @@ class CommentTest(TestCase):
         )
         response = self.c.get(delete_url)
         self.assertEqual(response.status_code, 302)
+
+    def test_add_comment_loggedin(self):
+        self.c.login(username="testuser", password="test1234Comment")
+        form = {
+            "text": "test adding comment",
+        }
+        response = self.c.get(
+            "/restaurant/profile/restaurant_id/comment_edit/"
+            + str(self.temp_review.id),
+            form,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.c.logout()
 
 
 class ReportTests(TestCase):

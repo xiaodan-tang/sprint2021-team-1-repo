@@ -57,6 +57,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
     const [liked, setLiked] = useState(isInternal ? review.liked : null);
     const [likesCount, setLikesCount] = useState(isInternal ? review.likes_num : 0);
     const [commentIndex, setCommentIndex] = useState(3);
+    const [showAlert, setShowAlert] = useState(false);
     const isAuthor = data.userId === userId;
 
     const onReplyClick = e => {
@@ -110,6 +111,11 @@ export default ({ review, restaurantId, userId, isInternal }) => {
             },
             body: `review_id=${Number(data.id)}`
         }).then(r => {
+            console.log(r.status);
+            if (r.status === 403) {
+                setShowAlert(true);
+                setTimeout(() => setShowAlert(false), 2500);
+            }
             if (!r.ok) return;
             return r.json();
         }).then(r => {
@@ -127,7 +133,8 @@ export default ({ review, restaurantId, userId, isInternal }) => {
 
     if (data.hidden && !isAuthor) return null;
     return (
-        <div className="yelp__root mt-2" onMouseLeave={() => setShowDropdown(false)}>
+        <div className="yelp__root mt-2 position-relative" onMouseLeave={() => setShowDropdown(false)}>
+            <div class={`alert alert-danger fade ${showAlert ? 'show' : ''}`} style={{ zIndex: 100, position: 'absolute', top: '10%', left: '30%' }}>Please login first</div>
             <div className="yelp__body d-block d-sm-flex">
                 <div className="yelp__pic_date" style={{ opacity: data.hidden ? 0.5 : 1 }}>
                     <div className="text-center">
@@ -157,7 +164,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                         { data.image3 ? <img className="review__image" src={new URL(data.image3, AWS_S3_MDEIA).href} onClick={() => onImageClick(new URL(data.image3, AWS_S3_MDEIA).href)}/> : null }
                     </div>
                     <RatingFooter
-                        isInternal
+                        isInternal={isInternal}
                         onLikeClick={onLikeClick}
                         liked={liked}
                         likesCount={likesCount}
@@ -172,7 +179,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                             <div className={`dropdown-menu p-0 ${showDropdown ? 'show' : ''}`}>
                                 <a className={`dropdown-item small py-2 ${isAuthor ? '' : 'd-none'}`} href="#" onClick={onEditClick}>Edit</a>
                                 <a className={`dropdown-item small py-2 ${isAuthor ? '' : 'd-none'}`} href="#" onClick={onDeleteClick}>Delete</a>
-                                <a className={`dropdown-item small py-2 ${data.hidden ? 'd-none' : ''}`} href="#" onClick={onReplyClick}>Reply</a>
+                                <a className={`dropdown-item small py-2 ${data.hidden || !userId ? 'd-none' : ''}`} href="#" onClick={onReplyClick}>Reply</a>
                                 <a className={`dropdown-item small py-2 ${isAuthor ? 'd-none' : ''}`} href="#" onClick={onReportClick}>Report</a>
                             </div>
                         </div>

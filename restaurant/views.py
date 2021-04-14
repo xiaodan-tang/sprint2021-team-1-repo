@@ -1,7 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.http import (
+    JsonResponse,
+    HttpResponseRedirect,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+)
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
@@ -66,6 +71,11 @@ def get_restaurant_profile(request, restaurant_id):
         url = reverse("restaurant:profile", args=[restaurant_id])
         date_from = datetime.now() - timedelta(days=1)
 
+        # If user has not logged in
+        if not request.user.is_authenticated:
+            messages.error(request, "Please login before making review")
+            return HttpResponseRedirect(url)
+
         # 24 hour limit for reviews on the same restaurant, 1 review at most
         lastday_reviews_num_rest = Review.objects.filter(
             user=request.user, restaurant_id=restaurant_id, time__gte=date_from
@@ -83,14 +93,11 @@ def get_restaurant_profile(request, restaurant_id):
             )
         elif lastday_reviews_num_user >= 2:
             messages.error(request, "Sorry, you've made 2 reviews within last 24 hours")
-        elif request.user.is_authenticated:
+        else:
             form = UserQuestionaireForm(request.POST, request.FILES, restaurant_id)
             # if form.is_valid():
             form.save()
             messages.success(request, "Thank you for your review!")
-        else:
-            messages.error(request, "Please login before making review")
-
         return HttpResponseRedirect(url)
 
     if request.method == "POST" and "employee_mask" in request.POST:
@@ -329,31 +336,30 @@ def edit_review(request, restaurant_id, review_id, action, source):
         return HttpResponseRedirect(reverse("user:user_reviews"))
 
 
-def edit_user_review(request, restaurant_id, comment_id, action):
-    if action == "delete":
-        Review.objects.filter(id=comment_id).delete()
-    if action == "put":
-        review = Review.objects.get(id=comment_id)
-        review.rating = request.POST.get("rating")
-        review.content = request.POST.get("content")
-        review.save()
-        messages.success(request, "success")
-    return HttpResponseRedirect(reverse("user:user_reviews"))
-
-
 def edit_comment(request, restaurant_id, review_id):
-    review = Review.objects.get(pk=review_id)
-    comment = Comment(user=request.user, review=review)
-    comment.text = request.GET.get("text")
-    comment.time = datetime.now()
-    comment.save()
-    messages.success(request, "Your comment is saved!")
+    if request.user.is_authenticated:
+        review = Review.objects.get(pk=review_id)
+        comment = Comment(user=request.user, review=review)
+        comment.text = request.GET.get("text")
+        comment.time = datetime.now()
+        comment.save()
+        messages.success(request, "Your comment is saved!")
+    else:
+        messages.error(request, "Please first login before replying any review")
+        return HttpResponseForbidden()
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
 def delete_comment(request, restaurant_id, comment_id):
-    Comment.objects.get(pk=comment_id).delete()
-    messages.success(request, "Your comment is removed!")
+    if request.user.is_authenticated:
+        comment = Comment.objects.get(pk=comment_id)
+        if request.user.id == comment.user.id:
+            comment.delete()
+            messages.success(request, "Your comment is removed!")
+        else:
+            messages.error(request, "You are not able to delete other users' comments!")
+    else:
+        messages.error(request, "Please first login before deleting any comment")
     return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))
 
 
@@ -456,8 +462,9 @@ def delete_favorite_restaurant(request, business_id):
         return HttpResponse("Deleted")
 
 
-@login_required
 def like_review(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
     if request.method == "POST":
         user = request.user
         review = get_object_or_404(Review, id=request.POST.get("review_id"))
@@ -537,7 +544,8 @@ def get_faqs_list(request):
 
 # Report Reviews & Comments
 def report_review(request, restaurant_id, review_id):
-    if request.method == "POST":
+    url = reverse("restaurant:profile", args=[restaurant_id])
+    if request.method == "POST" and request.user.is_authenticated:
         user = request.user
         form = Report_Review_Form(request.POST, review_id, user)
         form.save()
@@ -552,12 +560,14 @@ def report_review(request, restaurant_id, review_id):
         send_moderate_notification_email(
             request, target_user, restaurant, "review", "report"
         )
-        url = reverse("restaurant:profile", args=[restaurant_id])
-        return HttpResponseRedirect(url)
+    else:
+        messages.error(request, "Please first login before reporting any review")
+    return HttpResponseRedirect(url)
 
 
 def report_comment(request, restaurant_id, comment_id):
-    if request.method == "POST":
+    url = reverse("restaurant:profile", args=[restaurant_id])
+    if request.method == "POST" and request.user.is_authenticated:
         user = request.user
         form = Report_Comment_Form(request.POST, comment_id, user)
         form.save()
@@ -572,8 +582,10 @@ def report_comment(request, restaurant_id, comment_id):
         send_moderate_notification_email(
             request, target_user, restaurant, "comment", "report"
         )
-        url = reverse("restaurant:profile", args=[restaurant_id])
-        return HttpResponseRedirect(url)
+    else:
+        messages.error(request, "Please first login before reporting any comment")
+
+    return HttpResponseRedirect(url)
 
 
 # Ignore、hide and delete inappropriate Comments & Reviews
