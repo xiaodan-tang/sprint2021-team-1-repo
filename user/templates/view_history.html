@@ -8,7 +8,7 @@
             </div>
         </div>
         <div class="container">
-            {% if not restaurants %}
+            {% if not total_restaurant_count %}
             <center>
             <h4 id="no_restaurants"class="mb-5">No restaurants found</h4>
             </center>
@@ -16,7 +16,7 @@
             <!-- card deck -->
             <div class="card-deck" style="display:grid;   grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); grid-gap:10px;">
             
-                        {% for restaurant in restaurants %}
+                        {% for restaurant in page_obj %}
                         {% if not restaurant.yelp_info.fake_info %}
                         
                             <!-- venue item-->
@@ -72,8 +72,28 @@
 
             </div>    
             <div>
+            {% if  total_restaurant_count %}
+            <div id="paginationBlock" class="pagination d-flex justify-content-center">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="/user/view_history/1">&laquo; first</a>
+                        <a href="/user/view_history/{{ page_obj.previous_page_number }}">previous</a>
+                    {% endif %}
+                    
+                        <span class="current">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                        </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="/user/view_history/{{ page_obj.next_page_number }}">next</a>
+                        <a href="/user/view_history/{{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+
             <!-- load more button and clear all button -->
-            {% if restaurants %}
+            {% if total_restaurant_count %}
                 <center>
                     <div class="text-center" style="margin-top: 20px;">
                         <p class="mb-2">
@@ -121,7 +141,7 @@
       });
       $.ajax({
         type: 'POST',
-        url: "../user/delete/viewed_restaurants/" + currentForm.attr("business_id")  ,
+        url: "../delete/viewed_restaurants/" + currentForm.attr("business_id")  ,
         data: formData,
         processData: false,
         contentType: false,
@@ -170,7 +190,7 @@
           });
           $.ajax({
             type: 'POST',
-            url: "../user/clear_all/viewed_restaurants"   ,
+            url: "../clear_all/viewed_restaurants"   ,
             data: formData,
             processData: false,
             contentType: false,
@@ -178,6 +198,7 @@
             success: function (response) {
                  $('.card-deck').hide();
                  $('#clearAll').hide();
+                 $('.paginationBlock').hide();
             },
             error: function (xhr, errmsg, err) {
               console.log('Error')

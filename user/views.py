@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from restaurant.utils import get_filtered_restaurants, restaurants_to_dict
+from django.core.paginator import Paginator
 
 from .models import (
     User_Profile,
@@ -344,7 +345,7 @@ def profile(request):
 
 
 # view the viewing history
-def view_history(request):
+def view_history(request, page):
     viewed_restaurants = []
     if request.user.is_authenticated:
         user_activity = UserActivityLog.objects.filter(user=request.user)
@@ -355,9 +356,13 @@ def view_history(request):
         # Add last visit date
         for idx in range(user_activity.count()):
             viewed_restaurants[idx]["last_visit"] = user_activity[idx].last_visit.date()
+    page_obj = Paginator(viewed_restaurants, 10).get_page(page)
     # add restaurants to context
-    my_dict = {"restaurants": viewed_restaurants}
-    return render(request, "view_history.html", context=my_dict)
+    context = {
+        "total_restaurant_count": len(viewed_restaurants),
+        "page_obj": page_obj,
+    }
+    return render(request, "view_history.html", context=context)
 
 
 def delete_viewed_restaurant(request, business_id):
