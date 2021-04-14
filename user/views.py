@@ -232,6 +232,7 @@ def user_reviews(request):
             "restaurant__restaurant_name",
             "restaurant__yelp_detail__img_url",
             "restaurant__id",
+            "hidden",
         )
     )
     return render(
@@ -352,6 +353,9 @@ def view_history(request, page):
         for idx in range(user_activity.count()):
             viewed_restaurants.append(user_activity[idx].restaurant)
         viewed_restaurants = restaurants_to_dict(viewed_restaurants)
+        # Add last visit date
+        for idx in range(user_activity.count()):
+            viewed_restaurants[idx]["last_visit"] = user_activity[idx].last_visit.date()
     page_obj = Paginator(viewed_restaurants, 10).get_page(page)
     # add restaurants to context
     context = {

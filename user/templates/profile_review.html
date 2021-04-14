@@ -95,7 +95,6 @@
           <script>
             // Get the <span> element that closes the modal
           var span = document.getElementsByClassName("close1")[0];
-          console.log(span)
           // When the user clicks on <span> (x), close the modal
           span.onclick = function() { 
             var zoomModal = document.getElementById("myModal");
@@ -254,6 +253,14 @@
 </section>
 
 <script>
+  document.getElementById('rating-submit-button').addEventListener('click', () => {
+  document.forms['rating-form'].submit();
+});
+
+$('#exampleModal').on('hidden.bs.modal', function (e) {
+  document.forms['rating-form'].removeAttribute('action');
+})
+
   const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
   const isNull = el => el === 'null' || el === null || el === undefined;
     /**
@@ -276,7 +283,10 @@
     this.addStyles();
 
     this.rootDiv = document.createElement('div');
-    this.rootDiv.className = 'media d-block d-sm-flex review';
+
+    this.container = document.createElement('div');
+    this.container.className = 'media d-block d-sm-flex review';
+    this.container.setAttribute('style', 'border-bottom: 0; padding-bottom: 0;')
 
     // left side
     const userProfile = document.createElement('div');
@@ -366,23 +376,28 @@
       
     });
     
+    this.serviceHint = document.createElement('em');
+    this.serviceHint.setAttribute('style', 'display: none; font-size: 0.6rem; line-height: 0.8rem;');
+    this.serviceHint.setAttribute('class', 'text-secondary');
+    this.serviceHint.innerText = 'This post is only visible to you because it violates our terms of service';
+
     ratingBody.appendChild(this.comments);
     ratingBody.appendChild(this.image1);
     ratingBody.appendChild(this.image2);
     ratingBody.appendChild(this.image3);
+    ratingBody.appendChild(this.serviceHint);
 
-    this.rootDiv.appendChild(userProfile);
-    this.rootDiv.appendChild(ratingBody);
+    this.container.appendChild(userProfile);
+    this.container.appendChild(ratingBody);
 
-    if (this.hasAttribute('editable')) {
-      this.attachOptionButton();
-    }
+
+    this.rootDiv.appendChild(this.container);
 
     this.shadowRoot.appendChild(this.rootDiv);
   }
 
   static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'editable', 'image1', 'image2', 'image3'];
+    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -407,8 +422,16 @@
       });
     } else if (name === 'review-text') {
       this.comments.innerText = newValue || '';
-    } else if (name === 'editable') {
-      this.attachOptionButton();
+    } else if (name === 'author-id') {
+      if (newValue === userId && this.hasAttribute('hidden-flag')) {
+        this.rootDiv.style.opacity = 0.5;
+      }
+      this.attachOptionButton({ authorId: Number(newValue || '') });
+    } else if (name === 'hidden-flag') {
+      if (!newValue) return;
+      this.rootDiv.style.opacity = 0.5;
+      this.serviceHint.style.display = 'inline-block';
+      this.comments.style.webkitLineClamp = 2;
     } else if (name === 'image1' && !newValue.endsWith('/media/')) {
       this.image1.src = newValue;
       this.image1.style.display = "inline-block";
@@ -427,11 +450,11 @@
     }
   }
 
-  attachOptionButton () {
-    if (this.optionButton) return;
+  attachOptionButton ({ authorId }) {
+    if (!this.optionButton) {
     // option button
-    const optionButtonWrapper = document.createElement('div');
-    optionButtonWrapper.setAttribute('class', 'dropdown');
+    this.optionButtonWrapper = document.createElement('div');
+    this.optionButtonWrapper.setAttribute('class', 'dropdown');
 
     this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.optionButton.setAttribute('viewBox', '0 0 24 24');
@@ -447,12 +470,26 @@
     this.optionButton.appendChild(optionWrapper);
 
     // dropdown button wrapper
-    const dropdownWrapper = document.createElement('div');
-    dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
+    this.dropdownWrapper = document.createElement('div');
+    this.dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
 
     this.deleteForm = document.createElement('form');
     this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/delete/user`);
 
+    this.optionButtonWrapper.appendChild(this.optionButton);
+    this.optionButtonWrapper.appendChild(this.dropdownWrapper);
+    this.optionButtonWrapper.appendChild(this.deleteForm);
+    this.optionButtonWrapper.addEventListener('mouseover', () => {
+      this.dropdownWrapper.classList.add('show');
+    });
+    this.dropdownWrapper.addEventListener('mouseout', () => {
+      this.dropdownWrapper.classList.remove('show');
+    });
+
+    this.container.appendChild(this.optionButtonWrapper);
+  }
+  
+  new Array().forEach.call(this.dropdownWrapper.children, el => this.dropdownWrapper.removeChild(el));
     ['Edit', 'Delete'].forEach((el, index) => {
       const anchor = document.createElement('a');
       anchor.setAttribute('class', 'dropdown-item small py-2');
@@ -472,20 +509,8 @@
       } else {
         anchor.addEventListener('click', () => this.deleteForm.submit());
       }
-      dropdownWrapper.appendChild(anchor);
+      this.dropdownWrapper.appendChild(anchor);
     });
-
-    optionButtonWrapper.appendChild(this.optionButton);
-    optionButtonWrapper.appendChild(dropdownWrapper);
-    optionButtonWrapper.appendChild(this.deleteForm);
-    optionButtonWrapper.addEventListener('mouseover', () => {
-      dropdownWrapper.classList.add('show');
-    });
-    dropdownWrapper.addEventListener('mouseout', () => {
-      dropdownWrapper.classList.remove('show');
-    });
-
-    this.rootDiv.appendChild(optionButtonWrapper);
   }
 
   // add web component styles
@@ -522,13 +547,14 @@
       const temp = "../restaurant/profile/" + review.restaurant__id;
       ratingReview.setAttribute('profile-url', temp);
       ratingReview.setAttribute('restaurant-id', review.restaurant__id);
+      ratingReview.setAttribute('author-id', review.user);
       ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
       ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
       ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
 
-      if (userId === review.user) {
-        ratingReview.setAttribute('editable', 'editable');
-      }
+      if (review.hidden) {
+      ratingReview.setAttribute('hidden-flag', review.hidden);
+    }
       reviewWrapper.appendChild(ratingReview);
     });
     </script>
