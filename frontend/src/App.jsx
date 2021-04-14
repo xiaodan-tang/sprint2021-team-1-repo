@@ -13,7 +13,7 @@ const App = ({ yelpReviews, internalReviews, restaurantId, userId }) => (
     {yelpReviews.reviews.map((review, idx) => <YelpReview key={idx} review={review} restaurantId={restaurantId} userId={userId}/>)}
     <hr/>
     <h6>
-      <span className="text-primary">INTERNAL</span> REVIEWS
+      <span className="text-primary">DINELINE</span> REVIEWS
     </h6>
     {internalReviews.map((review, idx) => <YelpReview key={idx} review={review} restaurantId={restaurantId} userId={userId} isInternal/>)}
   </div>
