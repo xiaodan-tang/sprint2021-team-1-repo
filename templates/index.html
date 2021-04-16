@@ -231,6 +231,77 @@
         </section>
     </div >
 </section>
+<style>
+
+.swiper-container {
+	margin-top: 2em; /* minor cosmetic */
+}
+
+	.swiper-wrapper {
+		/* now pagination is below slides */
+		margin-bottom: 3em;
+
+		/* just enough width so slides handing off screen are partially visible */
+		width: 73.8%;
+	}
+
+	@media (min-width: 37.5em) {
+		.swiper-wrapper {
+			width: 100%;
+		}
+	}
+
+		/* doubleing up specificity to win over on transform */
+		.swiper-slide.swiper-slide {
+			/* a single column layout */
+			width: 100%;
+		}
+
+		@media (min-width: 37.5em) {
+			.swiper-slide.swiper-slide  {
+				/* going for a 2 column layout here */
+				width: 50%;
+
+				/* centeredSlides set to true */
+				/* reposition so first slide appears on left */
+				transform: translateX(-50%);
+			}
+		}
+
+		@media (min-width: 43.75em) {
+			.swiper-slide.swiper-slide  {
+				/* upping it to a 3 column layout */
+				width: 33.33333333333%;
+
+				/* centeredSlides set to true */
+				/* reposition so first slide appears on left */
+				transform: translateX(-100%);
+			}
+		}
+
+		@media (min-width: 53em) {
+			.swiper-slide.swiper-slide  {
+				/* and finally the 4 column layout */
+				width: 25%;
+
+				/* centeredSlides set to true */
+				/* reposition so first slide appears on left */
+				transform: translateX(-150%);
+			}
+		}
+
+</style>
+<script>
+    $( document ).ready(function () {
+        //initialize swiper when document ready
+        var mySwiper = new Swiper('.swiper-container', {
+            loop: false,
+            slidesPerView: 'auto',
+            centerInsufficientSlides: true,
+	        centeredSlides: true,
+        });
+    });
+</script>
 <section class="pt-4 pb-6">
     <div class="container">
         <div class="text-center pb-lg-4">
@@ -239,7 +310,7 @@
     </div>
     <div class="container-fluid">
         <!-- Slider main container-->
-        <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+        <div class="swiper1 swiper-container swiper-container-mx-negative px-lg-5 pt-3">
             <!-- Additional required wrapper-->
             <div class="swiper-wrapper pb-5">
                 {% for recent in restaurant_review_list %}
@@ -271,7 +342,7 @@
                                                     {% else %}
                                                     {% for i in "x"|ljust:aa %}
                                                     <i class="fa fa-star text-gray-300"></i>
-                                                    {% endfor %}
+                                                    `{% endfor %}
                                                     {% endif %}
                                                     {% endwith %}
                                                 </p>
