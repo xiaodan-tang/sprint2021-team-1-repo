@@ -46,6 +46,7 @@ from .utils import (
 )
 
 from dinesafelysite.views import index, get_recent_views_recommendation
+from user.views import view_history
 
 from user.models import (
     Review,
@@ -2756,3 +2757,10 @@ class RecentViewsRecommendationTest(TestCase):
         self.assertEqual(suggested_restaurant_list[1], self.restaurant4)
         self.assertEqual(suggested_restaurant_list[2], self.restaurant1)
         self.assertEqual(suggested_restaurant_list[3], self.restaurant2)
+
+    def test_get_recent_views_history(self):
+        self.c.login(username="myuser", password="pass123")
+        response = self.c.get("/user/view_history/1")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.resolver_match.func, view_history)
+        self.c.logout()
