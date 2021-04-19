@@ -15,9 +15,10 @@ export default ({ text, userId, author, restaurantId, reviewId, profile, comment
     });
   };
   const onReplyClick = e => {
+    e.target.setAttribute('disabled', 'disabled');
     fetch(`/restaurant/profile/${restaurantId}/comment_edit/${reviewId}?text=${textInput.current.value}`).then(res => {
       if (res.ok) location.reload();
-    })
+    });
   };
   const isAuthor = userId === author;
 

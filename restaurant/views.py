@@ -319,16 +319,33 @@ def get_restaurant_profile(request, restaurant_id):
         )
 
 
-def edit_review(request, restaurant_id, review_id, action, source):
-    if action == "delete":
+def edit_review(request, restaurant_id, review_id, source):
+    if request.method == "DELETE":
         Review.objects.filter(id=review_id).delete()
         messages.success(request, "Your review is removed!")
-    if action == "put":
+    if request.method == "POST":
+        data = request.POST
+        files = request.FILES
+
+        # Update review
         review = Review.objects.get(id=review_id)
-        review.rating = request.POST.get("rating")
-        review.content = request.POST.get("content")
+        review.rating = data["rating"] if "rating" in data else 1
+        review.rating_safety = data["rating_safety"] if "rating_safety" in data else 1
+        review.rating_entry = data["rating_entry"] if "rating_entry" in data else 1
+        review.rating_door = data["rating_door"] if "rating_door" in data else 1
+        review.rating_table = data["rating_table"] if "rating_table" in data else 1
+        review.rating_bathroom = (
+            data["rating_bathroom"] if "rating_bathroom" in data else 1
+        )
+        review.rating_path = data["rating_path"] if "rating_path" in data else 1
+        review.content = data["content"] if "content" in data else None
         review.hidden = False
+
+        review.image1 = files["image1"] if "image1" in files else None
+        review.image2 = files["image2"] if "image2" in files else None
+        review.image3 = files["image3"] if "image3" in files else None
         review.save()
+
         messages.success(request, "Your review is saved!")
     if source == "restaurant":
         return HttpResponseRedirect(reverse("restaurant:profile", args=[restaurant_id]))

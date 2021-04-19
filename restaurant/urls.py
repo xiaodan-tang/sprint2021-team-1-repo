@@ -30,7 +30,7 @@ urlpatterns = [
     ),
     # Reviews & Comments
     path(
-        "profile/<restaurant_id>/review/<review_id>/<action>/<source>",
+        "profile/<restaurant_id>/review/<review_id>/<source>",
         views.edit_review,
         name="edit_review",
     ),
