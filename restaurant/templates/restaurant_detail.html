@@ -452,7 +452,7 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" type="submit">Submit</button>
+                <button class="btn btn-primary" type="submit" id="report-abuse-submit-btn">Submit</button>
               </div>
              </form>
             </div>
@@ -469,7 +469,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form class="form-validate" method="POST">
+              <form class="form-validate" method="POST" name="question-form">
                 {% csrf_token %}
                 <div class="modal-body">
                   <h2>For this restaurant:</h2>
@@ -531,7 +531,7 @@
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
+                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved" onclick="e => {e.preventDefault();e.target.setAttribute('disabled', 'disabled'); document.forms['question-form'].submit();}">Submit</button>
                 </div>
               </form>
             </div>
@@ -1054,7 +1054,9 @@ for (i = 0; i < yelp_info.photos.length; i++) {
     gallery_imgs.appendChild(ele);
 }
 
-document.getElementById('rating-submit-button').addEventListener('click', () => {
+document.getElementById('rating-submit-button').addEventListener('click', e => {
+  e.preventDefault();
+  e.target.setAttribute('disabled', 'disabled');
   document.forms['rating-form'].submit();
 });
 
@@ -1081,6 +1083,7 @@ let __data__ = {
 // END-TODO
 document.forms['report-abuse'].addEventListener('submit', e => {
   e.preventDefault();
+  document.getElementById('report-abuse-submit-btn').setAttribute('disabled', 'disabled');
   if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
     e.target.setAttribute('action', `/restaurant/report/${restaurantId}/review/${__data__.reportAbuse.id}`);
   } else {
