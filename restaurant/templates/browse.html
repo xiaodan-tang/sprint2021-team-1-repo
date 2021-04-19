@@ -468,14 +468,15 @@ $(document).ready(function(){
                     <div class="column-box">
                         <div class="hundred-width" style="width:100%;">
                             <center>
-                                <div id="map"></div>
-                            </center>
+                                <div id="map"></div>  
+                            </center>                
                         </div>
                     </div>
-                    <div class="column-box">
+                    <div class="column-box" id="RestaruantsDiv" style="overflow-y:scroll;overflow-x:hidden;">
                         <div id="res_list_group" class="row"></div>
                     </div>
                 </div>
+                <br></br>
                 <center>
                     <div class="text-center">
                         <button type="button" class="btn btn-dark mb-2" onclick="load_more()" id="load_button">Load More</button>
@@ -484,9 +485,9 @@ $(document).ready(function(){
                         </a>
                     </div>
                 </center>
-            </div>
-            
         </div>
+            
+    </div>
 
         <script type="text/javascript">
           function clearRestaurant() {
@@ -775,6 +776,123 @@ $(document).ready(function(){
             });
         </script>
     </div>
+    <style>
+        
+        #map {
+            height: 550px;
+            width: 550px;
+        }
+        #RestaruantsDiv{
+            height: 550px;
+        }
+        @media screen and (max-width: 1225px) {
+            #map {
+                height: 500px;
+                width: 500px;
+            }
+            #RestaruantsDiv{
+                height: 500px;
+            }
+        }
+
+        @media screen and (max-width: 1175px) {
+            #map {
+                height: 450px;
+                width: 450px;
+            }
+            #RestaruantsDiv{
+                height: 450px;
+            }
+        }
+
+        @media screen and (max-width: 1090px) {
+            #map {
+                height: 400px;
+                width: 400px;
+            }
+            #RestaruantsDiv{
+                height: 400px;
+            }
+        }
+
+        @media screen and (max-width: 990px) {
+            .column-box {
+                width: 100%;
+            }
+
+            #map {
+                width: 800px;
+                height: 500px;
+            }
+            #RestaruantsDiv{
+                height: 500px;
+            }
+        }
+
+        @media screen and (max-width: 840px) {
+            .column-box {
+                width: 100%;
+            }
+
+            #map {
+                width: 750px;
+                height: 450px;
+            }
+            #RestaruantsDiv{
+                height: 450px;
+            }
+        }
+
+        @media screen and (max-width: 775px){
+            #map {
+                height: 500px;
+                width: 500px;
+            }
+            #RestaruantsDiv{
+                height: 500px;
+            }
+        }
+
+        @media screen and (max-width: 600px){
+            #map {
+                height: 400px;
+                width: 400px;
+            }
+            #RestaruantsDiv{
+                height: 400px;
+            }
+        }
+
+        @media screen and (max-width: 500px){
+            #map {
+                height: 335px;
+                width: 335px;
+            }
+            #RestaruantsDiv{
+                height: 335px;
+            }
+        }
+            #RestaruantsDiv{
+                scrollbar-width: thin;
+                scrollbar-color: #596ff8 white;
+              }
+              
+              /* Works on Chrome, Edge, and Safari */
+              #RestaruantsDiv::-webkit-scrollbar {
+                width: 12px;
+              }
+              
+              #RestaruantsDiv::-webkit-scrollbar-track {
+                background: white;
+              }
+              
+              #RestaruantsDiv::-webkit-scrollbar-thumb {
+                background-color:#596ff8;
+                border-radius: 20px;
+                border: 3px solid white;
+              }
+
+    </style>
     <script>
         window.onload = function () {
           var loaded = 0;

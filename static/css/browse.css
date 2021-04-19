@@ -23,11 +23,16 @@
     height: 550px;
     width: 550px;
 }
-
+#RestaruantsDiv{
+    height: 550px;
+}
 @media screen and (max-width: 1225px) {
     #map {
         height: 500px;
         width: 500px;
+    }
+    #RestaruantsDiv{
+        height: 500px;
     }
 }
 
@@ -36,12 +41,18 @@
         height: 450px;
         width: 450px;
     }
+    #RestaruantsDiv{
+        height: 450px;
+    }
 }
 
 @media screen and (max-width: 1090px) {
     #map {
         height: 400px;
         width: 400px;
+    }
+    #RestaruantsDiv{
+        height: 400px;
     }
 }
 
@@ -52,6 +63,9 @@
 
     #map {
         width: 800px;
+        height: 500px;
+    }
+    #RestaruantsDiv{
         height: 500px;
     }
 }
@@ -65,12 +79,18 @@
         width: 750px;
         height: 450px;
     }
+    #RestaruantsDiv{
+        height: 450px;
+    }
 }
 
 @media screen and (max-width: 775px){
     #map {
         height: 500px;
         width: 500px;
+    }
+    #RestaruantsDiv{
+        height: 500px;
     }
 }
 
@@ -79,11 +99,17 @@
         height: 400px;
         width: 400px;
     }
+    #RestaruantsDiv{
+        height: 400px;
+    }
 }
 
 @media screen and (max-width: 500px){
     #map {
         height: 335px;
         width: 335px;
+    }
+    #RestaruantsDiv{
+        height: 335px;
     }
 }
