@@ -15,7 +15,7 @@
         <div class="card shadow">
           <div class="card-body">
             <div class="d-flex flex-column align-items-center text-center">
-              <img id="avatar" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" class="rounded-circle" width="150">
+              <img id="avatar" src="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" alt="" class="rounded-circle" width="150">
               <div class="mt-3">
                 <h4>{{user.username}}</h4>
                 <div class="text-muted font-size-sm" id="test2">
@@ -560,7 +560,7 @@
             <div class="col-6">
               <h6 class="mb-0">Image Photo</h6>
               <div class="mt-2 form-group">
-                <img id="profile-pic-preview" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" width="100%">
+                <img id="profile-pic-preview" src="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" alt="" width="100%">
                 <div class="row mt-3">
                   <div class="col text-center">
                     <label for="profile-pic" role="button" class="btn btn-sm btn-primary">
@@ -586,8 +586,13 @@
 
 <script>
   $(document).ready(() => {
-    const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png';
-    const profilePic = '{{ profile_pic }}' || DEFAULT_PROFILE_PIC;
+    const DEFAULT_PROFILE_PIC = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
+    let profilePic = null;
+    if ('{{ profile_pic }}' == 'None') {
+        profilePic = DEFAULT_PROFILE_PIC;
+    } else {
+        profilePic = '{{ profile_pic }}';
+    }
     $('#profile-pic-preview').attr('src', profilePic);
     $('#avatar').attr('src', profilePic);
     $('#profile-pic').change(event => {
