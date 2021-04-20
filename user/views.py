@@ -303,6 +303,16 @@ def profile(request):
                     User_Profile.objects.update_or_create(
                         user=user, defaults={"photo": profile_pic}
                     )
+                else:
+                    default_profile_pic = (
+                        "https://s3-media3.fl.yelpcdn.com"
+                        "/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg"
+                    )
+                    profile_pic_src = request.POST["profile-pic-src"]
+                    if profile_pic_src == default_profile_pic:
+                        User_Profile.objects.update_or_create(
+                            user=user, defaults={"photo": None}
+                        )
                 form.save()
                 return redirect("user:profile")
     user_profile = User_Profile.objects.get(user=user)
