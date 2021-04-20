@@ -25,7 +25,31 @@
 }
 #RestaruantsDiv{
     height: 550px;
+    overflow-y:scroll;
+    overflow-x:hidden;
 }
+
+#RestaruantsDiv{
+    scrollbar-width: thin;
+    scrollbar-color: #596ff8 white;
+}
+  
+/* Works on Chrome, Edge, and Safari */
+#RestaruantsDiv::-webkit-scrollbar {
+    width: 12px;
+}
+  
+#RestaruantsDiv::-webkit-scrollbar-track {
+    background: white;
+}
+  
+#RestaruantsDiv::-webkit-scrollbar-thumb {
+    background-color:#596ff8;
+    border-radius: 20px;
+    border: 3px solid white;
+}
+
+
 @media screen and (max-width: 1225px) {
     #map {
         height: 500px;
