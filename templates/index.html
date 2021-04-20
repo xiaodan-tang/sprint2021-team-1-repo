@@ -172,7 +172,7 @@
                 </div>
                 <div class="container-fluid">
                     <!-- Slider main container-->
-                    <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+                    <div class="swiper-container swiper-container-mx-negative px-lg-5 pt-3">
                         <!-- Additional required wrapper-->
                         <div class="swiper-wrapper pb-5">
                             {% for restaurant in suggested_restaurant_list %}
@@ -299,6 +299,10 @@
             slidesPerView: 'auto',
             centerInsufficientSlides: true,
 	        centeredSlides: true,
+            pagination: {
+                el: '.swiper-pagination',
+                type: 'bullets',
+            },
         });
     });
 </script>
@@ -363,7 +367,7 @@
             <!-- If we need pagination-->
             <div class="swiper-pagination"></div>
         </div>
-</div>
+    </div>
 </section>
 <section class="pt-4 pb-6">
     <section class="container">
