@@ -121,41 +121,56 @@ CHOICES_PRICE = [
 
 def add_neighbourhood():
     for neighbourhood in CHOICES_NEIGHBOURHOOD:
-        p, c = Preferences.objects.get_or_create(
-            preference_type="neighbourhood",
-            value=neighbourhood[0],
-            display_value=neighbourhood[1],
-        )
+        try:
+            p, c = Preferences.objects.get_or_create(
+                preference_type="neighbourhood",
+                value=neighbourhood[0],
+                display_value=neighbourhood[1],
+            )
+        except Exception:
+            continue
 
 
 def add_category():
     for category in CHOICES_CATEGORY:
-        p, c = Preferences.objects.get_or_create(
-            preference_type="category", value=category[0], display_value=category[1]
-        )
+        try:
+            p, c = Preferences.objects.get_or_create(
+                preference_type="category", value=category[0], display_value=category[1]
+            )
+        except Exception:
+            continue
 
 
 def add_rating():
     for rating in CHOICES_RATING:
-        p, c = Preferences.objects.get_or_create(
-            preference_type="rating", value=rating[0], display_value=rating[1]
-        )
+        try:
+            p, c = Preferences.objects.get_or_create(
+                preference_type="rating", value=rating[0], display_value=rating[1]
+            )
+        except Exception:
+            continue
 
 
 def add_compliance():
     for compliance in CHOICES_COMPLIANCE:
-        p, c = Preferences.objects.get_or_create(
-            preference_type="compliance",
-            value=compliance[0],
-            display_value=compliance[1],
-        )
+        try:
+            p, c = Preferences.objects.get_or_create(
+                preference_type="compliance",
+                value=compliance[0],
+                display_value=compliance[1],
+            )
+        except Exception:
+            continue
 
 
 def add_price():
     for price in CHOICES_PRICE:
-        p, c = Preferences.objects.get_or_create(
-            preference_type="price", value=price[0], display_value=price[1]
-        )
+        try:
+            p, c = Preferences.objects.get_or_create(
+                preference_type="price", value=price[0], display_value=price[1]
+            )
+        except Exception:
+            continue
 
 
 if __name__ == "__main__":

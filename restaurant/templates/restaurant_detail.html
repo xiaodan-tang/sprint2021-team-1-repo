@@ -1,5 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 {% load mathfilters %}
+<link href="https://dineline.s3.amazonaws.com/build/index.css" rel="stylesheet"></link>
 <!-- Hero Section-->
 <section class="pt-7 pb-5 d-flex align-items-end dark-overlay bg-cover" id="res_img">
   <div class="container overlay-content">
@@ -84,12 +85,14 @@
                 </h5>
                 {% if messages %}
                 {% for message in messages %}
-                {% if message %}
+                {% if message.extra_tags%}
                 <span class="badge badge-primary-light"><h6>Thanks for your feedback!</h6></span>
+                {% else%}
+                <button type="button" class="btn btn-link" data-toggle="modal" data-target="#feedbackModal">Submit Feedback?</button>
                 {% endif %}
                 {% endfor %}
                 {% elif user.is_authenticated %}
-                <button type="button" class="btn btn-link" data-toggle="modal" data-target="#exampleModal">Submit Feedback?</button>
+                <button type="button" class="btn btn-link" data-toggle="modal" data-target="#feedbackModal">Submit Feedback?</button>
                 {% endif %}
               </div>
 
@@ -303,20 +306,6 @@
           </div>
           <div class="text-block">
           </div>
-
-
-{#              {% if saved_restaurants %}#}
-{#              <!-- Button trigger delete restaurant from favorite -->#}
-{#              <button type="button" class="fa fa-heart fa-2x" data-toggle="modal" data-target="#delete_favorite" id="delete_fav_button" >#}
-{#                Remove from favorite#}
-{#              </button>#}
-{#              {% else %}#}
-{#                <!-- Button trigger save restaurant as favorite -->#}
-{#                <button type="button" class="fa fa-heart fa-2x" data-toggle="modal" data-target="#save_favorite" id="save_fav_button" color="red" >#}
-{#                  Do you like this restaurant?#}
-{#                </button>#}
-{##}
-{#              {% endif %}#}
         </div>
 
           <!-- Save Favorite Restaurant -->
@@ -470,7 +459,84 @@
           </div>
         </div>
 
-
+        <!-- Modal -->
+        <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tell us about your experience!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <form class="form-validate" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <h2>For this restaurant:</h2>
+                  <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden >
+                    <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
+                    <input type="text" id="saved_on" name="saved_on"   hidden>
+                  <br>
+                  <p>Did you receive a temperature check?</p>
+                  <div class="form-group">
+                    <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
+                    <label for="temp_check_true" title="text">Yes</label>
+                    <input id="temp_check_false" type="radio" name="temperature_required" value="false" required/>
+                    <label for="temp_check_false" title="text">No</label>
+                  </div>
+                  <br>
+                  <p>Were you or a member of your party required to provide contact tracing information?</p>
+                  <div class="form-group">
+                    <input id="contact_true" type="radio" name="contact_info_required" value="true" required/>
+                    <label for="contact_true" title="text">Yes</label>
+                    <input id="contact_false" type="radio" name="contact_info_required" value="false" required/>
+                    <label for="contact_false" title="text">No</label>
+                  </div>
+                  <br>
+                  <p>Were restaurant staff wearing masks at all times?</p>
+                  <div class="form-group">
+                    <input id="employee_mask_true" type="radio" name="employee_mask" value="true" required/>
+                    <label for="employee_mask_true" title="text">Yes</label>
+                    <input id="employee_mask_false" type="radio" name="employee_mask" value="false" required/>
+                    <label for="employee_mask_false" title="text">No</label>
+                  </div>
+                  <br>
+                  <p>Was in-door capacity under 25%?</p>
+                  <div class="form-group">
+                    <input id="capacity_true" type="radio" name="capacity_compliant" value="true" required/>
+                    <label for="capacity_true" title="text">Yes</label>
+                    <input id="capacity_false" type="radio" name="capacity_compliant" value="false" required/>
+                    <label for="capacity_false" title="text">No</label>
+                  </div>
+                  <br>
+                  <p>Were you seated at least 6 feet from the nearest party?</p>
+                  <div class="form-group">
+                    <input id="distance_compliant_true" type="radio" name="distance_compliant" value="true" required/>
+                    <label for="distance_compliant_true" title="text">Yes</label>
+                    <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
+                    <label for="distance_compliant_false" title="text">No</label>
+                  </div>
+                  <br>
+                  <p>How would you rate the safety level for this restaurant?</p>
+                  <div class="form-group" style="width: 200px;">
+                    <select class="selectpicker form-control" name="safety_level" data-style="btn-selectpicker" title="">
+                      <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5/5)</option>
+                      <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4/5)</option>
+                      <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3/5)</option>
+                      <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2/5)</option>
+                      <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1/5)</option>
+                    </select>
+                  </div>
+                  <br>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg" role="document">
@@ -557,41 +623,6 @@
                   <input type="text" id="restaurant_business_id" name="restaurant_business_id" value="" hidden>
                   <input type="text" id="user_id" name="user_id" value="{{user.id}}" hidden>
                   <input type="text" id="saved_on" name="saved_on"   hidden>
-                  {% comment %} <p class="mb-2">Did you receive a temperature check?</p>
-                  <div class="form-group mb-2">
-                    <input id="temp_check_true" type="radio" name="temperature_required" value="true" required/>
-                    <label for="temp_check_true" title="text">Yes</label>
-                    <input id="temp_check_false" type="radio" name="temperature_required" value="false" required/>
-                    <label for="temp_check_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Were you or a member of your party required to provide contact tracing information?</p>
-                  <div class="form-group mb-2">
-                    <input id="contact_true" type="radio" name="contact_info_required" value="true" required/>
-                    <label for="contact_true" title="text">Yes</label>
-                    <input id="contact_false" type="radio" name="contact_info_required" value="false" required/>
-                    <label for="contact_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Were restaurant staff wearing masks at all times?</p>
-                  <div class="form-group mb-2">
-                    <input id="employee_mask_true" type="radio" name="employee_mask" value="true" required/>
-                    <label for="employee_mask_true" title="text">Yes</label>
-                    <input id="employee_mask_false" type="radio" name="employee_mask" value="false" required/>
-                    <label for="employee_mask_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Was in-door capacity under 25%?</p>
-                  <div class="form-group mb-2">
-                    <input id="capacity_true" type="radio" name="capacity_compliant" value="true" required/>
-                    <label for="capacity_true" title="text">Yes</label>
-                    <input id="capacity_false" type="radio" name="capacity_compliant" value="false" required/>
-                    <label for="capacity_false" title="text">No</label>
-                  </div>
-                  <p class="mb-2">Were you seated at least 6 feet from the nearest party?</p>
-                  <div class="form-group mb-2">
-                    <input id="distance_compliant_true" type="radio" name="distance_compliant" value="true" required/>
-                    <label for="distance_compliant_true" title="text">Yes</label>
-                    <input id="distance_compliant_false" type="radio" name="distance_compliant" value="false" required/>
-                    <label for="distance_compliant_false" title="text">No</label>
-                  </div> {% endcomment %}
                   <p class="mb-2">Tell others about your thoughts!</p>
                   <div class="form-group mb-2">
                     <textarea class="form-control" name="content" id="content" cols="30" rows="5" required></textarea>
@@ -796,22 +827,10 @@
             </div>
           </div>
           <hr>
-
-
           <div id="root"></div>
-          <div id="reviews">
-            <h6>
-              <span class="text-primary">YELP</span> REVIEWS
-            </h6>
-            <span id="yelp_review"></span>
-            <hr>
-            <h6>
-              <span class="text-primary">DINELINE</span> REVIEWS
-            </h6>
-            <span id="internal_review"></span>
-          </div>
         </div> 
       </div>
+      
       <div class="col-lg-4">
         <div class="pl-xl-4">
           <!-- Opening Hours      -->
@@ -872,14 +891,88 @@
         </div>
       </div>
     </div>
-    <!-- Recommedn restaurant  -->
+    <style>
+
+      .swiper-container {
+        margin-top: 2em; /* minor cosmetic */
+      }
+      
+        .swiper-wrapper {
+          /* now pagination is below slides */
+          margin-bottom: 3em;
+      
+          /* just enough width so slides handing off screen are partially visible */
+          width: 73.8%;
+        }
+      
+        @media (min-width: 37.5em) {
+          .swiper-wrapper {
+            width: 100%;
+          }
+        }
+      
+          /* doubleing up specificity to win over on transform */
+          .swiper-slide.swiper-slide {
+            /* a single column layout */
+            width: 100%;
+          }
+      
+          @media (min-width: 37.5em) {
+            .swiper-slide.swiper-slide  {
+              /* going for a 2 column layout here */
+              width: 50%;
+      
+              /* centeredSlides set to true */
+              /* reposition so first slide appears on left */
+              transform: translateX(-50%);
+            }
+          }
+      
+          @media (min-width: 43.75em) {
+            .swiper-slide.swiper-slide  {
+              /* upping it to a 3 column layout */
+              width: 33.33333333333%;
+      
+              /* centeredSlides set to true */
+              /* reposition so first slide appears on left */
+              transform: translateX(-100%);
+            }
+          }
+      
+          @media (min-width: 53em) {
+            .swiper-slide.swiper-slide  {
+              /* and finally the 4 column layout */
+              width: 25%;
+      
+              /* centeredSlides set to true */
+              /* reposition so first slide appears on left */
+              transform: translateX(-150%);
+            }
+          }
+      
+      </style>
+    <script>
+      $( document ).ready(function () {
+          //initialize swiper when document ready
+          var mySwiper = new Swiper('.swiper-container', {
+              loop: false,
+              slidesPerView: 'auto',
+              centeredSlides: true,
+              pagination: {
+                  el: '.swiper-pagination',
+                  type: 'bullets',
+              },
+          });
+      });
+  </script>
+    <!-- Recommend restaurant  -->
     <!-- insert row here -->
     <div class="row">
         {% if recommended_restaurants  %}
-        <h3 class="mb-4">Similar restaurants</h3>
+        <h3 class="mb-4">Similar Restaurants</h3>
         <div class="container-fluid">
            <!-- Slider main container-->
-           <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+           <div class="swiper-container swiper-container-mx-negative px-lg-5 pt-3">
               <!-- Additional required wrapper-->
               <div class="swiper-wrapper pb-5">
                   {% for restaurant in recommended_restaurants %}
@@ -932,17 +1025,11 @@
         </div>
         {% endif %}
     </div> <!-- row ends-->
-
-
-
-
   </div>
 </section>
-
 <!--Insert values into HTML-->
 <script>
 var inspection_data = {{ lasted_inspection | safe}};
-
 document.getElementById("res_compliance_status").innerHTML = inspection_data.is_roadway_compliant;
 document.getElementById("res_last_inspection").innerHTML = inspection_data.inspected_on;
 
@@ -1043,32 +1130,6 @@ function timeChangeFunc(x) {
   return(hrs + ":" + mins + " " + a);
 }
 
-var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-var day_time = [0, 0, 0, 0, 0, 0, 0];
-for (i = 0; i < yelp_info.hours[0].open.length; i++) {
-    var curr = yelp_info.hours[0].open[i].day;
-    day_time[curr]++;
-}
-var prev_day = -1;
-for (i = 0; i < yelp_info.hours[0].open.length; i++) {
-    var opening_hours = document.getElementById("res_open_hours");
-    var row = document.createElement("tr");
-    opening_hours.appendChild(row);
-    var curr_day = yelp_info.hours[0].open[i].day;
-    if (curr_day != prev_day) {
-        var thh = document.createElement("th");
-        thh.className = "pl-0";
-        thh.innerHTML = days[curr_day];
-        thh.rowSpan = day_time[curr_day];
-        row.appendChild(thh);
-    }
-    prev_day = curr_day;
-    var tdd = document.createElement("td");
-    tdd.className = "pr-0 text-right";
-    tdd.innerHTML = timeChangeFunc(yelp_info.hours[0].open[i].start) + "-" + timeChangeFunc(yelp_info.hours[0].open[i].end);
-    row.appendChild(tdd);
-}
-
 for (i = 0; i < yelp_info.photos.length; i++) {
     var gallery_imgs = document.getElementById("gallery_imgs");
     var ele = document.createElement("div");
@@ -1096,6 +1157,8 @@ const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0i
 const isNull = el => el === 'null' || el === 'None' || el === null || el === undefined;
 const restaurantId = '{{ restaurant_id }}' || '';
 const userId = Number('{{ user_id | safe }}');
+const yelpReviews = {{ yelp_info.reviews | safe }};
+const internalReviews = {{ internal_reviews | safe }};
 const REPORT_TYPE = {
   REVIEW: 'REVIEW',
   COMMENT: 'COMMENT'
@@ -1106,22 +1169,7 @@ let __data__ = {
     id: null
   }
 };
-// TODO: remove this for demo
-if (restaurantId === '1686') {
-  const S3_CDN = 'https://dineline.s3.amazonaws.com/build';
-  const reviews = document.getElementById('reviews');
-  reviews.style.display = 'none';
-  const runtime = document.createElement('script');
-  runtime.src = `${S3_CDN}/runtime.js`;
-  const script = document.createElement('script');
-  script.src = `${S3_CDN}/index.js`;
-  const style = document.createElement('link');
-  style.setAttribute('rel', 'stylesheet');
-  style.setAttribute('href', `${S3_CDN}/index.css`);
-  document.body.appendChild(style);
-  document.body.appendChild(runtime);
-  document.body.appendChild(script);
-}
+// END-TODO
 document.forms['report-abuse'].addEventListener('submit', e => {
   e.preventDefault();
   if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
@@ -1131,500 +1179,6 @@ document.forms['report-abuse'].addEventListener('submit', e => {
   }
   e.target.submit();
 });
-/**
- * Rating box view
- * @param {review-id} string
- * @param {profile-img} string
- * @param {profile-img-alt} string
- * @param {profile-url} string
- * @param {time-created} string
- * @param {user-name} string
- * @param {user-rating} string
- * @param {review-text} string
- * @param {authorId} string
- */
-class RatingReview extends HTMLElement {
-  constructor () {
-    super();
-    this.attachShadow({ mode: 'open' });
-
-    this.addStyles();
-
-    this.rootDiv = document.createElement('div');
-
-    this.container = document.createElement('div');
-    this.container.className = 'media d-block d-sm-flex review';
-    this.container.setAttribute('style', 'border-bottom: 0; padding-bottom: 0;')
-
-    // left side
-    const userProfile = document.createElement('div');
-    userProfile.className = 'text-md-center mr-4 mr-xl-5';
-    this.avatar = document.createElement('img');
-    this.avatar.className = 'd-block avatar avatar-xl p-2 mb-2';
-
-    this.avatar.src = this.getAttribute('profile-img') || DEFAULT_AVATAR;
-    this.avatar.alt = this.getAttribute('profile-img-alt') || '';
-    this.createRatingTimestamp = document.createElement('span');
-    this.createRatingTimestamp.className = 'text-uppercase text-muted text-sm';
-    this.createRatingTimestamp.innerText = this.getAttribute('time-created') || '';
-    
-    userProfile.appendChild(this.avatar);
-    userProfile.appendChild(this.createRatingTimestamp);
-
-    // right side
-    const ratingBody = document.createElement('div');
-    ratingBody.className = 'media-body';
-    
-    // author link
-    const author = document.createElement('h6');
-    author.className = 'mt-2 mb-1';
-
-    this.authorProfileLink = document.createElement('a');
-    this.authorProfileLink.href = this.getAttribute('profile-url') || DEFAULT_AVATAR;
-    this.authorProfileLink.innerText = this.getAttribute('user-name') || '';
-
-    author.appendChild(this.authorProfileLink);
-    ratingBody.appendChild(author);
-
-    // rating stars
-    this.ratingStars = document.createElement('div');
-    const rating = Number(this.getAttribute('user-rating') || '');
-    for (let i = 0; i < 5; i++) {
-      const star = document.createElement('i');
-      star.className = 'fa fa-xs fa-star';
-      star.classList.add(i < rating ? 'text-primary' : 'text-gray-200');
-      this.ratingStars.appendChild(star);
-    }
-    ratingBody.appendChild(this.ratingStars);
-
-    // comments
-    this.comments = document.createElement('p');
-    this.comments.setAttribute('style', 'display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;');
-    this.comments.className = 'text-muted text-sm';
-    this.comments.innerText = this.getAttribute('review-text');
-    
-    // 3 images
-    this.image1 = document.createElement('img');
-    this.image1.className= 'review-image';
-    this.image1.src = this.getAttribute('image1');
-    this.image1.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
-
-    this.image2 = document.createElement('img');
-    this.image2.className= 'review-image';
-    this.image2.src = this.getAttribute('image2');
-    this.image2.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
-
-    this.image3 = document.createElement('img');
-    this.image3.className= 'review-image';
-    this.image3.src = this.getAttribute('image3');
-    this.image3.setAttribute('style', 'display: none; object-fit: contain; height: 100px !important; align-items: center; margin-left: 5px;')
-
-    this.image1.addEventListener('click', () => {
-      var zoomModal = document.getElementById("myModal");
-      zoomModal.style.display = "block";
-      var modalImg = document.getElementById("img01");
-      modalImg.src = this.image1.src;
-      
-    });
-
-    this.image2.addEventListener('click', () => {
-      var zoomModal = document.getElementById("myModal");
-      zoomModal.style.display = "block";
-      var modalImg = document.getElementById("img01");
-      modalImg.src = this.image2.src;
-      
-    });
-
-    this.image3.addEventListener('click', () => {
-      var zoomModal = document.getElementById("myModal");
-      zoomModal.style.display = "block";
-      var modalImg = document.getElementById("img01");
-      modalImg.src = this.image3.src;
-      
-    });
-
-
-    this.serviceHint = document.createElement('em');
-    this.serviceHint.setAttribute('style', 'display: none; font-size: 0.6rem; line-height: 0.8rem;');
-    this.serviceHint.setAttribute('class', 'text-secondary');
-    this.serviceHint.innerText = 'This post is only visible to you because it violates our terms of service';
-    
-    ratingBody.appendChild(this.comments);
-    ratingBody.appendChild(this.image1);
-    ratingBody.appendChild(this.image2);
-    ratingBody.appendChild(this.image3);
-    ratingBody.appendChild(this.serviceHint);
-
-    this.container.appendChild(userProfile);
-    this.container.appendChild(ratingBody);
-
-
-    this.rootDiv.appendChild(this.container);
-    
-    this.shadowRoot.appendChild(this.rootDiv);
-  }
-
-  static get observedAttributes() {
-    return ['profile-img', 'profile-img-alt', 'profile-url', 'time-created', 'user-name', 'user-rating', 'review-text', 'author-id', 'hidden-flag', 'image1', 'image2', 'image3', 'likes_num'];
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'profile-img') {
-      this.avatar.setAttribute('src', isNull(newValue) ? DEFAULT_AVATAR : newValue);
-    } else if (name === 'profile-img-alt') {
-      this.avatar.setAttribute('alt', newValue || '');
-    } else if (name === 'time-created') {
-      this.createRatingTimestamp.innerText = newValue || '';
-    } else if (name === 'profile-url') {
-      this.authorProfileLink.setAttribute('href', newValue || '');
-    } else if (name === 'user-name') {
-      this.authorProfileLink.innerText = newValue || '';
-    } else if (name === 'user-rating') {
-      const rating = Number(newValue || 0);
-      new Array().forEach.call(this.ratingStars.children, (el, index) => {
-        if (index < rating) {
-          el.classList.replace('text-gray-200', 'text-primary');
-        } else {
-          el.classList.replace('text-primary', 'text-gray-200');
-        }
-      });
-    } else if (name === 'review-text') {
-      this.comments.innerText = newValue || '';
-    } else if (name === 'author-id') {
-      if (newValue === userId && this.hasAttribute('hidden-flag')) {
-        this.rootDiv.style.opacity = 0.5;
-      }
-      this.attachOptionButton({ authorId: Number(newValue || '') });
-    } else if (name === 'hidden-flag') {
-      if (!newValue) return;
-      this.container.removeChild(this.optionButtonWrapper);
-      this.rootDiv.style.opacity = 0.5;
-      this.serviceHint.style.display = 'inline-block';
-      this.comments.style.webkitLineClamp = 2;
-    } else if (name === 'image1' && !newValue.endsWith('/media/')) {
-      this.image1.src = newValue;
-      this.image1.style.display = "inline-block";
-      var modalImg = document.getElementById("img01");
-      modalImg.src = this.image1.src;
-    } else if (name === 'image2' && !newValue.endsWith('/media/')) {
-      this.image2.src = newValue;
-      this.image2.style.display = "inline-block";
-      var modalImg = document.getElementById("img01");
-      modalImg.src = this.image2.src;
-    } else if (name === 'image3' && !newValue.endsWith('/media/')) {
-      this.image3.src = newValue;
-      this.image3.style.display = "inline-block";
-      var modalImg = document.getElementById("img01");
-      modalImg.src = this.image3.src;
-    } else if (name === 'likes_num') {
-      this.attachHeart();
-    }
-  }
-
-  attachHeart () {
-    const reviewId = this.getAttribute('review-id');
-    if (!reviewId || !userId) return;
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('mt-2');
-    const likeButton = document.createElement('i');
-    const likeNumber = document.createElement('span');
-    likeNumber.setAttribute('class', 'ml-3');
-    const liked = this.hasAttribute('liked');
-    likeNumber.innerText = this.getAttribute('likes_num');
-    likeButton.setAttribute('class', `fa fa-heart d-blcok ${liked ? 'text-primary' : 'text-muted'}`);
-    likeButton.setAttribute('style', 'cursor: pointer');
-    likeButton.addEventListener('click', e => {
-      fetch('/restaurant/like/review/', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
-        },
-        body: `review_id=${Number(reviewId)}`
-      })
-      .then(r => { 
-        if (!r.ok) return; 
-        return r.json();
-      })
-      .then(r => {
-        const { liked, likes_num } = r;
-        if (liked) {
-          likeButton.classList.replace('text-muted', 'text-primary');
-        } else {
-          likeButton.classList.replace('text-primary', 'text-muted');
-        }
-        likeNumber.innerText = likes_num;
-      })
-    });
-    wrapper.appendChild(likeButton);
-    wrapper.appendChild(likeNumber);
-    this.comments.appendChild(wrapper);
-  }
-
-  attachOptionButton ({ authorId }) {
-    if (!this.optionButton) {
-      // option button
-      this.optionButtonWrapper = document.createElement('div');
-      this.optionButtonWrapper.setAttribute('class', 'dropdown');
-
-      this.optionButton = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      this.optionButton.setAttribute('viewBox', '0 0 24 24');
-      this.optionButton.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      this.optionButton.setAttribute('style', 'display: inline-block; width: 1rem; height: 1rem; cursor: pointer;');
-      this.optionButton.setAttribute('class', 'dropdown-toggle');
-      this.optionButton.setAttribute('type', 'button');
-
-      const optionWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const optionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      optionPath.setAttribute('d', 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
-      optionWrapper.appendChild(optionPath);
-      this.optionButton.appendChild(optionWrapper);
-
-      // dropdown button wrapper
-      this.dropdownWrapper = document.createElement('div');
-      this.dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
-
-      this.deleteForm = document.createElement('form');
-      this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/delete/restaurant`);
-
-      this.optionButtonWrapper.appendChild(this.optionButton);
-      this.optionButtonWrapper.appendChild(this.dropdownWrapper);
-      this.optionButtonWrapper.appendChild(this.deleteForm);
-      this.optionButtonWrapper.addEventListener('mouseover', () => {
-        this.dropdownWrapper.classList.add('show');
-      });
-      this.dropdownWrapper.addEventListener('mouseout', () => {
-        this.dropdownWrapper.classList.remove('show');
-      });
-
-      this.container.appendChild(this.optionButtonWrapper);
-    }
-
-    new Array().forEach.call(this.dropdownWrapper.children, el => this.dropdownWrapper.removeChild(el));
-    ['Edit', 'Delete', 'Reply', 'Report'].forEach((el, index) => {
-      if (authorId !== userId && [0, 1].includes(index)) return;
-      if (authorId === userId && index === 3) return;
-      const anchor = document.createElement('a');
-      anchor.setAttribute('class', 'dropdown-item small py-2');
-      anchor.setAttribute('href', '#');      
-      anchor.innerText = el;
-      if (index === 0) {
-        anchor.addEventListener('click', () => {
-          $('#exampleModal').modal('toggle');
-          const rating = document.querySelector('select[name="rating"]');
-          rating.value = this.getAttribute('user-rating');
-          rating.dispatchEvent(new Event('change'));
-          const content = document.querySelector('textarea[name="content"]');
-          content.value = this.getAttribute('review-text');
-          content.dispatchEvent(new Event('change'));
-          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/put/restaurant`);
-        });
-      } else if (index === 1) {
-        anchor.addEventListener('click', () => this.deleteForm.submit());
-      } else if (index === 2) {
-        anchor.addEventListener('click', e => {
-          e.preventDefault();
-          this.dropdownWrapper.classList.remove('show');
-          let form = this.rootDiv.querySelector('form[name="reply-form"]');
-          if (form) {
-            form.querySelector('input').focus();
-            return;
-          }
-
-          form = document.createElement('form');
-          form.setAttribute('name', 'reply-form');
-          form.setAttribute('method', 'get');
-          form.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_edit/${this.getAttribute('review-id')}`);
-          form.setAttribute('class', 'd-flex form-group mb-0');
-          form.setAttribute('style', 'padding-left: 12%; align-items: baseline;');
-
-          const line = document.createElement('div');
-          line.setAttribute('style', 'border-bottom: 2px solid #e7e7e7; border-left: 2px solid #e7e7e7; border-radius: 5px; height: 40px; width: 50px;');
-
-          const inputBox = document.createElement('input');
-          inputBox.setAttribute('class', 'form-control form-control-sm');
-          inputBox.setAttribute('name', 'text');
-
-          const submitBtn = document.createElement('button');
-          submitBtn.setAttribute('type', 'submit');
-          submitBtn.setAttribute('class', 'btn btn-sm btn-primary ml-2');
-          submitBtn.innerText = 'Submit';
-
-          const cancelBtn = document.createElement('button');
-          cancelBtn.setAttribute('type', 'button');
-          cancelBtn.setAttribute('class', 'btn btn-sm btn-secondary ml-2');
-          cancelBtn.innerText = 'Cancel';
-          cancelBtn.addEventListener('click', () => {
-            this.rootDiv.removeChild(form);
-          });
-
-          form.appendChild(line);
-          form.appendChild(inputBox);
-          form.appendChild(submitBtn);
-          form.appendChild(cancelBtn);
-
-          this.rootDiv.appendChild(form);
-        });
-      } else if (index === 3) {
-        anchor.addEventListener('click', e => {
-          e.preventDefault();
-          this.dropdownWrapper.classList.remove('show');
-          $('#report-abuse-modal').modal('show');
-          __data__.reportAbuse.type = REPORT_TYPE.REVIEW;
-          __data__.reportAbuse.id = this.getAttribute('review-id');
-        });
-      }
-      this.dropdownWrapper.appendChild(anchor);
-    });
-  }
-
-  /**
-   * @params {profile} string - profile picture
-   * @params {text} string - comment
-   * @params {author} string - comment author
-   * @params {commentId} string - comment id
-   * @params {hidden} boolean - should display hidden hint if this is true
-   */
-  renderReplies ({ profile = DEFAULT_AVATAR, text = '', author = '', commentId = '', hidden = false }) {
-    const commentContainer = document.createElement('div');
-    commentContainer.className = 'd-flex';
-    commentContainer.setAttribute('style', `padding-left: 12%; align-items: baseline; ${hidden ? 'opacity: 0.5;' : ''}`);
-
-    const line = document.createElement('div');
-    line.setAttribute('style', 'border-bottom: 2px solid #e7e7e7; border-left: 2px solid #e7e7e7; border-radius: 5px; height: 40px; width: 50px;');
-
-    const replyContainer = document.createElement('div');
-    replyContainer.setAttribute('style', 'width: calc(100% - 50px)');
-    
-    const replyAvatar = document.createElement('img');
-    replyAvatar.setAttribute('style', 'width: 40px; height: 40px; border-radius: 50%;');
-    replyAvatar.setAttribute('src', profile);
-
-    const replyBox = document.createElement('div');
-    replyBox.setAttribute('style', `display: inline-block; margin-left: 1rem; width: ${hidden ? '50%' : '70%'}; vertical-align: middle;`);
-    replyBox.setAttribute('class', 'text-muted text-sm text-truncate');
-    replyBox.innerText = text;
-
-    replyContainer.appendChild(replyAvatar);
-    replyContainer.appendChild(replyBox);
-    
-    // hide report / delete button if this post is hidden
-    if (!hidden) {
-      const deleteForm = document.createElement('form');
-      deleteForm.setAttribute('method', 'get');
-      deleteForm.setAttribute('action', `/restaurant/profile/${restaurantId}/comment_delete/${commentId}`);
-      deleteForm.setAttribute('class', 'd-inline-block');
-      if (userId === Number(author)) {
-        const deleteButton = document.createElement('span');
-        deleteButton.setAttribute('class', 'fas fa-backspace text-primary btn btn-sm ml-1');
-        deleteButton.addEventListener('click', () => {
-          deleteForm.submit();
-        });
-        deleteForm.appendChild(deleteButton);
-      }
-      if (!isNull(userId) && userId != Number(author)) {
-        const reportButton = document.createElement('span');
-        reportButton.setAttribute('class', 'fas fa-flag text-secondary btn btn-sm ml-1');
-        reportButton.addEventListener('click', () => {
-          $('#report-abuse-modal').modal('show');
-          __data__.reportAbuse.type = REPORT_TYPE.COMMENT;
-          __data__.reportAbuse.id = commentId;
-        });
-        deleteForm.appendChild(reportButton);
-      }
-
-      replyContainer.appendChild(deleteForm);
-    } else {
-      const hint = document.createElement('em');
-      hint.classList.add('text-secondary');
-      hint.style.fontSize = '0.6rem';
-      hint.innerText = 'This comment is only visible to you';
-      replyContainer.appendChild(hint);
-    }
-
-    commentContainer.appendChild(line);
-    commentContainer.appendChild(replyContainer);
-
-    this.rootDiv.appendChild(commentContainer);
-  }
-
-  // add web component styles
-  addStyles () {
-    const styleLinks = [
-      'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
-      '/static/css/style.default.452e11c7.css',
-      '/static/css/all.css'
-    ]
-
-    styleLinks.forEach(el => {
-      const styles = document.createElement('link');
-      styles.setAttribute('rel', 'stylesheet');
-      styles.setAttribute('href', el);
-      this.shadowRoot.appendChild(styles);
-    });
-  }
-};
-customElements.define('rating-review', RatingReview);
-const yelpReviews = {{ yelp_info.reviews | safe }};
-if (document.getElementById('yelp_review') != null){
-  yelpReviews['reviews'].forEach(review => {
-    const reviewWrapper = document.getElementById('yelp_review');
-    const ratingReview = document.createElement('rating-review');
-    ratingReview.setAttribute('profile-img', review.user.image_url);
-    ratingReview.setAttribute('profile-img-alt', review.user.name);
-    ratingReview.setAttribute('profile-url', review.user.profile_url);
-    ratingReview.setAttribute('user-name', review.user.name);
-    ratingReview.setAttribute('time-created', review.time_created);
-    ratingReview.setAttribute('user-rating', review.rating);
-    ratingReview.setAttribute('review-text', review.text);
-    reviewWrapper.appendChild(ratingReview);
-  });
-}
-
-const internalReviews = {{ internal_reviews | safe }};
-if (document.getElementById('internal_review') != null) {
-  internalReviews.forEach(review => {
-    if (review.hidden && review.user !== userId) return;
-    const reviewWrapper = document.getElementById('internal_review');
-    const ratingReview = document.createElement('rating-review');
-    ratingReview.setAttribute('profile-img', review.user__user_profile__photo);
-    ratingReview.setAttribute('profile-img-alt', review.user__username);
-    ratingReview.setAttribute('profile-url', `/user/facing_page/${review.user}`);
-    ratingReview.setAttribute('user-name', review.user__username);
-    ratingReview.setAttribute('time-created', review.time);
-    ratingReview.setAttribute('user-rating', review.rating);
-    ratingReview.setAttribute('review-text', review.content);
-    ratingReview.setAttribute('review-id', review.id);
-    ratingReview.setAttribute('restaurant-id', restaurantId);
-    ratingReview.setAttribute('author-id', review.user);
-    if (review.liked) {
-      ratingReview.setAttribute('liked', true);
-    }
-    ratingReview.setAttribute('likes_num', review.likes_num || 0);
-
-    ratingReview.setAttribute('image1', 'https://dineline.s3.amazonaws.com/media/' + review.image1);
-    ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
-    ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
-
-    if (review.hidden) {
-      ratingReview.setAttribute('hidden-flag', review.hidden);
-    } else {
-      // add replies here
-      review.comments.forEach(el => {
-        if (el.hidden && el.author !== userId) return;
-        ratingReview.renderReplies({
-          profile: el.profile || DEFAULT_AVATAR,
-          text: el.text,
-          author: el.author,
-          commentId: el.commentId,
-          hidden: el.hidden
-        })
-      });
-    }
-    reviewWrapper.appendChild(ratingReview);
-  });
-}
 
 var data = {{ data | safe }};
 
@@ -1731,13 +1285,7 @@ function initMap() {
         }
       });
 }
-      
-
 </script>
-<!-- <script src="{% static 'build/runtime.js' %}"></script> -->
-<!-- <script src="{% static 'build/index.js' %}"></script> -->
-<!-- <link rel="stylesheet" href="{% static 'build/index.css' %}"></link> -->
-
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&map_ids={{google_map_id}}&callback=initMap"
     type="text/javascript">
 </script>
@@ -1800,7 +1348,7 @@ function initMap() {
                 });
             });
 </script>
-  
-
+<script src="https://dineline.s3.amazonaws.com/build/runtime.js"></script>
+<script src="https://dineline.s3.amazonaws.com/build/index.js"></script>
 
 {% endblock %}

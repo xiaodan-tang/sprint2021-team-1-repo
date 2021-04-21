@@ -13,6 +13,8 @@ from .models import (
     RestaurantQuestion,
     RestaurantAnswer,
     UserActivityLog,
+    Email,
+    User_Profile,
 )
 
 
@@ -27,8 +29,10 @@ from .forms import (
     ContactForm,
     RestaurantQuestionForm,
     RestaurantAnswerForm,
+    AddUserEmailForm,
 )
 from .utils import send_reset_password_email, send_feedback_email
+from .views import verify_email_link, profile
 from django.test import Client
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -431,6 +435,58 @@ class TestAccountDetailsView(BaseTest):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_update_user_avatar(self):
+        # Test upload user avatar
+        self.c.login(username="myuser", password="pass123")
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic": SimpleUploadedFile(
+                    "test.jpg", b"file_content", content_type="image/jpg"
+                ),
+            },
+        )
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_profile = User_Profile.objects.filter(user=self.dummy_user).first()
+        self.assertIn(
+            "https://dineline.s3.amazonaws.com/media/user_profile_pics/",
+            user_profile.photo,
+        )
+
+        # Test reset user avatar to default one
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic-src": (
+                    "https://s3-media3.fl.yelpcdn.com"
+                    "/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg"
+                ),
+            },
+        )
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_profile = User_Profile.objects.filter(user=self.dummy_user).first()
+        self.assertEqual(user_profile.photo, None)
+
+        self.c.logout()
+
 
 class TestUserReviewsView(BaseTest):
     def test_no_user_logged_in(self):
@@ -510,6 +566,90 @@ class TestDeletePrefView(BaseTest):
         )
         response = self.c.post(path=url)
         self.assertEqual(response.status_code, 200)
+
+
+class TestDeleteViewedRestaurant(TestCase):
+    def setUp(self):
+        self.c = Client()
+        # Initialize dummy user
+        self.dummy_user = get_user_model().objects.create(
+            username="testuser",
+            email="test@gmail.com",
+        )
+        self.dummy_user.set_password("test1234Restaurant")
+        self.dummy_user.save()
+        self.c.login(username="testuser", password="test1234Restaurant")
+
+        # Initialize temp restaurants
+        self.temp_restaurant = create_restaurant(
+            restaurant_name="Tacos El Paisa",
+            business_address="1548 St. Nicholas btw West 187th street and west 188th "
+            "street, Manhattan, NY",
+            yelp_detail=None,
+            postcode="10040",
+            business_id="WavvLdfdP6g8aZTtbBQHTw",
+        )
+        self.temp_restaurant2 = create_restaurant(
+            restaurant_name="JUST SALAD",
+            business_address="252 7th Ave",
+            yelp_detail=None,
+            postcode="11215",
+            business_id="kasdjf09j2oijlkdjsf",
+        )
+
+        self.temp_restaurant3 = create_restaurant(
+            "random_name",
+            "random_address",
+            None,
+            "random_postcode",
+            "U8C69ISrhGTTubjqoVgZYg",
+        )
+        self.temp_restaurant.save()
+        self.temp_restaurant2.save()
+        self.temp_restaurant3.save()
+
+        # user clicks to restaurants
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.temp_restaurant,
+        ).save()
+
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.temp_restaurant2,
+        ).save()
+        UserActivityLog.objects.create(
+            user=self.dummy_user,
+            restaurant=self.temp_restaurant3,
+        ).save()
+
+    def test_view_history(self):
+        url = "user/view_history/1"
+        response = self.c.get((url))
+        self.assertEqual(response.status_code, 200)
+
+    def test_del_rest_valid(self):
+        user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
+        # initally user has 3 logs
+        self.assertEqual(user_activity.all().count(), 3)
+        # delete restaurant from viewed histroy
+        url = reverse(
+            "user:delete_viewed_restaurant",
+            args=[str(self.temp_restaurant.business_id)],
+        )
+        response = self.c.post(path=url)
+        self.assertEqual(response.status_code, 200)
+        user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
+        # deleted 1 restaurant, 2 remaining restaurants
+        self.assertEqual(user_activity.all().count(), 2)
+
+    def test_clear_rest_valid(self):
+        url = reverse("user:clear_viewed_restaurants")
+        response = self.c.post(path=url)
+        self.assertEqual(response.status_code, 200)
+        user_activity = UserActivityLog.objects.filter(user=self.dummy_user)
+        # deleted all restaurants, 0 remaining restaurants
+        self.assertEqual(user_activity.all().count(), 0)
 
 
 class TestContactFormView(BaseTest):
@@ -915,3 +1055,212 @@ class TestUserActivityLogModel(BaseTest):
         rest_activity_log = self.restaurant1.activity_log.first()
         self.assertEqual(user_activity_log, activity_log)
         self.assertEqual(rest_activity_log, activity_log)
+
+
+class TestEmailModel(BaseTest):
+    """ Test Email Model """
+
+    def test_email_str_function(self):
+        email = "test@test.com"
+        user_email = Email.objects.create(user=self.dummy_user, email=email)
+        self.assertEqual(str(user_email), "myuser test@test.com is not active")
+
+        user_email.active = True
+        user_email.save()
+        self.assertEqual(str(user_email), "myuser test@test.com is active")
+
+    def test_email_related_name(self):
+        email = "test@test.com"
+        user_email = Email.objects.create(user=self.dummy_user, email=email)
+        self.assertEqual(self.dummy_user.other_emails.first(), user_email)
+
+
+class TestAddUserEmailForm(BaseTest):
+    """ Test AddUserEmailForm """
+
+    def test_add_email_form_invalid(self):
+        # Test invalid email
+        form_data = {
+            "email": "invalid_email",
+        }
+        form = AddUserEmailForm(self.dummy_user, form_data)
+        self.assertFalse(form.is_valid())
+
+        # Test email that already exists
+        form_data = {
+            "email": "abcd@gmail.com",
+        }
+        form = AddUserEmailForm(self.dummy_user, form_data)
+        self.assertFalse(form.is_valid())
+
+    def test_add_email_form_valid(self):
+        form_data = {
+            "email": "test@test.com",
+        }
+        form = AddUserEmailForm(self.dummy_user, form_data)
+        self.assertTrue(form.is_valid())
+
+
+class TestAddUserEmailView(BaseTest):
+    """ Test Add & Verify User Email View """
+
+    def test_add_email_view(self):
+        self.c.login(username="myuser", password="pass123")
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 0)
+
+        # Post valid form data
+        form_data = {
+            "submit-add-email-form": "",
+            "email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 1)
+
+        # Post invalid form data
+        form_data = {
+            "submit-add-email-form": "",
+            "email": "",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 1)
+
+        self.c.logout()
+
+    def test_verify_email_link_view_valid(self):
+        email = "test@test.com"
+        secondary_email = Email.objects.create(user=self.dummy_user, email=email)
+        self.assertFalse(secondary_email.active)
+
+        response = self.c.post(
+            "/user/email/verification/"
+            + urlsafe_base64_encode(force_bytes(self.dummy_user.pk))
+            + "/"
+            + urlsafe_base64_encode(force_bytes(email))
+            + "/"
+            + PasswordResetTokenGenerator().make_token(self.dummy_user)
+        )
+        # redirect to profile page after reset
+        # if user not logged in, redirect to login page
+        self.assertEqual(response.resolver_match.func, verify_email_link)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=302,
+            fetch_redirect_response=True,
+        )
+        secondary_email = Email.objects.get(user=self.dummy_user, email=email)
+        self.assertTrue(secondary_email.active)
+
+    def test_verify_email_link_view_invalid(self):
+        valid_email = "test1@test.com"
+        invalid_email = "test2@test.com"
+        secondary_email = Email.objects.create(
+            user=self.dummy_user, email=valid_email, active=False
+        )
+        self.assertFalse(secondary_email.active)
+
+        response = self.c.post(
+            "/user/email/verification/"
+            + urlsafe_base64_encode(force_bytes(self.dummy_user.pk))
+            + "/"
+            + urlsafe_base64_encode(force_bytes(invalid_email))
+            + "/"
+            + PasswordResetTokenGenerator().make_token(self.dummy_user)
+        )
+        # return invalid http response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode("utf-8"), "This is invalid!")
+        secondary_email = Email.objects.get(user=self.dummy_user, email=valid_email)
+        self.assertFalse(secondary_email.active)
+
+
+class TestDeleteUserEmailView(BaseTest):
+    """ Test Delete User Primary and Other Emails View """
+
+    def test_delete_primary_email_view(self):
+        self.c.login(username="myuser", password="pass123")
+
+        # If user has active secondary emails, the user can delete primary email
+        email = "test@test.com"
+        user_email = Email.objects.create(user=self.dummy_user, email=email)
+        user_email.active = True
+        user_email.save()
+        form_data = {
+            "primary_email": "abcd@gmail.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+
+        # If user doesn't have active secondary emails, the user cannot delete primary email
+        form_data = {
+            "primary_email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+
+        email = "test2@test.com"
+        Email.objects.create(user=self.dummy_user, email=email)
+        form_data = {
+            "primary_email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+
+        self.c.logout()
+
+    def test_delete_other_email_view(self):
+        self.c.login(username="myuser", password="pass123")
+
+        email = "test@test.com"
+        Email.objects.create(user=self.dummy_user, email=email)
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 1)
+
+        # Post valid form data
+        form_data = {
+            "submit-delete-email-form": "",
+            "email": "test@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 0)
+
+        # Post invalid form data
+        form_data = {
+            "submit-delete-email-form": "",
+            "email": "test2@test.com",
+        }
+        response = self.c.post("/user/profile", form_data)
+        self.assertEqual(response.status_code, 200)
+        user_email = Email.objects.filter(user=self.dummy_user)
+        self.assertEqual(user_email.count(), 0)
+
+        self.c.logout()

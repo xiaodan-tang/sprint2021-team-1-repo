@@ -34,3 +34,13 @@ echo""
 echo -e "${L_CYAN}Adding preference options to database${NC}"
 python add_preferences.py || error_exit "Error with add_preferencese"
 echo -e "${GREEN}[Success] Preference options added to database!${NC}"
+
+## Update covid compliance status
+echo -e "${L_CYAN}Updating covid compliance status for each restaurant${NC}"
+python update_compliant_status.py || error_exit "Error with update_comlpiant_status"
+echo -e "${GREEN}[Success] Covid compliance status updated for each restaurant!${NC}"
+
+## Add test accounts
+echo -e "${L_CYAN}Creating user test accounts${NC}"
+python create_test_accounts.py || error_exit "Error with create_test_status"
+echo -e "${GREEN}[Success] User test accounts created!${NC}"

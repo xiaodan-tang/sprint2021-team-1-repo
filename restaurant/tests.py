@@ -46,6 +46,7 @@ from .utils import (
 )
 
 from dinesafelysite.views import index, get_recent_views_recommendation
+from user.views import view_history
 
 from user.models import (
     Review,
@@ -642,7 +643,7 @@ class UserQuestionnaireFormTests(BaseTest):
         form = QuestionnaireForm(self.form)
         response = self.c.post("/restaurant/profile/1/", self.form)
         self.assertTrue(form.is_valid())
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
 
 class SearchFilterFormTests(BaseTest):
@@ -1405,7 +1406,7 @@ class ReviewTests(BaseTest):
             username="user1",
             email="test1@gmail.com",
         )
-        self.user1.set_password("test1234Report")
+        self.user1.set_password("test1234Reviews")
         self.user1.save()
 
         self.user2 = get_user_model().objects.create(
@@ -1434,6 +1435,49 @@ class ReviewTests(BaseTest):
             5,
         )
         self.temp_review.save()
+
+    def test_add_review(self):
+        self.c.login(username="user1", password="test1234Reviews")
+
+        restaurant = create_restaurant(
+            restaurant_name="Gary Danko",
+            business_address="800 N Point St",
+            yelp_detail=None,
+            postcode="94109",
+            business_id="WavvLdfdP6g8aZTtbBQHTx",
+        )
+        create_review(self.user1, restaurant, "test adding review", 5)
+
+        # test adding review for the same restaurant within 24 hours
+        url1 = "/restaurant/profile/" + str(self.temp_restaurant.id) + "/"
+        form = {
+            "user_id": str(self.user1.id),
+            "rating": 5,
+            "rating_safety": 5,
+            "rating_entry": 5,
+            "rating_door": 5,
+            "rating_table": 5,
+            "rating_bathroom": 5,
+            "rating_path": 5,
+            "content": "test adding review",
+        }
+
+        response1 = self.c.post(url1, form)
+        review_count_1 = Review.objects.filter(
+            user=self.user1, restaurant=self.temp_restaurant
+        ).count()
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(review_count_1, 1)
+
+        # test adding review for 2 or more different restaurants within 24 hours
+        url2 = "/restaurant/profile/" + str(restaurant.id) + "/"
+
+        response2 = self.c.post(url2, form)
+        review_count_2 = Review.objects.filter(user=self.user1).count()
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(review_count_2, 2)
+
+        self.c.logout()
 
     def test_like_review(self):
         self.c.login(username="user2", password="test4321Report")
@@ -2293,6 +2337,24 @@ class AskCommunityTest(TestCase):
         self.assertEqual(
             question_list[1].question, "How is this business operating during COVID-19?"
         )
+        # Post invalid/empty question, request failed
+        empty_form = {
+            "question": "",
+        }
+        response = self.c.post(
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1",
+            empty_form,
+        )
+        self.assertEqual(response.resolver_match.func, get_ask_community_page)
+        self.assertRedirects(
+            response,
+            "/restaurant/profile/" + str(self.restaurant.id) + "/ask_community/1",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        question_list = RestaurantQuestion.objects.filter(restaurant=self.restaurant)
+        self.assertEqual(question_list.count(), 2)
         self.c.logout()
 
     def test_get_answer_community_page(self):
@@ -2365,6 +2427,32 @@ class AskCommunityTest(TestCase):
         self.assertEqual(answer_list.count(), 2)
         self.assertEqual(answer_list[0].text, "They are open for takeout and delivery.")
         self.assertEqual(answer_list[1].text, "Test answer")
+        # Post invalid/empty answer, request failed
+        empty_form = {
+            "answer": "",
+        }
+        response = self.c.post(
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
+            empty_form,
+        )
+        self.assertEqual(response.resolver_match.func, answer_community_question)
+        self.assertRedirects(
+            response,
+            "/restaurant/profile/"
+            + str(self.restaurant.id)
+            + "/question/"
+            + str(self.question.id)
+            + "/1",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        answer_list = RestaurantAnswer.objects.filter(question=self.question)
+        self.assertEqual(answer_list.count(), 2)
         self.c.logout()
 
 
@@ -2713,3 +2801,10 @@ class RecentViewsRecommendationTest(TestCase):
         self.assertEqual(suggested_restaurant_list[1], self.restaurant4)
         self.assertEqual(suggested_restaurant_list[2], self.restaurant1)
         self.assertEqual(suggested_restaurant_list[3], self.restaurant2)
+
+        # Test get recent views history
+        self.c.login(username="myuser", password="pass123")
+        response = self.c.get("/user/view_history/1")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.resolver_match.func, view_history)
+        self.c.logout()

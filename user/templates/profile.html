@@ -63,7 +63,7 @@
         <div class="card shadow">
           <div class="card-body">
             <div class="d-flex flex-column align-items-center text-center">
-              <img id="avatar" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" class="rounded-circle" width="150">
+              <img id="avatar" src="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" alt="" class="rounded-circle" width="150">
               <div class="mt-3">
                 <h4>{{user.username}}</h4>
                 <div class="text-muted font-size-sm" id="test2">
@@ -125,15 +125,6 @@
             <hr>
             <div class="row">
               <div class="col-sm-3">
-                <h6 class="mb-0">Email</h6>
-              </div>
-              <div class="col-sm-9 text-secondary">
-                {{user.email}}
-              </div>
-            </div>
-            <hr>
-            <div class="row">
-              <div class="col-sm-3">
                 <h6 class="mb-0">Phone</h6>
               </div>
               <div class="col-sm-9 text-secondary">
@@ -151,6 +142,106 @@
             </div>
           </div>
         </div>
+        <div class="card mt-3 shadow">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Emails</h6>
+              </div>
+              <div class="col-sm-9">
+                <div class="row">
+                  <div class="col-sm-9">
+                    <span class="text-secondary">{{ user.email }}</span>
+                    <span> - </span>
+                    <span class="text-primary">Primary</span>
+                    <span class="text-primary">
+                      <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="bottom" title="This email will be used for account-related notifications and password resets."></i>
+                    </span>
+                  </div>
+                  <div class="col-sm-3">
+                    <form class="form-validate" method="post" id="delete_primary_email_form" name="delete_primary_email_form">
+                    {% csrf_token %}
+                      <input type="hidden" id="primary_email" name="primary_email" value="{{ user.email }}">
+                      <button type="button" id="submit-delete-primary-email-form" name="submit-delete-primary-email-form" class="fa_button text-secondary" onclick="deleteEmail()">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% if user_emails %}
+              {% for user_email in user_emails %}
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                  </div>
+                  <div class="col-sm-9">
+                    <div class="row">
+                      <div class="col-sm-9">
+                        <span class="text-secondary">{{ user_email.email }}</span>
+                        {% if not user_email.active %}
+                          <span> - </span>
+                          <span class="text-muted">Inactive</span>
+                          <span class="text-muted">
+                            <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="bottom" title="We have sent further instructions to your email. Please follow the steps for verifying your email."></i>
+                          </span>
+                        {% endif %}
+                      </div>
+                      <div class="col-sm-3">
+                        <form class="form-validate" method="post" id="delete_email_form_{{ forloop.counter0 }}">
+                        {% csrf_token %}
+                          <input type="hidden" id="email_{{ forloop.counter0 }}" name="email" value="{{ user_email.email }}">
+                          <button type="submit" form="delete_email_form_{{ forloop.counter0 }}" id="submit-delete-email-form" name="submit-delete-email-form" class="fa_button text-secondary">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+            <div class="row">
+              <div class="col-sm-3">
+              </div>
+              <div class="col-sm-9 text-right">
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse" data-target="#addEmail"
+                  aria-expanded="false" aria-controls="addEmail">Add</button>
+              </div>
+            </div>
+            <form class="form-validate" method="post" id="add_email_form">
+              {% csrf_token %}
+              <div class="collapse" id="addEmail">
+                <div class="row mt-4" id="sub_add_email_form">
+                  <div class="form-group col-12">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input class="form-control" type="email" name="email" id="other_email" required>
+                  </div>
+                </div>
+                <input type="submit" class="btn btn-outline-primary" id="submit-add-email-form" name="submit-add-email-form" value="Add Email">
+              </div>
+            </form>
+          </div>
+        </div>
+        <script>
+          $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+          })
+          function deleteEmail() {
+            let r = confirm("Are you sure you want to remove this email from your account? Once removed, one of your other emails will become your primary email.")
+            if (r == true) {
+              document.getElementById("delete_primary_email_form").submit();
+            }
+          }
+        </script>
+        <style>
+          .fa_button {
+              background: none;
+              padding: 0px;
+              border: none;
+            }
+        </style>
         <div class="card mt-3 shadow">
           <div class="card-body">
             {% load socialaccount %} {% get_social_accounts user as accounts %} 
@@ -372,6 +463,27 @@
                 </div>
               </div>
             </div>
+            <!-- viewing history -->
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <h6 class="mb-0">Activity Log</h6>
+              </div>
+              <div class="col-sm-9 text-right">
+                <button class="btn btn-link pl-0 text-primary collapsed" type="button" data-toggle="collapse" data-target="#viewHistory"
+                  aria-expanded="false" aria-controls="personalDetails">Edit</button>
+                
+              </div>
+            </div>
+           
+            <div class="collapse" id="viewHistory">
+          
+              <div class="col-sm-6">
+                  <a href="/user/view_history/1">Viewed Restaurants</a>
+              </div>
+                
+            </div>
+
           </div>
         </div>
 
@@ -496,15 +608,21 @@
             <div class="col-6">
               <h6 class="mb-0">Image Photo</h6>
               <div class="mt-2 form-group">
-                <img id="profile-pic-preview" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Admin" width="100%">
+                <input type="text" id="profile-pic-src" name="profile-pic-src" value="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" style="visibility: hidden">
+                <img id="profile-pic-preview" src="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" alt="" width="100%">
                 <div class="row mt-3">
-                  <div class="col text-center">
+                  <div class="col-6 text-center">
                     <label for="profile-pic" role="button" class="btn btn-sm btn-primary">
                       <input type="file" class="d-none" id="profile-pic" name="profile-pic"> Upload
                     </label>
                   </div>
-                  <div class="col mt-2 text-center">
+                  <div class="col-6 text-center">
                     <button type="button" class="btn btn-sm btn-secondary" id="remove-profile-pic-btn">Remove</button>
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col text-center">
+                    <button type="button" class="btn btn-sm btn-danger" id="reset-profile-pic-btn"><i class="fas fa-undo"></i>Reset</button>
                   </div>
                 </div>
               </div>
@@ -522,9 +640,15 @@
 
 <script>
   $(document).ready(() => {
-    const DEFAULT_PROFILE_PIC = 'https://bootdey.com/img/Content/avatar/avatar3.png';
-    const profilePic = '{{ profile_pic }}' || DEFAULT_PROFILE_PIC;
+    const DEFAULT_PROFILE_PIC = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
+    let profilePic = null;
+    if ('{{ profile_pic }}' == 'None') {
+        profilePic = DEFAULT_PROFILE_PIC;
+    } else {
+        profilePic = '{{ profile_pic }}';
+    }
     $('#profile-pic-preview').attr('src', profilePic);
+    $('#profile-pic-src').val(profilePic);
     $('#avatar').attr('src', profilePic);
     $('#profile-pic').change(event => {
       const file = event.target.files.length ? event.target.files[0] : null;
@@ -536,7 +660,14 @@
       reader.readAsDataURL(file);
     });
     $('#remove-profile-pic-btn').on('click', event => {
+      $('#profile-pic-preview').attr('src', profilePic);
+      $('#profile-pic-src').val(profilePic);
+      $('#profile-pic').val(null);
+    });
+    $('#reset-profile-pic-btn').on('click', event => {
       $('#profile-pic-preview').attr('src', DEFAULT_PROFILE_PIC);
+      $('#profile-pic-src').val(DEFAULT_PROFILE_PIC);
+      $('#profile-pic').val(null);
     });
   });
   $('body').on('submit', "form[name='saved_res_remove']", function (event) {

@@ -32,7 +32,12 @@ def send_reset_password_email(request, email):
 def send_verification_email(request, email):
     user = get_user_model().objects.get(email=email)
     host_name = request.get_host()
-    base_url = "http://" + host_name + "/user/verification/"
+    base_url = host_name + "/user/verification/"
+    if str(host_name).startswith("127.0.0.1"):
+        base_url = "http://" + base_url
+    else:
+        base_url = "https://" + base_url
+
     logger.info(base_url)
     c = {
         "base_url": base_url,
@@ -61,3 +66,20 @@ def send_feedback_email(request, email, subject, message):
         return True
     except Exception:
         return False
+
+
+def send_verification_secondary_email(request, email):
+    host_name = request.get_host()
+    base_url = "http://" + host_name + "/user/email/verification/"
+    c = {
+        "base_url": base_url,
+        "uid": urlsafe_base64_encode(force_bytes(request.user.pk)),
+        "encoded_email": urlsafe_base64_encode(force_bytes(email)),
+        "token": PasswordResetTokenGenerator().make_token(request.user),
+    }
+    htmltemp = template.loader.get_template("verify_email_template.html")
+    html_content = htmltemp.render(c)
+    email_subject = "Verify your email!"
+    email = EmailMultiAlternatives(email_subject, to=[email])
+    email.attach_alternative(html_content, "text/html")
+    return email.send()
