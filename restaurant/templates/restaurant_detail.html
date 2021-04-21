@@ -1,7 +1,22 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 {% load mathfilters %}
 <link href="https://dineline.s3.amazonaws.com/build/index.css" rel="stylesheet"></link>
+{% comment %} <link href="/static/build/index.css" rel="stylesheet"></link> {% endcomment %}
 <!-- Hero Section-->
+<script>
+  const check_logged_in = () => {
+    var logged_in = {{ user.is_authenticated }}
+    if (!logged_in) {
+        window.confirm("Can't leave a review without being logged in.");
+        if (window.location.href.includes('.com')) {
+          window.location.href = window.location.href.split('com')[0] + "com/user/login";
+        } else { window.location.href= "http://localhost:8000/user/login" }
+        return;
+    }
+  }
+
+</script>
+
 <section class="pt-7 pb-5 d-flex align-items-end dark-overlay bg-cover" id="res_img">
   <div class="container overlay-content">
     <div class="d-flex justify-content-between align-items-start flex-column flex-lg-row align-items-lg-end">
@@ -15,7 +30,7 @@
           &nbsp;&nbsp;
           <span id="res_review_count" class="ml-4"></span>
           <span>&nbsp;Reviews</span>
-          <button class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
+          <button onclick="check_logged_in();" class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
             <i class="fa fa-star"></i>
             Write a review
           </button>
@@ -833,10 +848,28 @@
       
       <div class="col-lg-4">
         <div class="pl-xl-4">
-        <div id="sidebar"></div>
+          <div id="sidebar"></div>
+          <!-- Opening Hours      -->
+          <div class="card border-0 shadow mb-5">
+            <div class="card-header py-4 border-0">
+              <div class="media align-items-center">
+                <div class="media-body">
+<!--                  <p class="subtitle text-sm text-primary">Overnight Status : <span id="res_overnight_status"></span></p>-->
+                  <h4 class="mb-0">Opening Hours </h4> </div>
+                <svg class="svg-icon svg-icon svg-icon-light w-3rem h-3rem ml-3 text-muted">
+                  <use xlink:href="#wall-clock-1"> </use>
+                </svg>
+              </div>
+            </div>
+            <div class="card-body">
+              <table id="res_open_hours" class="table text-sm mb-0">
+
+              </table>
+            </div>
+          </div>
           <!-- Contact-->
           <div class="card border-0 shadow mb-5">
-            <div class="card-header bg-gray-100 py-4 border-0">
+            <div class="card-header py-4 border-0">
               <div class="media align-items-center">
                 <div class="media-body">
                   <p class="subtitle text-sm text-primary">Want to know more?</p>
@@ -874,14 +907,88 @@
         </div>
       </div>
     </div>
-    <!-- Recommedn restaurant  -->
+    <style>
+
+      .swiper-container {
+        margin-top: 2em; /* minor cosmetic */
+      }
+      
+        .swiper-wrapper {
+          /* now pagination is below slides */
+          margin-bottom: 3em;
+      
+          /* just enough width so slides handing off screen are partially visible */
+          width: 73.8%;
+        }
+      
+        @media (min-width: 37.5em) {
+          .swiper-wrapper {
+            width: 100%;
+          }
+        }
+      
+          /* doubleing up specificity to win over on transform */
+          .swiper-slide.swiper-slide {
+            /* a single column layout */
+            width: 100%;
+          }
+      
+          @media (min-width: 37.5em) {
+            .swiper-slide.swiper-slide  {
+              /* going for a 2 column layout here */
+              width: 50%;
+      
+              /* centeredSlides set to true */
+              /* reposition so first slide appears on left */
+              transform: translateX(-50%);
+            }
+          }
+      
+          @media (min-width: 43.75em) {
+            .swiper-slide.swiper-slide  {
+              /* upping it to a 3 column layout */
+              width: 33.33333333333%;
+      
+              /* centeredSlides set to true */
+              /* reposition so first slide appears on left */
+              transform: translateX(-100%);
+            }
+          }
+      
+          @media (min-width: 53em) {
+            .swiper-slide.swiper-slide  {
+              /* and finally the 4 column layout */
+              width: 25%;
+      
+              /* centeredSlides set to true */
+              /* reposition so first slide appears on left */
+              transform: translateX(-150%);
+            }
+          }
+      
+      </style>
+    <script>
+      $( document ).ready(function () {
+          //initialize swiper when document ready
+          var mySwiper = new Swiper('.swiper-container', {
+              loop: false,
+              slidesPerView: 'auto',
+              centeredSlides: true,
+              pagination: {
+                  el: '.swiper-pagination',
+                  type: 'bullets',
+              },
+          });
+      });
+  </script>
+    <!-- Recommend restaurant  -->
     <!-- insert row here -->
     <div class="row">
         {% if recommended_restaurants  %}
-        <h3 class="mb-4">Similar restaurants</h3>
+        <h3 class="mb-4">Similar Restaurants</h3>
         <div class="container-fluid">
            <!-- Slider main container-->
-           <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+           <div class="swiper-container swiper-container-mx-negative px-lg-5 pt-3">
               <!-- Additional required wrapper-->
               <div class="swiper-wrapper pb-5">
                   {% for restaurant in recommended_restaurants %}
@@ -1262,4 +1369,6 @@ function initMap() {
 </script>
 <script src="https://dineline.s3.amazonaws.com/build/runtime.js"></script>
 <script src="https://dineline.s3.amazonaws.com/build/index.js"></script>
+{% comment %} <script src="/static/build/runtime.js"></script>
+<script src="/static/build/index.js"></script> {% endcomment %}
 {% endblock %}

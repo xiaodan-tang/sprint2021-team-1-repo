@@ -1,3 +1,21 @@
 .App {
   padding: 20px;
 }
+
+
+.sharebutton {
+  display: flex !important;
+  flex-direction: column !important;
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.sharebutton input {
+  width: 200px;
+}
+
+.sharebutton a {
+  margin-top: 10px !important;
+  width: 100px;
+  max-width: 100px;
+}

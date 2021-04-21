@@ -74,6 +74,14 @@ export default ({ review, restaurantId, userId, isInternal }) => {
     };
 
     const onReportClick = e => {
+        var logged_in = (typeof userId === 'number' && userId !== 0)
+        if (!logged_in) {
+            window.confirm("Can't report a review without being logged in.");
+            if (window.location.href.includes('.com')) {
+                window.location.href = window.location.href.split('com')[0] + "com/user/login";
+            } else { window.location.href= "http://localhost:8000/user/login" }
+            return;
+        }
         e.preventDefault();
         setShowDropdown(false);
         // Add this to communicate with non-react code

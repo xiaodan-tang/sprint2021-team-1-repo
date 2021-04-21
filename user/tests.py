@@ -14,6 +14,7 @@ from .models import (
     RestaurantAnswer,
     UserActivityLog,
     Email,
+    User_Profile,
 )
 
 
@@ -433,6 +434,58 @@ class TestAccountDetailsView(BaseTest):
             },
         )
         self.assertEqual(response.status_code, 302)
+
+    def test_update_user_avatar(self):
+        # Test upload user avatar
+        self.c.login(username="myuser", password="pass123")
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic": SimpleUploadedFile(
+                    "test.jpg", b"file_content", content_type="image/jpg"
+                ),
+            },
+        )
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_profile = User_Profile.objects.filter(user=self.dummy_user).first()
+        self.assertIn(
+            "https://dineline.s3.amazonaws.com/media/user_profile_pics/",
+            user_profile.photo,
+        )
+
+        # Test reset user avatar to default one
+        response = self.c.post(
+            "/user/profile",
+            {
+                "user_id": self.dummy_user.id,
+                "username": self.dummy_user.username,
+                "profile-pic-src": (
+                    "https://s3-media3.fl.yelpcdn.com"
+                    "/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg"
+                ),
+            },
+        )
+        self.assertEqual(response.resolver_match.func, profile)
+        self.assertRedirects(
+            response,
+            "/user/profile",
+            status_code=302,
+            target_status_code=200,
+            fetch_redirect_response=True,
+        )
+        user_profile = User_Profile.objects.filter(user=self.dummy_user).first()
+        self.assertEqual(user_profile.photo, None)
+
+        self.c.logout()
 
 
 class TestUserReviewsView(BaseTest):
