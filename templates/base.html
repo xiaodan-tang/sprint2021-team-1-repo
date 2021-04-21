@@ -50,20 +50,174 @@
     <link rel="stylesheet" href="{% static 'css/recent-activity.css' %}" crossorigin="anonymous"> </head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css" integrity="sha512-/zs32ZEJh+/EO2N1b0PEdoA10JkdC3zJ8L5FTiQu82LR9S/rOQNfQN7U59U9BC12swNeRAz3HSzIL2vpp4fv3w==" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
-<body style="padding-top: 72px">
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked + .slider {
+        background-color: rgb(32, 32, 32);
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px rgb(32, 32, 32);
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .dineline-logo-filler {
+        fill: green;
+    }
+    .dark-mode {
+        background-color: rgb(32, 32, 32);
+        color: rgb(228, 228, 228);
+    }
+    .card-dark-style {
+      background-color: rgb(24, 24, 24);
+      color: rgb(228, 228, 228);
+    }
+    body {
+        animation: fadeInAnimation ease 1150ms;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+    }
+    @keyframes fadeInAnimation {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+<script>
+
+    // Dark Mode
+
+    function changeMode(e) {
+        const {checked} = e.target;
+        if (checked == true){
+            darkMode();
+            sessionStorage.setItem("current_mode","dark");
+            localStorage.setItem("current_mode", "dark");
+        }
+        else {
+            lightMode();
+            sessionStorage.setItem("current_mode","light");
+            localStorage.setItem("current_mode", "light");
+        }
+    }
+    function initLuminanceMode(){
+        let current_luminance = sessionStorage.getItem("current_mode");
+        let local_luminance = localStorage.getItem("current_mode");
+        if (current_luminance == "dark" && local_luminance == "dark"){
+            darkMode();
+            document.getElementById("myCheckbox").checked = true;
+        }
+        if (current_luminance == "light" && local_luminance == "light"){
+            lightMode();
+            document.getElementById("myCheckbox").checked = false;
+        }
+    }
+
+    function lightMode() {
+        $('body').removeClass('dark-mode');
+        $('section').removeClass('dark-mode');
+        $('tr').removeClass('card-dark-style');
+        $('.collapsible').removeClass('dark-mode');
+        $('.content').removeClass('dark-mode');
+        $('.card').removeClass('card-dark-style');
+        $('.card-header').removeClass('card-dark-style');
+        $('.message').removeClass('dark-mode');
+        $('.modal-header').removeClass('dark-mode');
+        $('.modal-body').removeClass('dark-mode');
+        $('.modal-footer').removeClass('dark-mode');
+        $('.list-group-item').removeClass('card-dark-style');
+    }
+    function darkMode() {
+        $('body').addClass('dark-mode');
+        $('section').addClass('dark-mode');
+        $('tr').addClass('card-dark-style');
+        $('.collapsible').addClass('dark-mode');
+        $('.card-header').addClass('card-dark-style');
+        $('.card').addClass('card-dark-style');
+        $('.content').addClass('dark-mode');
+        $('.message').addClass('dark-mode');
+        $('.modal-header').addClass('dark-mode');
+        $('.modal-body').addClass('dark-mode');
+        $('.modal-footer').addClass('dark-mode');
+        $('.list-group-item').addClass('card-dark-style');
+    }
+</script>
+<body onload="initLuminanceMode()" style="padding-top: 72px">
 <header class="header">
     <!-- Navbar-->
-    <nav class="navbar fixed-top navbar-expand-lg shadow navbar-light bg-white">
+    <nav class="navbar fixed-top navbar-expand-lg" style="background-color: white;">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
                 <a class="navbar-brand py-1" href="{% url 'index' %}">
-                    <img src="{% static 'img/dineline-logo.svg' %}" alt="DineLine" height="50" width="250">
+                    <img class="dineline-logo-filler" src="{% static 'img/dineline-logo.svg' %}" alt="DineLine" height="50" width="250">
                 </a>
             </div>
             <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"><i class="fa fa-bars"></i></button>
             <!-- Navbar Collapse -->
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link">
+                            <label class="switch">
+                                <input id="myCheckbox" type="checkbox" onchange="changeMode(event)">
+                                Dark
+                                <span class="slider round"></span>
+                            </label>
+                        </a>
+                    </li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a> </li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:browse' %}">Restaurants</a> </li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:faqs' %}">FAQS</a> </li>
