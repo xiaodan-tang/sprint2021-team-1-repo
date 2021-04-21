@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 import CommentBox from './CommentBox';
+import Popover from './Popover';
 import "./YelpReview.css";
 
 const DEFAULT_AVATAR = 'https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg';
@@ -49,6 +50,11 @@ export default ({ review, restaurantId, userId, isInternal }) => {
         image2: isInternal ? review.image2 : null,
         image3: isInternal ? review.image3 : null,
         hidden: isInternal ? review.hidden : false,
+        rating_safety: isInternal ? review.rating_safety : 0,
+        rating_door: isInternal ? review.rating_door : 0,
+        rating_table: isInternal ? review.rating_table : 0,
+        rating_bathroom: isInternal ? review.rating_bathroom : 0,
+        rating_path: isInternal ? review.rating_path : 0,
         comments: review.comments || []
     };
 
@@ -57,6 +63,8 @@ export default ({ review, restaurantId, userId, isInternal }) => {
     const [liked, setLiked] = useState(isInternal ? review.liked : null);
     const [likesCount, setLikesCount] = useState(isInternal ? review.likes_num : 0);
     const [commentIndex, setCommentIndex] = useState(3);
+    const [showAlert, setShowAlert] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
     const isAuthor = data.userId === userId;
 
     const onReplyClick = e => {
@@ -66,6 +74,14 @@ export default ({ review, restaurantId, userId, isInternal }) => {
     };
 
     const onReportClick = e => {
+        var logged_in = (typeof userId === 'number' && userId !== 0)
+        if (!logged_in) {
+            window.confirm("Can't report a review without being logged in.");
+            if (window.location.href.includes('.com')) {
+                window.location.href = window.location.href.split('com')[0] + "com/user/login";
+            } else { window.location.href= "http://localhost:8000/user/login" }
+            return;
+        }
         e.preventDefault();
         setShowDropdown(false);
         // Add this to communicate with non-react code
@@ -87,13 +103,19 @@ export default ({ review, restaurantId, userId, isInternal }) => {
         const content = document.querySelector('textarea[name="content"]');
         content.value = data.content;
         content.dispatchEvent(new Event('change'));
-        document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${restaurantId}/review/${data.id}/put/restaurant`);
+        document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${restaurantId}/review/${data.id}/restaurant`);
     };
 
     const onDeleteClick = e => {
         e.preventDefault();
         setShowDropdown(false);
-        fetch(`/restaurant/profile/${restaurantId}/review/${data.id}/delete/restaurant`).then(res => {
+        fetch(`/restaurant/profile/${restaurantId}/review/${data.id}/restaurant`, { 
+            method: 'DELETE', 
+            credentials: 'include',
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]')?.value
+            }
+        }).then(res => {
             if (res.ok) {
                 location.reload();
             }
@@ -110,6 +132,10 @@ export default ({ review, restaurantId, userId, isInternal }) => {
             },
             body: `review_id=${Number(data.id)}`
         }).then(r => {
+            if (r.status === 403) {
+                setShowAlert(true);
+                setTimeout(() => setShowAlert(false), 2500);
+            }
             if (!r.ok) return;
             return r.json();
         }).then(r => {
@@ -127,11 +153,12 @@ export default ({ review, restaurantId, userId, isInternal }) => {
 
     if (data.hidden && !isAuthor) return null;
     return (
-        <div className="yelp__root mt-2" onMouseLeave={() => setShowDropdown(false)}>
+        <div className="yelp__root mt-2 position-relative" onMouseLeave={() => setShowDropdown(false)}>
+            { showAlert ? <div className={`alert alert-danger fade show`} style={{ zIndex: 100, position: 'absolute', top: '10%', left: '30%' }}>Please login first</div> : null }
             <div className="yelp__body d-block d-sm-flex">
                 <div className="yelp__pic_date" style={{ opacity: data.hidden ? 0.5 : 1 }}>
                     <div className="text-center">
-                        <img src={data.profilePic || DEFAULT_AVATAR} className="yelp__pic p-2" style={{ cursor: 'pointer' }} onClick={() => window.open(`/user/facing_page/${userId}`, '_blank') }/>
+                        <img src={data.profilePic || DEFAULT_AVATAR} className="yelp__pic p-2" style={{ cursor: 'pointer' }} onClick={() => window.open(`/user/facing_page/${data.userId}`, '_blank') }/>
                     </div>
                     <div className="yelp__date text-muted text-sm">
                         {data.time}
@@ -139,13 +166,16 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                 </div>
                 <div className = "yelp__name_rating_text text-muted" style={{ opacity: data.hidden ? 0.5 : 1 }}>
                     <div className="yelp__name">
-                        <a href={`/user/facing_page/${userId}`}>
+                        <a href={`/user/facing_page/${data.userId}`}>
                             {data.userName}
                         </a>
                     </div>
-                    <div className="yelp__rating">
+                    <div className="yelp__rating position-relative" onMouseEnter={() => setShowPopup(true)} onMouseLeave={() => setShowPopup(false)}>
                         { Array(data.rating).fill(0).map((_, i) => 
                             <FontAwesomeIcon key={i} icon={faStar} className="text-primary text-sm" /> ) 
+                        }
+                        {
+                            isInternal && showPopup ? <Popover rating_safety={data.rating_safety} rating_door={data.rating_door} rating_table={data.rating_table} rating_bathroom={data.rating_bathroom} rating_path={data.rating_path} /> : null
                         }
                     </div>
                     <div className="yelp__text text-sm">
@@ -157,7 +187,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                         { data.image3 ? <img className="review__image" src={new URL(data.image3, AWS_S3_MDEIA).href} onClick={() => onImageClick(new URL(data.image3, AWS_S3_MDEIA).href)}/> : null }
                     </div>
                     <RatingFooter
-                        isInternal
+                        isInternal={isInternal}
                         onLikeClick={onLikeClick}
                         liked={liked}
                         likesCount={likesCount}
@@ -172,7 +202,7 @@ export default ({ review, restaurantId, userId, isInternal }) => {
                             <div className={`dropdown-menu p-0 ${showDropdown ? 'show' : ''}`}>
                                 <a className={`dropdown-item small py-2 ${isAuthor ? '' : 'd-none'}`} href="#" onClick={onEditClick}>Edit</a>
                                 <a className={`dropdown-item small py-2 ${isAuthor ? '' : 'd-none'}`} href="#" onClick={onDeleteClick}>Delete</a>
-                                <a className={`dropdown-item small py-2 ${data.hidden ? 'd-none' : ''}`} href="#" onClick={onReplyClick}>Reply</a>
+                                <a className={`dropdown-item small py-2 ${data.hidden || !userId ? 'd-none' : ''}`} href="#" onClick={onReplyClick}>Reply</a>
                                 <a className={`dropdown-item small py-2 ${isAuthor ? 'd-none' : ''}`} href="#" onClick={onReportClick}>Report</a>
                             </div>
                         </div>

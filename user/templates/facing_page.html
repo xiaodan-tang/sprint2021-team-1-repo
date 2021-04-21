@@ -3,12 +3,13 @@
 
 <style>
 .root-container {
-  height: 350px !important;
+  height: 100%;
   margin: 0;
   background-color: white;
   border-radius: 5px;
   margin: auto;
-  min-width: 577px !important;
+  min-width: 400px !important;
+  min-height:500px;
 }
 .white-card {
   border: 1px solid blue;
@@ -24,7 +25,7 @@
 }
 @media (max-width: 576px) and (min-width: 500px) {
   .root-container {
-    height: 350px !important;
+    height: 100%;
     margin-left: 162px;
     margin-right: 162px;
   }
@@ -36,16 +37,95 @@
   height: 150px !important;
 }
 </style>
-<section class="root-page d-flex align-items-center bg-cover" data-parallax="true" style="min-height:600px; background-image: url(https://images.pexels.com/photos/2074130/pexels-photo-2074130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940);">
-  <div class="container root-container">
-    <!-- Breadcrumbs -->
-    <ol class="breadcrumb pl-0  justify-content-start">
-    </ol>
-   
-    <div class="" style = "transform:translate(0px,100px);">
-        <div class="" >
-		<div class="profile-content">
-            <div class="container" style = "transform:translate(0px,-100px);">
+<!--Zoom Picture Style-->
+<style>
+
+    /* The Modal (background) */
+    .modal1 {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 9999; /* Sit on top */
+      padding-top: 100px; /* Location of the box */
+      left: 0;
+      top: 10px;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    }
+    
+    /* Modal Content (image) */
+    .modal1-content {
+      margin: auto;
+      display: block;
+      width: 80%;
+      max-width: 700px;
+    }
+
+    
+    /* Add Animation */
+    .modal1-content {  
+      -webkit-animation-name: zoom;
+      -webkit-animation-duration: 0.6s;
+      animation-name: zoom;
+      animation-duration: 0.6s;
+    }
+    
+    @-webkit-keyframes zoom {
+      from {-webkit-transform:scale(0)} 
+      to {-webkit-transform:scale(1)}
+    }
+    
+    @keyframes zoom {
+      from {transform:scale(0)} 
+      to {transform:scale(1)}
+    }
+    
+    /* The Close Button */
+    .close1 {
+      position: absolute;
+      top: 25px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    
+    .close1:hover,
+    .close1:focus {
+      color: #bbb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    /* 100% Image Width on Smaller Screens */
+    @media only screen and (max-width: 700px){
+      .modal1-content {
+        width: 100%;
+      }
+    }
+</style>
+<!-- Zoom Picture -->
+<div id="myModal" class="modal1">
+<span class="close1">&times;</span>
+<img class="modal1-content" id="img01">
+</div>
+<script>
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close1")[0];
+console.log(span)
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() { 
+var zoomModal = document.getElementById("myModal");
+zoomModal.style.display = "none";
+}
+</script>
+<section class="py-5" style="min-height:600px; background-image: url(https://images.pexels.com/photos/2074130/pexels-photo-2074130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940);">
+  <div class="root-container"> 
+  <div class="container">
+    <div class="card-body" >
                 <div class="row" >
 	                <div class="col-md-6 ml-auto mr-auto">
                    
@@ -221,13 +301,12 @@
                             modalImg.src = this.image3.src;
                             
                           });
-                          
                           ratingBody.appendChild(this.comments);
                           ratingBody.appendChild(this.image1);
                           ratingBody.appendChild(this.image2);
                           ratingBody.appendChild(this.image3);
-
-                      
+         
+                          
                           this.rootDiv.appendChild(userProfile);
                           this.rootDiv.appendChild(ratingBody);
                       
@@ -367,7 +446,9 @@
                           const internalReviews = {{ internal_reviews | safe }};
                           internalReviews.forEach(review => {
                             const reviewWrapper = document.getElementById('internal_review');
+                            reviewWrapper.style = "margin-left:auto;margin-right:auto;";
                             const ratingReview = document.createElement('rating-review');
+                            const reviewhr = document.createElement('hr');
                             ratingReview.setAttribute('profile-img', review.restaurant__yelp_detail__img_url);
                             ratingReview.setAttribute('profile-img-alt', review.restaurant__restaurant_name);
                             ratingReview.setAttribute('user-name', review.restaurant__restaurant_name);
@@ -382,6 +463,7 @@
                             ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
                             ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
                             reviewWrapper.appendChild(ratingReview);
+                            reviewWrapper.appendChild(reviewhr);
                           });
                    </script>
                 </div>

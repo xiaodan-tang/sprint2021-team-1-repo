@@ -1,7 +1,22 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 {% load mathfilters %}
 <link href="https://dineline.s3.amazonaws.com/build/index.css" rel="stylesheet"></link>
+{% comment %} <link href="/static/build/index.css" rel="stylesheet"></link> {% endcomment %}
 <!-- Hero Section-->
+<script>
+  const check_logged_in = () => {
+    var logged_in = {{ user.is_authenticated }}
+    if (!logged_in) {
+        window.confirm("Can't leave a review without being logged in.");
+        if (window.location.href.includes('.com')) {
+          window.location.href = window.location.href.split('com')[0] + "com/user/login";
+        } else { window.location.href= "http://localhost:8000/user/login" }
+        return;
+    }
+  }
+
+</script>
+
 <section class="pt-7 pb-5 d-flex align-items-end dark-overlay bg-cover" id="res_img">
   <div class="container overlay-content">
     <div class="d-flex justify-content-between align-items-start flex-column flex-lg-row align-items-lg-end">
@@ -15,7 +30,7 @@
           &nbsp;&nbsp;
           <span id="res_review_count" class="ml-4"></span>
           <span>&nbsp;Reviews</span>
-          <button class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
+          <button onclick="check_logged_in();" class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
             <i class="fa fa-star"></i>
             Write a review
           </button>
@@ -452,7 +467,7 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" type="submit">Submit</button>
+                <button class="btn btn-primary" type="submit" id="report-abuse-submit-btn">Submit</button>
               </div>
              </form>
             </div>
@@ -469,7 +484,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form class="form-validate" method="POST">
+              <form class="form-validate" method="POST" name="question-form">
                 {% csrf_token %}
                 <div class="modal-body">
                   <h2>For this restaurant:</h2>
@@ -531,7 +546,7 @@
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved">Submit</button>
+                  <button class="btn btn-primary" type="submit" name="questionnaire_form" data-toggle="tooltip" data-placement="top" data-original-title="All fields required. Incomplete form will not be saved" onclick="e => {e.preventDefault();e.target.setAttribute('disabled', 'disabled'); document.forms['question-form'].submit();}">Submit</button>
                 </div>
               </form>
             </div>
@@ -1146,7 +1161,9 @@ for (i = 0; i < yelp_info.photos.length; i++) {
     gallery_imgs.appendChild(ele);
 }
 
-document.getElementById('rating-submit-button').addEventListener('click', () => {
+document.getElementById('rating-submit-button').addEventListener('click', e => {
+  e.preventDefault();
+  e.target.setAttribute('disabled', 'disabled');
   document.forms['rating-form'].submit();
 });
 
@@ -1173,6 +1190,7 @@ let __data__ = {
 // END-TODO
 document.forms['report-abuse'].addEventListener('submit', e => {
   e.preventDefault();
+  document.getElementById('report-abuse-submit-btn').setAttribute('disabled', 'disabled');
   if (__data__.reportAbuse.type === REPORT_TYPE.REVIEW) {
     e.target.setAttribute('action', `/restaurant/report/${restaurantId}/review/${__data__.reportAbuse.id}`);
   } else {
@@ -1351,5 +1369,6 @@ function initMap() {
 </script>
 <script src="https://dineline.s3.amazonaws.com/build/runtime.js"></script>
 <script src="https://dineline.s3.amazonaws.com/build/index.js"></script>
-
+{% comment %} <script src="/static/build/runtime.js"></script>
+<script src="/static/build/index.js"></script> {% endcomment %}
 {% endblock %}

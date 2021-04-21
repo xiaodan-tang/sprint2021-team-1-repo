@@ -1,7 +1,7 @@
 import React from 'react'
 import "./OpeningHours.css"
 
-function OpeningHours() {
+const OpeningHours = () => {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     function changeTime(time) {
         time = time.substring(0, time.length-2).concat(":00")
@@ -42,4 +42,4 @@ function OpeningHours() {
     )
 }
 
-export default OpeningHours
+export default OpeningHours;

@@ -31,6 +31,7 @@ urlpatterns = [
     path("chatbot/", include("chatbot.urls")),
 ]
 
+
 handler404 = "dinesafelysite.views.custom_error_404"  # noqa: F811
 handler500 = "dinesafelysite.views.custom_error_500"  # noqa: F811
 handler403 = "dinesafelysite.views.custom_error_403"  # noqa: F811

@@ -69,34 +69,16 @@ XXX_KEY="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ~~~
 
 
-
-### 5) Migrations
-
-For the first time deployment, if there's an update on any model, a makemigrations is needed before migration operation. Make migrations using this command:
-
+### 5) Initialize Data
+For the first time deployment, to update the data model and initialize that database, use this command:
 ~~~shell
-python manage.py makemigrations
+bash release-tasks.sh
 ~~~
-
-If there's nothing changed on model, execute a migration to generate the underlying database.
-
-~~~:
-python manage.py migrate
-~~~
+All the commands that are run by this script can be viewed in release-tasks.sh
 
 
 
-### 6) Load initial data to database
-
-~~~shell
-python manage.py loaddata data.json
-~~~
-
-This process might take some time since the initial dataset is a little bit large.
-
-
-
-### 7) Create local superuser
+### 6) Create local superuser
 
 ~~~shell
 python manage.py createsuperuser
@@ -104,7 +86,7 @@ python manage.py createsuperuser
 
 
 
-### 8） Collect static files
+### 7） Collect static files
 
 ~~~shell
 python manage.py collectstatic
@@ -112,7 +94,7 @@ python manage.py collectstatic
 
 
 
-### 9) Run server
+### 8) Run server
 
 ~~~shell
 python manage.py runserver

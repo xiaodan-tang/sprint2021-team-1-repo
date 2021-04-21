@@ -762,15 +762,15 @@ class EditReviewTests(BaseTest):
     def test_edit_review(self, queryset):
         queryset.delete.return_value = None
         queryset.filter.return_value = queryset
-        response = self.c.get(
-            "/restaurant/profile/restaurant_id/review/comment_id/delete/user"
+        response = self.c.post(
+            "/restaurant/profile/restaurant_id/review/review_id/user"
         )
         self.assertEqual(response.status_code, 302)
 
     def test_delete_review(self, queryset):
         queryset.get.return_value = mock.Mock(spec=Review)
-        response = self.c.get(
-            "/restaurant/profile/restaurant_id/review/comment_id/put/user"
+        response = self.c.delete(
+            "/restaurant/profile/restaurant_id/review/review_id/user"
         )
         self.assertEqual(response.status_code, 302)
 
