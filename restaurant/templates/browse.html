@@ -1,5 +1,42 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 <script>
+    function initLuminanceMode(){
+        let current_luminance = sessionStorage.getItem("current_mode");
+        let local_luminance = localStorage.getItem("current_mode");
+        if (current_luminance == "dark" && local_luminance == "dark"){
+            darkMode();
+            document.getElementById("myCheckbox").checked = true;
+        }
+        if (current_luminance == "light" && local_luminance == "light"){
+            lightMode();
+            document.getElementById("myCheckbox").checked = false;
+        }
+    }
+
+    function lightMode() {
+        $('body').removeClass('dark-mode');
+        $('section').removeClass('dark-mode');
+        $('.collapsible').removeClass('dark-mode');
+        $('.content').removeClass('dark-mode');
+        $('.message').removeClass('dark-mode');
+        $('.modal-header').removeClass('dark-mode');
+        $('.modal-body').removeClass('dark-mode');
+        $('.modal-footer').removeClass('dark-mode');
+        $('.list-group-item').removeClass('dark-mode');
+    }
+    function darkMode() {
+        $('body').addClass('dark-mode');
+        $('section').addClass('dark-mode');
+        $('.collapsible').addClass('dark-mode');
+        $('.content').addClass('dark-mode');
+        $('.message').addClass('dark-mode');
+        $('.modal-header').addClass('dark-mode');
+        $('.modal-body').addClass('dark-mode');
+        $('.modal-footer').addClass('dark-mode');
+        $('.list-group-item').addClass('dark-mode');
+    }
+</script>
+<script>
 $(document).ready(function(){
   // Add smooth scrolling to all links
   $("a").on('click', function(event) {
@@ -36,7 +73,7 @@ $(document).ready(function(){
         </div>
     </div>
     <div class="row">
-        <div class="top-container style="width:100%">
+        <div class="top-container" style="width:100%">
             <div class="mr-3">
                 <p class="mb-3 mb-md-0"><strong id="res_count"></strong> results found</p>
             </div>
@@ -252,6 +289,7 @@ $(document).ready(function(){
 
                                         // Displaying map onto the page
                                         initMap(map);
+                                        initLuminanceMode();
 
                                     },
                                     error : function(xhr,errmsg,err) {
@@ -483,7 +521,7 @@ $(document).ready(function(){
 
                 <div class="row-box">
                     <div class="column-box">
-                        <div class="hundred-width" style="width:100%;">
+                        <div class="hundred-width">
                             <center>
                                 <div id="map"></div>      
                             </center>    

@@ -228,9 +228,9 @@ $(document).ready(function() {
           m = d.getMinutes();
         }
       if (m < 10) {
-          $('<div class="media col-md-9 col-xl-7 mb-3"><img class="avatar avatar-border-white" src="https://dine-safely.s3.amazonaws.com/icons8-chatbot-80.png" alt="user"><div class="message media-body ml-3"><div class="bg-gray-200 rounded p-4 mb-2"><p class="text-sm mb-0">' + content + '</p></div><p class="small ml-3">' + d.getHours() + ':0' + m + '</p></div>').appendTo($('.mCSB_container')).addClass('new');
+          $('<div class="media col-md-9 col-xl-7 mb-3"><img class="avatar avatar-border-white" src="https://dine-safely.s3.amazonaws.com/icons8-chatbot-80.png" alt="user"><div class="message media-body ml-3"><div class="bg-black-200 rounded p-4 mb-2"><p class="text-sm mb-0">' + content + '</p></div><p class="small ml-3">' + d.getHours() + ':0' + m + '</p></div>').appendTo($('.mCSB_container')).addClass('new');
       } else {
-          $('<div class="media col-md-9 col-xl-7 mb-3"><img class="avatar avatar-border-white" src="https://dine-safely.s3.amazonaws.com/icons8-chatbot-80.png" alt="user"><div class="message media-body ml-3"><div class="bg-gray-200 rounded p-4 mb-2"><p class="text-sm mb-0">' + content + '</p></div><p class="small ml-3">' + d.getHours() + ':' + m + '</p></div>').appendTo($('.mCSB_container')).addClass('new');
+          $('<div class="media col-md-9 col-xl-7 mb-3"><img class="avatar avatar-border-white" src="https://dine-safely.s3.amazonaws.com/icons8-chatbot-80.png" alt="user"><div class="message media-body ml-3"><div class="bg-black-200 rounded p-4 mb-2"><p class="text-sm mb-0">' + content + '</p></div><p class="small ml-3">' + d.getHours() + ':' + m + '</p></div>').appendTo($('.mCSB_container')).addClass('new');
       }
 
       updateScrollbar();
