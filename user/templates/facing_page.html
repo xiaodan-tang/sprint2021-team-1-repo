@@ -301,13 +301,12 @@ zoomModal.style.display = "none";
                             modalImg.src = this.image3.src;
                             
                           });
-                          
                           ratingBody.appendChild(this.comments);
                           ratingBody.appendChild(this.image1);
                           ratingBody.appendChild(this.image2);
                           ratingBody.appendChild(this.image3);
-
-                      
+         
+                          
                           this.rootDiv.appendChild(userProfile);
                           this.rootDiv.appendChild(ratingBody);
                       
@@ -447,7 +446,9 @@ zoomModal.style.display = "none";
                           const internalReviews = {{ internal_reviews | safe }};
                           internalReviews.forEach(review => {
                             const reviewWrapper = document.getElementById('internal_review');
+                            reviewWrapper.style = "margin-left:auto;margin-right:auto;";
                             const ratingReview = document.createElement('rating-review');
+                            const reviewhr = document.createElement('hr');
                             ratingReview.setAttribute('profile-img', review.restaurant__yelp_detail__img_url);
                             ratingReview.setAttribute('profile-img-alt', review.restaurant__restaurant_name);
                             ratingReview.setAttribute('user-name', review.restaurant__restaurant_name);
@@ -462,6 +463,7 @@ zoomModal.style.display = "none";
                             ratingReview.setAttribute('image2', 'https://dineline.s3.amazonaws.com/media/' + review.image2);
                             ratingReview.setAttribute('image3', 'https://dineline.s3.amazonaws.com/media/' + review.image3);
                             reviewWrapper.appendChild(ratingReview);
+                            reviewWrapper.appendChild(reviewhr);
                           });
                    </script>
                 </div>

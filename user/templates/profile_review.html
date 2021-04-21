@@ -19,7 +19,7 @@
         </div>
         <!--Zoom Picture Style-->
         <style>
-
+          
             /* The Modal (background) */
             .modal1 {
               display: none; /* Hidden by default */
@@ -473,12 +473,8 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
     this.dropdownWrapper = document.createElement('div');
     this.dropdownWrapper.setAttribute('class', 'dropdown-menu p-0');
 
-    this.deleteForm = document.createElement('form');
-    this.deleteForm.setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/delete/user`);
-
     this.optionButtonWrapper.appendChild(this.optionButton);
     this.optionButtonWrapper.appendChild(this.dropdownWrapper);
-    this.optionButtonWrapper.appendChild(this.deleteForm);
     this.optionButtonWrapper.addEventListener('mouseover', () => {
       this.dropdownWrapper.classList.add('show');
     });
@@ -504,10 +500,23 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
           const content = document.querySelector('textarea[name="content"]');
           content.value = this.getAttribute('review-text');
           content.dispatchEvent(new Event('change'));
-          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/put/user`);
+          document.forms['rating-form'].setAttribute('action', `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/user`);
         });
       } else {
-        anchor.addEventListener('click', () => this.deleteForm.submit());
+        var url = `/restaurant/profile/${this.getAttribute('restaurant-id')}/review/${this.getAttribute('review-id')}/user`;
+        anchor.addEventListener('click', () => {
+          $.ajax({
+                  type: 'DELETE',
+                  url: url,
+                  data: {},
+                  headers: {
+                  'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]')?.value
+                  },
+                  success: function (result) {
+                    location.reload();
+                  }
+                });
+        });
       }
       this.dropdownWrapper.appendChild(anchor);
     });
@@ -537,6 +546,7 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
     internalReviews.forEach(review => {
       const reviewWrapper = document.getElementById('internal_review');
       const ratingReview = document.createElement('rating-review');
+      const reviewhr = document.createElement('hr');
       ratingReview.setAttribute('profile-img', review.restaurant__yelp_detail__img_url);
       ratingReview.setAttribute('profile-img-alt', review.restaurant__restaurant_name);
       ratingReview.setAttribute('user-name', review.restaurant__restaurant_name);
@@ -556,6 +566,7 @@ $('#exampleModal').on('hidden.bs.modal', function (e) {
       ratingReview.setAttribute('hidden-flag', review.hidden);
     }
       reviewWrapper.appendChild(ratingReview);
+      reviewWrapper.appendChild(reviewhr);
     });
     </script>
 

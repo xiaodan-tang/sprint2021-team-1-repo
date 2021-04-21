@@ -1,7 +1,22 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
 {% load mathfilters %}
 <link href="https://dineline.s3.amazonaws.com/build/index.css" rel="stylesheet"></link>
+{% comment %} <link href="/static/build/index.css" rel="stylesheet"></link> {% endcomment %}
 <!-- Hero Section-->
+<script>
+  const check_logged_in = () => {
+    var logged_in = {{ user.is_authenticated }}
+    if (!logged_in) {
+        window.confirm("Can't leave a review without being logged in.");
+        if (window.location.href.includes('.com')) {
+          window.location.href = window.location.href.split('com')[0] + "com/user/login";
+        } else { window.location.href= "http://localhost:8000/user/login" }
+        return;
+    }
+  }
+
+</script>
+
 <section class="pt-7 pb-5 d-flex align-items-end dark-overlay bg-cover" id="res_img">
   <div class="container overlay-content">
     <div class="d-flex justify-content-between align-items-start flex-column flex-lg-row align-items-lg-end">
@@ -15,7 +30,7 @@
           &nbsp;&nbsp;
           <span id="res_review_count" class="ml-4"></span>
           <span>&nbsp;Reviews</span>
-          <button class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
+          <button onclick="check_logged_in();" class="btn btn-sm btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
             <i class="fa fa-star"></i>
             Write a review
           </button>
@@ -1262,4 +1277,6 @@ function initMap() {
 </script>
 <script src="https://dineline.s3.amazonaws.com/build/runtime.js"></script>
 <script src="https://dineline.s3.amazonaws.com/build/index.js"></script>
+{% comment %} <script src="/static/build/runtime.js"></script>
+<script src="/static/build/index.js"></script> {% endcomment %}
 {% endblock %}
