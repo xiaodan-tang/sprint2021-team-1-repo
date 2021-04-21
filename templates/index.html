@@ -25,12 +25,17 @@
                         console.log(keyword);
                         window.location.href="./restaurant/1?search=" + keyword;
                     };
+                    const swiper = new Swiper('.swiper-container', {
+                        autoplay: {
+                            delay: 5000,
+                        },
+                    });
                 </script>
             </div>
         </form>
     </div>
 </div>
-<section class="py-6 bg-gray-100">
+<section class="py-6">
     <div class="container">
         <div class="text-center pb-lg-4">
             <p class="subtitle text-secondary">What's new?</p>
@@ -39,12 +44,12 @@
     </div>
     <div class="container-fluid">
         <!-- Slider main container-->
-        <div class="swiper-container swiper-container-mx-negative items-slider-full px-lg-5 pt-3">
+        <div class="swiper-container items-slider-full px-lg-5 pt-3">
             <!-- Additional required wrapper-->
             <div class="swiper-wrapper pb-5">
                 {% for restaurant in restaurant_list %}
                 {% if not restaurant.yelp_info.fake_info %}
-                <div class="swiper-slide h-auto px-2">
+                <div class="swiper-slide h-auto px-2" data-swiper-autoplay="2000">
                     <!-- venue item-->
                     <div class="w-100 h-100 hover-animate" data-marker-id="59c0c8e322f3375db4d89128">
                         <div class="card h-100 border-0 shadow">
@@ -73,7 +78,7 @@
                             </div>
                             <div class="card-body">
                                 <p class="text-sm text-muted text-uppercase mb-1">
-                                    <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                    <a href="{% url 'restaurant:inspection_history' restaurant.id %}">{{ restaurant.latest_record.is_roadway_compliant }}</a>
                                     {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
                                         <i class="fas fa-check-circle" style="color:#596ff8"></i>
                                     {% endif %}
@@ -100,7 +105,7 @@
             <div class="swiper-pagination"></div>
         </div>
 
-        <section class="py-6 bg-gray-100">
+        <section class="py-6">
         {% if user.is_authenticated %}
         
             <div class="container">
@@ -140,7 +145,7 @@
                                     </div>
                                     <div class="card-body">
                                         <p class="text-sm text-muted text-uppercase mb-1">
-                                            <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                            <a href="{% url 'restaurant:inspection_history' restaurant.id %}">{{ restaurant.latest_record.is_roadway_compliant }}</a>
                                             {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
                                                 <i class="fas fa-check-circle" style="color:#596ff8"></i>
                                             {% endif %}
@@ -163,7 +168,7 @@
             </div>
             <!-- recommend based on recently viewed restaurants -->
             {% if suggested_restaurant_list %}
-            <section class="py-6 bg-gray-100">
+            <section class="py-6">
                 <div class="container">
                     <div class="text-center pb-lg-4">
                         <h2 class="mb-5">Recommended based on your viewing history
@@ -202,7 +207,7 @@
                                         </div>
                                         <div class="card-body">
                                             <p class="text-sm text-muted text-uppercase mb-1">
-                                                <a href="{% url 'restaurant:inspection_history' restaurant.id %}" class="text-dark">{{ restaurant.latest_record.is_roadway_compliant }}</a>
+                                                <a href="{% url 'restaurant:inspection_history' restaurant.id %}">{{ restaurant.latest_record.is_roadway_compliant }}</a>
                                                 {% if restaurant.latest_record.is_roadway_compliant == "Compliant" %}
                                                     <i class="fas fa-check-circle" style="color:#596ff8"></i>
                                                 {% endif %}
@@ -254,7 +259,11 @@
                                     <div class="opaque-container">
                                         <div class="review-metadata-box">
                                             <div class="avatar-container">
-                                                <img class="avatar-img" src="{{ recent.user.user_profile.photo }}" alt="" height="50" width="50" />
+                                                {% if recent.user.user_profile.photo %}
+                                                    <img class="avatar-img" src="{{ recent.user.user_profile.photo }}" alt="" height="50" width="50" />
+                                                {% else %}
+                                                    <img class="avatar-img" src="https://s3-media3.fl.yelpcdn.com/photo/O8CmQtEeOUvMTFk0iMn5sw/o.jpg" alt="" height="50" width="50" />
+                                                {% endif %}
                                             </div>
                                             <div class="user-timestamp">
                                                 <p class="user-name" style="float: left;">{{ recent.user }}</p>
@@ -378,7 +387,7 @@
             </div>
         </div>
     </section>
-<section class="py-6 bg-gray-100">
+<section class="py-6">
     <div class="container">
         <div class="row">
             <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-left">
