@@ -44,3 +44,8 @@ echo -e "${GREEN}[Success] Covid compliance status updated for each restaurant!$
 echo -e "${L_CYAN}Creating user test accounts${NC}"
 python create_test_accounts.py || error_exit "Error with create_test_status"
 echo -e "${GREEN}[Success] User test accounts created!${NC}"
+
+## Delete old inspection records
+echo -e "${L_CYAN}Deleting old inspection records${NC}"
+python delete_old_inspection_records.py || error_exit "Error with delete_old_inspection_records"
+echo -e "${GREEN}[Success] Deleted old inspection records!${NC}"
