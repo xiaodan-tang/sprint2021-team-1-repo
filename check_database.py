@@ -7,7 +7,8 @@ django.setup()
 
 import django.apps  # noqa: E402
 from user.models import UserActivityLog  # noqa: E402
-from restaurant.models import Restaurant, AccessibilityRecord # noqa: E402
+from restaurant.models import Restaurant, AccessibilityRecord  # noqa: E402
+
 
 def count_records():
     total_count = 0
@@ -19,11 +20,13 @@ def count_records():
 
     return total_count
 
+
 def reduce_activity_records():
     # Delete old user activity history
     time_threshold = datetime.now() - timedelta(days=10)
     UserActivityLog.objects.filter(last_visit__lt=time_threshold).delete()
     return count_records()
+
 
 def reduce_accessibility_records():
     # delete accessibility record that doesn't match restaurant
@@ -34,8 +37,8 @@ def reduce_accessibility_records():
             AccessibilityRecord.objects.filter(
                 restaurant_name__iexact=obj.restaurant_name
             )
-                .filter(street_number=restaurant_street_number)
-                .first()
+            .filter(street_number=restaurant_street_number)
+            .first()
         )
         if q_result:
             records.append(q_result.id)
@@ -49,6 +52,7 @@ def reduce_accessibility_records():
         AccessibilityRecord.objects.filter(id=c).delete()
 
     return count_records()
+
 
 if __name__ == "__main__":
     total_records = count_records()
