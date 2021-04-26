@@ -27,8 +27,11 @@ jobs:
           command: python -m flake8 .
           name: FormatCheck
       - run:
-          command: ./manage.py test
+          command: python -m coverage run --source=restaurant,user manage.py test
           name: Test
+      - run:
+          command: python -m coveralls
+          name: Coveralls
 
 workflows:
   main:
