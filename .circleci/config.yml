@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   python: circleci/python@0.2.1
-  coveralls: coveralls/coveralls@1.0.6
 
 jobs:
   build-and-test:
@@ -28,9 +27,11 @@ jobs:
           command: python -m flake8 .
           name: FormatCheck
       - run:
-          command: ./manage.py test
+          command: coverage run --source=restaurant,user manage.py test
           name: Test
-      - coveralls/upload
+      - run:
+          command: coveralls
+          name: Coveralls
 
 workflows:
   main:
