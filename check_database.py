@@ -61,7 +61,7 @@ def reduce_accessibility_records():
     return count_records()
 
 
-@sched.scheduled_job("interval", hours=24)
+@sched.scheduled_job("cron", day_of_week="mon-sun", hour=0)
 def check_db():
     total_records = count_records()
     print("Check Database Start! Total Records: {}".format(total_records))
