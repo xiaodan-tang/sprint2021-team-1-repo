@@ -19,6 +19,7 @@
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
+- [ ] Enhancement
 ## Checklist
 - [ ] I have read the [CONTRIBUTING](https://github.com/gcivil-nyu-org/spring2021-cs-gy-9223-class/blob/main/CONTRIBUTING.md) guidelines of this project
 - [ ] My code follows the code style of this project

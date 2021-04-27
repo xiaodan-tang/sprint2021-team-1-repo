@@ -2,12 +2,19 @@ import os
 import django
 from datetime import datetime, timedelta
 
+import logging
+from apscheduler.schedulers.blocking import BlockingScheduler
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dinesafelysite.settings")
 django.setup()
 
 import django.apps  # noqa: E402
 from user.models import UserActivityLog  # noqa: E402
 from restaurant.models import Restaurant, AccessibilityRecord  # noqa: E402
+
+
+sched = BlockingScheduler()
+logger = logging.getLogger(__name__)
 
 
 def count_records():
@@ -54,7 +61,8 @@ def reduce_accessibility_records():
     return count_records()
 
 
-if __name__ == "__main__":
+@sched.scheduled_job("cron", day_of_week="mon-sun", hour=0)
+def check_db():
     total_records = count_records()
     print("Check Database Start! Total Records: {}".format(total_records))
     if total_records > 10000:
@@ -62,3 +70,10 @@ if __name__ == "__main__":
     if total_records > 10000:
         total_records = reduce_accessibility_records()
     print("Check Database Done! Total Records: {}".format(total_records))
+
+
+sched.start()
+
+
+if __name__ == "__main__":
+    check_db()

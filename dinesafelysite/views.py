@@ -20,10 +20,22 @@ REVIEW_LIMIT = 10
 def index(request):
     restaurant_list = get_compliant_restaurant_list(
         1,
-        RESTAURANT_NUMBER,
+        RESTAURANT_NUMBER / 2,
         rating_filter=[3, 3.5, 4, 4.5, 5],
-        compliant_filter=["COVIDCompliant"],
+        compliant_filter="COVIDCompliant",
     )
+
+    mopd_compliant_restaurant = get_compliant_restaurant_list(
+        1,
+        RESTAURANT_NUMBER / 2,
+        rating_filter=[3, 3.5, 4, 4.5, 5],
+        compliant_filter="MOPDCompliant",
+    )
+
+    # Avoid restaurant duplicates
+    for restaurant in mopd_compliant_restaurant:
+        if restaurant not in restaurant_list:
+            restaurant_list.append(restaurant)
 
     recent_reviews = Review.objects.order_by("-time")[:REVIEW_LIMIT]
     restaurant_review_list = [r for r in recent_reviews]
