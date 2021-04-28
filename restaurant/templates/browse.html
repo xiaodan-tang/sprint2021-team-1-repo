@@ -693,20 +693,24 @@ $(document).ready(function(){
                 var a2 = document.createElement("a");
                 a2.className = "text-dark";
                 a2.href = "../restaurant/inspection_records/" + restaurant_list[i].id ;
-                a2.innerHTML = restaurant_list[i].latest_record.is_roadway_compliant;
 
-                if(restaurant_list[i].latest_record.is_roadway_compliant == "Compliant")
-                {
-                    a2.innerHTML += "&nbsp";
-                    var itick = document.createElement("i");
-                    itick.className = "fas fa-check-circle";
-                    itick.style = "color:#596ff8";
-                    p_1.appendChild(a2);
-                    p_1.appendChild(itick);
-                }
-                else
-                {
-                    p_1.appendChild(a2);
+                if (restaurant_list[i].latest_record != null){
+                    a2.innerHTML = restaurant_list[i].latest_record.is_roadway_compliant;
+
+                    if(restaurant_list[i].latest_record.is_roadway_compliant == "Compliant")
+                    {
+                        a2.innerHTML += "&nbsp";
+                        var itick = document.createElement("i");
+                        itick.className = "fas fa-check-circle";
+                        itick.style = "color:#596ff8";
+                        p_1.appendChild(a2);
+                        p_1.appendChild(itick);
+                    }
+                    else
+                    {
+                        p_1.appendChild(a2);
+                    }
+
                 }
 
                 // MOPD Compliance Status 
