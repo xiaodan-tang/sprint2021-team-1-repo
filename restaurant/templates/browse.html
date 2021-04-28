@@ -270,6 +270,7 @@ $(document).ready(function(){
                                     url : "search_filter/restaurants_list/1",
                                     type : "POST",
                                     data : form,
+                                    async: false,
                                     processData: false,
                                     contentType: false,
                                     success : function(json) {
@@ -278,14 +279,16 @@ $(document).ready(function(){
                                         document.getElementById("form_autocomplete").value = json.user_location;
                                         document.getElementById("form_location").value = json.user_location;
                                         document.getElementById("form_geocode").value = json.user_geocode;
-                                        loadRestaurant(json.restaurant_list, json.restaurant_number)
+                                        loadRestaurant(json.restaurant_list, json.restaurant_number);                                        
 
                                         // Parsing and converting the fetched data into an array
-                                        var respData = JSON.parse(json.restaurant_list)
+                                        var respData = JSON.parse(json.restaurant_list);
 
                                         for(var i = 0; i < respData.length; ++i){
                                             resData.push(respData[i])
                                         }
+                                       // console.log('respData.length');
+                                       // console.log(respData.length);
 
                                         // Displaying map onto the page
                                         initMap(map);
